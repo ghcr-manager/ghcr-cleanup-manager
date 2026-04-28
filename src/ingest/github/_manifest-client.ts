@@ -1,4 +1,5 @@
 import type { ManifestEdgeRecord, ManifestRecord } from "../../core/index.js";
+import { loadRegistryPullToken } from "./_registry-token-client.js";
 import { acceptedManifestMediaTypes, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 interface _RegistryPlatform {
@@ -30,11 +31,11 @@ export async function loadManifestGraph(
   options: GitHubScanOptions,
 ): Promise<{ record: ManifestRecord; childRecords: ManifestRecord[]; edgeRecords: ManifestEdgeRecord[] }> {
   const url = new URL(`/v2/${options.owner}/${options.packageName}/manifests/${digest}`, registryBaseUrl);
-  const basicAuth = Buffer.from(`${options.username ?? options.owner}:${options.token}`).toString("base64");
+  const registryToken = await loadRegistryPullToken(fetchImpl, registryBaseUrl, options);
   const response = await fetchImpl(url.toString(), {
     headers: {
       Accept: acceptedManifestMediaTypes,
-      Authorization: `Basic ${basicAuth}`,
+      Authorization: `Bearer ${registryToken}`,
       "User-Agent": "ghcr-manager",
     },
   });

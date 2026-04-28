@@ -1,7 +1,7 @@
 export interface GitHubScanOptions {
   owner: string;
   packageName: string;
-  token: string;
+  token?: string;
   githubApiBaseUrl?: string;
   registryBaseUrl?: string;
   username?: string;

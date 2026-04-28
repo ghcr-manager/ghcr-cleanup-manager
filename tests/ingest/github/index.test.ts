@@ -41,6 +41,14 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
       },
     ],
     [
+      "https://ghcr.test/token?service=ghcr.test&scope=repository%3Aacme%2Fexample%3Apull",
+      {
+        body: {
+          token: "registry-token",
+        },
+      },
+    ],
+    [
       "https://ghcr.test/v2/acme/example/manifests/sha256:index",
       {
         contentType: "application/vnd.oci.image.index.v1+json",
@@ -98,6 +106,9 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
         }
 
         assert.ok(init?.headers);
+        if (input.includes("/manifests/")) {
+          assert.equal((init.headers as Record<string, string>).Authorization, "Bearer registry-token");
+        }
 
         return {
           ok: true,

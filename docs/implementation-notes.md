@@ -28,7 +28,7 @@ This section is the canonical place for session-to-session continuity.
 
 - ☑ Add a real GitHub Packages and GHCR ingest adapter beside the fixture loader.
 - ☑ Normalize live package, version, tag, manifest, and edge data into the existing SQLite schema.
-- ☐ Refactor ingest so GitHub and fixture input write incrementally into SQLite instead of assembling package-level
+- ☑ Refactor ingest so GitHub and fixture input write incrementally into SQLite instead of assembling package-level
   in-memory snapshots.
 - ☐ Expand planner output so it explains why versions are protected or deletable.
 - ☐ Add tests for multi-arch images, referrers, and explicit tag exclusion behavior.
@@ -43,11 +43,13 @@ This section is the canonical place for session-to-session continuity.
   - local JSON snapshot fixture
   - live GitHub Packages plus GHCR manifest scan for one org-owned container package
 - Current ingest implementation:
-  - still assembles package-level in-memory snapshot objects before writing to SQLite
+  - writes fixture and live GitHub/GHCR results incrementally into SQLite
+  - uses a dedicated GHCR registry token client for bearer-token acquisition
+  - supports anonymous GHCR manifest reads for public registries and optional GitHub auth for better access
 - Ingest architecture direction:
   - full remote traversal may still be required for correctness
   - SQLite is the integration surface between ingest stages
-  - target state: avoid package-level in-memory aggregate models as the ingest contract
+  - avoid package-level in-memory aggregate models as the ingest contract
 - Current action shape: thin composite wrapper that invokes the shared CLI.
 - Working tree expectation at the end of the last session: clean after `e33d011`.
 - Commit policy: do not commit agent changes until the user has reviewed and explicitly asked for a commit.
@@ -136,11 +138,11 @@ src/
 - Mirrored `tests/` to `src/` one-to-one and added an enforced source-to-test mapping check.
 - Settled the ingest direction for the next refactor: write remote results incrementally into SQLite instead of using
   package-level in-memory aggregate objects as the primary ingest boundary.
+- Switched GHCR manifest reads to the registry bearer-token flow and split token acquisition into a dedicated internal
+  client so public registries work without GitHub auth while authenticated reads remain available.
 
 ## Next Increment
 
-1. Replace the current package-level snapshot ingest flow with incremental DB-first ingest for both fixture and
-   GitHub/GHCR paths.
-2. Improve planner output so it explains why versions are protected or deletable.
-3. Add more planner tests for multi-arch images, referrers, and explicit tag exclusion cases.
-4. Revisit action packaging after the live ingest path exists.
+1. Improve planner output so it explains why versions are protected or deletable.
+2. Add more planner tests for multi-arch images, referrers, and explicit tag exclusion cases.
+3. Revisit action packaging after the live ingest path exists.

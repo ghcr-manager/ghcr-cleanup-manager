@@ -1,7 +1,7 @@
 import { ScanWriter, SnapshotRepository, openDatabase } from "../db/index.js";
 import { importFileScan } from "../ingest/file/index.js";
 import { importGitHubScan } from "../ingest/github/index.js";
-import { findOption, requireOption, resolveGitHubToken } from "./_args.js";
+import { findOption, requireOption, resolveOptionalGitHubToken } from "./_args.js";
 
 export async function handleScan(args: string[]): Promise<number> {
   const databasePath = requireOption(args, "--db");
@@ -39,7 +39,7 @@ async function _importScan(args: string[], writer: ScanWriter, repository: Snaps
         {
           owner: requireOption(args, "--owner"),
           packageName: requireOption(args, "--package"),
-          token: resolveGitHubToken(args),
+          token: resolveOptionalGitHubToken(args),
         },
         writer,
         repository,

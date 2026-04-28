@@ -39,3 +39,12 @@ export function resolveGitHubToken(args: string[]): string {
 
   throw new Error("missing GitHub token: pass --token or set GITHUB_TOKEN");
 }
+
+export function resolveOptionalGitHubToken(args: string[]): string | undefined {
+  const cliToken = findOption(args, "--token");
+  if (cliToken) {
+    return cliToken;
+  }
+
+  return process.env.GITHUB_TOKEN;
+}
