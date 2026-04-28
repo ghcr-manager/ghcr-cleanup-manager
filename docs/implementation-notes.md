@@ -15,6 +15,10 @@ This section is the canonical place for session-to-session continuity.
 - ☑ `9d2eb23` Add live GHCR package scan support.
 - ☑ `e33d011` Restructure modules and enforce source-test boundaries.
 - ☑ `38159a1` Add scan logging and auth debug helper.
+- ☑ `b854e18` Generalize paginated GitHub ingest.
+- ☑ `5160246` Enforce foreign keys in the scan schema.
+- ☑ `1166d0c` Improve GitHub and GHCR error reporting.
+- ☑ `c61c531` Refine tag foreign keys and trim schema tests.
 
 ### Completed Plan
 
@@ -61,6 +65,9 @@ This section is the canonical place for session-to-session continuity.
 - Relational integrity direction:
   - add FKs by default and satisfy them via ingest order
   - only relax constraints later if a demonstrated ingest problem requires it
+  - `tags(version_id, digest)` is enforced as one composite reference to `package_versions(version_id, digest)`
+  - manifest parent/child references remain two separate references to `manifests(digest)` because they point to two
+    different manifest rows
 - Current action shape: thin composite wrapper that invokes the shared CLI.
 - Scan logging:
   - progress logs go to stderr
@@ -165,6 +172,11 @@ src/
   follows the same request -> normalize -> write shape as the rest of the DB-first ingest flow.
 - Tightened the schema with foreign keys for `tags -> package_versions` and `manifest_edges -> manifests`, and aligned
   ingest order so manifests are written before edges.
+- Improved GitHub and GHCR HTTP error reporting so upstream JSON messages, docs URLs, and auth-challenge headers are
+  surfaced instead of only HTTP status codes.
+- Tightened `tags` from two separate foreign keys to one composite reference on `(version_id, digest)`.
+- Removed the low-value SQLite DDL/constraint-behavior checks from `tests/db/_schema.test.ts` and kept only an
+  idempotence check for `initializeSchema(...)`.
 
 ## Next Increment
 
