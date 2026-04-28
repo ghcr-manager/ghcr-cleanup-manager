@@ -1,4 +1,4 @@
-import type { FetchLike, GitHubScanOptions } from "./_shared.js";
+import { buildHttpErrorMessage, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 export async function loadRegistryPullToken(
   fetchImpl: FetchLike,
@@ -9,7 +9,7 @@ export async function loadRegistryPullToken(
     headers: _buildTokenHeaders(options),
   });
   if (!response.ok) {
-    throw new Error(`GHCR token request failed with status ${response.status}`);
+    throw new Error(await buildHttpErrorMessage(response, "GHCR token request failed"));
   }
 
   const body = (await response.json()) as { token?: string };

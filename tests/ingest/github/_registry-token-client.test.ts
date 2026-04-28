@@ -47,3 +47,27 @@ test("registry token client omits auth for anonymous access", async () => {
 
   assert.equal(token, "public-token");
 });
+
+test("registry token client surfaces auth challenge details", async () => {
+  await assert.rejects(
+    () =>
+      loadRegistryPullToken(
+        async () => ({
+          ok: false,
+          status: 401,
+          headers: new Headers({
+            "content-type": "application/json",
+            "www-authenticate": 'Bearer realm="https://ghcr.io/token"',
+          }),
+          async json() {
+            return {
+              message: "authentication required",
+            };
+          },
+        }),
+        "https://ghcr.test",
+        { owner: "acme", packageName: "example" },
+      ),
+    /GHCR token request failed - status 401 - authentication required - www-authenticate: Bearer realm="https:\/\/ghcr\.io\/token"/,
+  );
+});

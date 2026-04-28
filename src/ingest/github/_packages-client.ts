@@ -1,7 +1,7 @@
 import type { PackageVersionRecord, TagRecord } from "../../core/index.js";
 import type { ScanWriter } from "../../db/index.js";
 import { ingestPaginated } from "./_paginated-ingest.js";
-import type { FetchLike, GitHubScanOptions } from "./_shared.js";
+import { buildHttpErrorMessage, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 interface _GitHubPackageVersion {
   id: number;
@@ -36,7 +36,7 @@ export async function ingestPackageVersions(
         },
       });
       if (!response.ok) {
-        throw new Error(`GitHub Packages request failed with status ${response.status}`);
+        throw new Error(await buildHttpErrorMessage(response, "GitHub Packages request failed"));
       }
 
       return (await response.json()) as _GitHubPackageVersion[];

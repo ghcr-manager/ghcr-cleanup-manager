@@ -41,3 +41,31 @@ test("package client writes package versions and tags page by page", async () =>
 
   database.close();
 });
+
+test("package client surfaces GitHub error details", async () => {
+  const database = openDatabase(":memory:");
+  const writer = new ScanWriter(database);
+
+  await assert.rejects(
+    () =>
+      ingestPackageVersions(
+        async () => ({
+          ok: false,
+          status: 401,
+          headers: new Headers({ "content-type": "application/json" }),
+          async json() {
+            return {
+              message: "Requires authentication",
+              documentation_url: "https://docs.github.com/rest/packages/packages",
+            };
+          },
+        }),
+        "https://api.github.test",
+        { owner: "acme", packageName: "example" },
+        writer,
+      ),
+    /GitHub Packages request failed - status 401 - Requires authentication - https:\/\/docs\.github\.com\/rest\/packages\/packages/,
+  );
+
+  database.close();
+});

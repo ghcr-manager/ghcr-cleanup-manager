@@ -1,6 +1,11 @@
 import type { ManifestEdgeRecord, ManifestRecord } from "../../core/index.js";
 import { loadRegistryPullToken } from "./_registry-token-client.js";
-import { acceptedManifestMediaTypes, type FetchLike, type GitHubScanOptions } from "./_shared.js";
+import {
+  acceptedManifestMediaTypes,
+  buildHttpErrorMessage,
+  type FetchLike,
+  type GitHubScanOptions,
+} from "./_shared.js";
 
 interface _RegistryPlatform {
   architecture?: string;
@@ -40,7 +45,7 @@ export async function loadManifestGraph(
     },
   });
   if (!response.ok) {
-    throw new Error(`GHCR manifest request for ${digest} failed with status ${response.status}`);
+    throw new Error(await buildHttpErrorMessage(response, `GHCR manifest request for ${digest} failed`));
   }
 
   const mediaTypeHeader = response.headers.get("content-type")?.split(";")[0];
