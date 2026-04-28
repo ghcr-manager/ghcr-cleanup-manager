@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { openDatabase } from "./database.js";
+import { loadSnapshotFromGitHub } from "./github-snapshot-source.js";
 import { buildPlanSummary } from "./planner.js";
 import { Repository } from "./repository.js";
 import { loadSnapshotFromFile } from "./snapshot-source.js";
@@ -34,10 +35,9 @@ async function _handleInitDb(args: string[]): Promise<number> {
 
 async function _handleScan(args: string[]): Promise<number> {
   const databasePath = _requireOption(args, "--db");
-  const snapshotPath = _requireOption(args, "--snapshot");
   const database = openDatabase(databasePath);
   const repository = new Repository(database);
-  const snapshot = await loadSnapshotFromFile(snapshotPath);
+  const snapshot = await _loadSnapshot(args);
   repository.replaceSnapshot(snapshot);
   console.log(
     JSON.stringify(
@@ -55,6 +55,22 @@ async function _handleScan(args: string[]): Promise<number> {
   );
   database.close();
   return 0;
+}
+
+async function _loadSnapshot(args: string[]) {
+  const source = _findOption(args, "--source") ?? "file";
+  switch (source) {
+    case "file":
+      return loadSnapshotFromFile(_requireOption(args, "--snapshot"));
+    case "github":
+      return loadSnapshotFromGitHub({
+        owner: _requireOption(args, "--owner"),
+        packageName: _requireOption(args, "--package"),
+        token: _resolveToken(args),
+      });
+    default:
+      throw new Error(`unknown scan source: ${source}`);
+  }
 }
 
 async function _handlePlanSummary(args: string[]): Promise<number> {
@@ -106,10 +122,25 @@ function _collectRepeatedOption(args: string[], name: string): string[] {
   return values;
 }
 
+function _resolveToken(args: string[]): string {
+  const cliToken = _findOption(args, "--token");
+  if (cliToken) {
+    return cliToken;
+  }
+
+  const envToken = process.env.GITHUB_TOKEN;
+  if (envToken) {
+    return envToken;
+  }
+
+  throw new Error("missing GitHub token: pass --token or set GITHUB_TOKEN");
+}
+
 function _printUsage(): void {
   console.error(`Usage:
   ghcr-manager init-db --db <path>
-  ghcr-manager scan --db <path> --snapshot <path>
+  ghcr-manager scan --db <path> [--source file --snapshot <path>]
+  ghcr-manager scan --db <path> --source github --owner <org> --package <name> [--token <token>]
   ghcr-manager plan-summary --db <path> --older-than-days <days> [--delete-untagged] [--exclude-tag <tag>]`);
 }
 

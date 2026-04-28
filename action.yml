@@ -8,8 +8,21 @@ inputs:
   db-path:
     description: SQLite database path used by the command.
     required: true
+  source:
+    description: Scan input source, either file or github.
+    required: false
+    default: file
   snapshot:
     description: Local JSON snapshot path for the initial read-only scan flow.
+    required: false
+  owner:
+    description: GitHub organization that owns the container package for live scans.
+    required: false
+  package:
+    description: Container package name for live scans.
+    required: false
+  token:
+    description: GitHub token used for live scans.
     required: false
   older-than-days:
     description: Age threshold used by the planning command.
@@ -44,7 +57,11 @@ runs:
       env:
         INPUT_COMMAND: ${{ inputs.command }}
         INPUT_DB_PATH: ${{ inputs.db-path }}
+        INPUT_SOURCE: ${{ inputs.source }}
         INPUT_SNAPSHOT: ${{ inputs.snapshot }}
+        INPUT_OWNER: ${{ inputs.owner }}
+        INPUT_PACKAGE: ${{ inputs.package }}
+        INPUT_TOKEN: ${{ inputs.token }}
         INPUT_OLDER_THAN_DAYS: ${{ inputs.older-than-days }}
         INPUT_DELETE_UNTAGGED: ${{ inputs.delete-untagged }}
         INPUT_EXCLUDE_TAGS: ${{ inputs.exclude-tags }}

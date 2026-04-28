@@ -17,6 +17,13 @@ Audience: AI coding agents working in this repo.
 - For any substantial work, update [docs/implementation-notes.md](docs/implementation-notes.md) before ending the
   session.
 - Do not create commits unless the user explicitly asks for a commit after review.
+- Keep production TypeScript files small by default:
+  - up to about 100 lines is comfortable
+  - above about 100 to 160 lines, strongly consider splitting
+  - above about 160 to 220 lines, split unless cohesion is unusually strong
+  - above about 220 lines is generally not acceptable outside repetitive or low-risk code
+- Test files may exceed those sizes when scenario readability or fixture-heavy structure benefits from it.
+- Evaluate file size together with cohesion, abstraction level, and testability, not line count alone.
 
 ## Linting and tests
 

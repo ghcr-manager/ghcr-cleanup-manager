@@ -19,7 +19,7 @@ test("repository imports snapshot and planner keeps tagged graph while exposing 
 
     repository.replaceSnapshot(snapshot);
 
-    assert.equal(repository.countPackageVersions(), 4);
+    assert.equal(repository.countPackageVersions(), 5);
     assert.equal(repository.countTaggedVersions(), 2);
 
     const summary = buildPlanSummary(repository, {
@@ -29,7 +29,7 @@ test("repository imports snapshot and planner keeps tagged graph while exposing 
     });
 
     assert.equal(summary.packageName, "acme/example");
-    assert.deepEqual(summary.protectedVersionIds, [101, 102, 103]);
+    assert.deepEqual(summary.protectedVersionIds, [101, 102, 103, 105]);
     assert.deepEqual(summary.deletableVersionIds, [104]);
 
     database.close();
