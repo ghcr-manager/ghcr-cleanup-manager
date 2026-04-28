@@ -46,10 +46,22 @@ const _schemaStatements = [
       FOREIGN KEY(child_digest) REFERENCES manifests(digest)
     )
   `,
+  `
+    CREATE TABLE IF NOT EXISTS manifest_reachability (
+      ancestor_digest TEXT NOT NULL,
+      descendant_digest TEXT NOT NULL,
+      min_distance INTEGER NOT NULL,
+      PRIMARY KEY(ancestor_digest, descendant_digest),
+      FOREIGN KEY(ancestor_digest) REFERENCES manifests(digest),
+      FOREIGN KEY(descendant_digest) REFERENCES manifests(digest),
+      CHECK(min_distance >= 0)
+    )
+  `,
   `CREATE INDEX IF NOT EXISTS idx_package_versions_created_at ON package_versions(created_at)`,
   `CREATE INDEX IF NOT EXISTS idx_tags_digest ON tags(digest)`,
   `CREATE INDEX IF NOT EXISTS idx_manifest_edges_parent ON manifest_edges(parent_digest)`,
   `CREATE INDEX IF NOT EXISTS idx_manifest_edges_child ON manifest_edges(child_digest)`,
+  `CREATE INDEX IF NOT EXISTS idx_manifest_reachability_descendant ON manifest_reachability(descendant_digest)`,
 ];
 
 export function initializeSchema(database: Database.Database): void {

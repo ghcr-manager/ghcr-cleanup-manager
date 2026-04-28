@@ -6,6 +6,8 @@ This document tracks the current implementation plan, decisions, and completed i
 
 This section is the canonical place for session-to-session continuity.
 
+- Developer glossary: [docs/terminology.md](terminology.md)
+
 ### Completed Checkpoints
 
 - ☑ `6899876` Add GHCR manager analysis and roadmap.
@@ -37,6 +39,7 @@ This section is the canonical place for session-to-session continuity.
   in-memory snapshots.
 - ☑ Introduce a generic paginated ingest pipeline for request -> normalize -> write and move package version/tag
   enumeration onto it.
+- ☑ Add a derived reachability table to the schema for non-recursive manifest graph reads.
 - ☐ Expand planner output so it explains why versions are protected or deletable.
 - ☐ Add tests for multi-arch images, referrers, and explicit tag exclusion behavior.
 - ☐ Revisit action packaging after the live ingest path exists.
@@ -177,9 +180,12 @@ src/
 - Tightened `tags` from two separate foreign keys to one composite reference on `(version_id, digest)`.
 - Removed the low-value SQLite DDL/constraint-behavior checks from `tests/db/_schema.test.ts` and kept only an
   idempotence check for `initializeSchema(...)`.
+- Added a `manifest_reachability(ancestor_digest, descendant_digest, min_distance)` table so future planner reads can
+  use precomputed graph reachability instead of traversing raw `manifest_edges` at read time.
+- Added `docs/terminology.md` to map Docker/GHCR/OCI terms to this repo's DB tables and normalized manifest relations.
 
 ## Next Increment
 
-1. Improve planner output so it explains why versions are protected or deletable.
-2. Add more planner tests for multi-arch images, referrers, and explicit tag exclusion cases.
-3. Revisit action packaging after the live ingest path exists.
+1. Decide how and when ingest populates `manifest_reachability` from raw `manifest_edges`.
+2. Improve planner output so it explains why versions are protected or deletable.
+3. Add more planner tests for multi-arch images, referrers, and explicit tag exclusion cases.
