@@ -16,6 +16,9 @@ export interface ManifestRecord {
   digest: string;
   mediaType: string;
   artifactType?: string;
+  configMediaType?: string;
+  subjectDigest?: string;
+  annotations?: Record<string, unknown>;
   platform?: {
     architecture?: string;
     os?: string;

@@ -23,6 +23,10 @@ interface _RegistryDescriptor {
 interface _RegistryManifestDocument {
   mediaType?: string;
   artifactType?: string;
+  annotations?: Record<string, unknown>;
+  config?: {
+    mediaType?: string;
+  };
   manifests?: _RegistryDescriptor[];
   subject?: {
     digest?: string;
@@ -67,6 +71,9 @@ export async function loadManifestGraph(
       digest,
       mediaType,
       artifactType: document.artifactType,
+      configMediaType: document.config?.mediaType,
+      subjectDigest: document.subject?.digest,
+      annotations: document.annotations,
     },
     descriptorRecords: _buildDescriptorRecords(digest, document),
     edgeRecords: _buildEdges(digest, document),

@@ -44,6 +44,9 @@ const _schemaStatements = [
       digest TEXT PRIMARY KEY,
       media_type TEXT NOT NULL,
       artifact_type TEXT,
+      config_media_type TEXT,
+      subject_digest TEXT,
+      annotations_json TEXT,
       platform_os TEXT,
       platform_architecture TEXT,
       platform_variant TEXT

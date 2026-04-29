@@ -45,6 +45,7 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Write raw package-version and manifest response JSON into dedicated payload tables during live ingest.
 - ☑ Split fetched manifest documents from index child descriptors at the schema level.
 - ☑ Write index child descriptor rows into `manifest_descriptors` and recursively fetch child manifests.
+- ☑ Extract `config_media_type`, `subject_digest`, and `annotations_json` from fetched manifest JSON into `manifests`.
 - ☐ Expand planner output so it explains why versions are protected or deletable.
 - ☐ Add tests for multi-arch images, referrers, and explicit tag exclusion behavior.
 - ☐ Revisit action packaging after the live ingest path exists.
@@ -198,6 +199,8 @@ src/
 - Live GitHub/GHCR ingest now writes descriptor rows into `manifest_descriptors` and recursively fetches queued child
   and subject digests so `manifest_edges` still point at directly fetched manifest rows.
 - Added `docs/terminology.md` to map Docker/GHCR/OCI terms to this repo's DB tables and normalized manifest relations.
+- Fetched manifest rows now also keep `config_media_type`, `subject_digest`, and `annotations_json` in `manifests` so
+  common image-vs-artifact classification can be done without JSON-path expressions in every query.
 
 ## Next Increment
 

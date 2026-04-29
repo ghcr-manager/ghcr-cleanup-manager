@@ -9,6 +9,12 @@ test("manifest client maps child and referrer edges", async () => {
       "https://ghcr.test/v2/acme/example/manifests/sha256:index",
       {
         mediaType: "application/vnd.oci.image.index.v1+json",
+        annotations: {
+          "org.opencontainers.image.ref.name": "latest",
+        },
+        config: {
+          mediaType: "application/vnd.oci.empty.v1+json",
+        },
         manifests: [
           {
             digest: "sha256:child",
@@ -45,6 +51,16 @@ test("manifest client maps child and referrer edges", async () => {
   );
 
   assert.equal(manifest.record.digest, "sha256:index");
+  assert.deepEqual(manifest.record, {
+    digest: "sha256:index",
+    mediaType: "application/vnd.oci.image.index.v1+json",
+    artifactType: undefined,
+    configMediaType: "application/vnd.oci.empty.v1+json",
+    subjectDigest: "sha256:subject",
+    annotations: {
+      "org.opencontainers.image.ref.name": "latest",
+    },
+  });
   assert.match(manifest.rawJson, /"mediaType":"application\/vnd\.oci\.image\.index\.v1\+json"/);
   assert.deepEqual(manifest.descriptorRecords, [
     {

@@ -74,6 +74,9 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
         contentType: "application/vnd.oci.image.manifest.v1+json",
         body: {
           mediaType: "application/vnd.oci.image.manifest.v1+json",
+          config: {
+            mediaType: "application/vnd.oci.image.config.v1+json",
+          },
         },
       },
     ],
@@ -84,6 +87,12 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
         body: {
           mediaType: "application/vnd.oci.artifact.manifest.v1+json",
           artifactType: "application/vnd.in-toto+json",
+          annotations: {
+            "dev.sigstore.bundle.content": "dsse-envelope",
+          },
+          config: {
+            mediaType: "application/vnd.oci.empty.v1+json",
+          },
           subject: {
             digest: "sha256:index",
           },
@@ -172,6 +181,22 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
       }
     ).raw_json,
     /"manifests":\[/,
+  );
+  assert.deepEqual(
+    database
+      .prepare(
+        `
+          SELECT config_media_type, subject_digest, annotations_json
+          FROM manifests
+          WHERE digest = 'sha256:attestation'
+        `,
+      )
+      .get(),
+    {
+      config_media_type: "application/vnd.oci.empty.v1+json",
+      subject_digest: "sha256:index",
+      annotations_json: '{"dev.sigstore.bundle.content":"dsse-envelope"}',
+    },
   );
   assert.equal(
     (database.prepare("SELECT COUNT(*) AS total FROM manifest_reachability").get() as { total: number }).total,
