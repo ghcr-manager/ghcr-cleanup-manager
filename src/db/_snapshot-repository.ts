@@ -4,9 +4,7 @@ import type { PlanSummary } from "../core/index.js";
 interface _ScanRow {
   scan_id: number;
   package_name: string;
-  scan_started_at: string;
-  scan_completed_at: string | null;
-  status: string;
+  scan_completed_at: string;
 }
 
 interface _VersionRow {
@@ -22,15 +20,15 @@ export class SnapshotRepository {
     this.#database = database;
   }
 
-  getPackageMetadata(): { packageName: string; scannedAt: string } {
+  getPackageMetadata(): { packageName: string; scanCompletedAt: string } {
     const row = this.#getActivePackageRow();
     if (!row) {
-      throw new Error("database does not contain a package scan");
+      throw new Error("database does not contain a completed package scan");
     }
 
     return {
       packageName: row.package_name,
-      scannedAt: row.scan_completed_at ?? row.scan_started_at,
+      scanCompletedAt: row.scan_completed_at,
     };
   }
 
@@ -154,7 +152,7 @@ export class SnapshotRepository {
     const metadata = this.getPackageMetadata();
     return {
       packageName: metadata.packageName,
-      scannedAt: metadata.scannedAt,
+      scanCompletedAt: metadata.scanCompletedAt,
       totalPackageVersions: this.countPackageVersions(),
       totalTaggedVersions: this.countTaggedVersions(),
       protectedVersionIds: [...protectedVersionIds].sort((left, right) => left - right),
@@ -166,9 +164,10 @@ export class SnapshotRepository {
     return this.#database
       .prepare(
         `
-          SELECT scan_id, package_name, scan_started_at, scan_completed_at, status
+          SELECT scan_id, package_name, scan_completed_at
           FROM package_scans
-          ORDER BY scan_started_at DESC, scan_id DESC
+          WHERE status = 'completed' AND scan_completed_at IS NOT NULL
+          ORDER BY scan_completed_at DESC, scan_id DESC
           LIMIT 1
         `,
       )
@@ -178,7 +177,7 @@ export class SnapshotRepository {
   #requireActiveScanId(): number {
     const row = this.#getActivePackageRow();
     if (!row) {
-      throw new Error("database does not contain a package scan");
+      throw new Error("database does not contain a completed package scan");
     }
 
     return row.scan_id;

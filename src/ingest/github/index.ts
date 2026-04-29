@@ -13,11 +13,11 @@ export async function importGitHubScan(
   const fetchImpl = options.fetchImpl ?? defaultFetch;
   const githubApiBaseUrl = options.githubApiBaseUrl ?? "https://api.github.com";
   const registryBaseUrl = options.registryBaseUrl ?? "https://ghcr.io";
-  const scannedAt = new Date().toISOString();
+  const scanStartedAt = new Date().toISOString();
   const packageName = `${options.owner}/${options.packageName}`;
   const logger = options.logger;
 
-  writer.resetScan(packageName, scannedAt);
+  writer.resetScan(packageName, scanStartedAt);
   logger?.info(`Starting GitHub package scan for ${packageName}`);
   try {
     const counts = await ingestPackageVersions(fetchImpl, githubApiBaseUrl, options, writer);

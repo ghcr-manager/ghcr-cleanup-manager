@@ -5,7 +5,7 @@ import type { PlanSummary } from "../../src/core/index.js";
 test("core index re-exports public types", () => {
   const summary: PlanSummary = {
     packageName: "acme/example",
-    scannedAt: "2026-04-20T12:00:00.000Z",
+    scanCompletedAt: "2026-04-20T12:00:00.000Z",
     totalPackageVersions: 1,
     totalTaggedVersions: 1,
     protectedVersionIds: [1],

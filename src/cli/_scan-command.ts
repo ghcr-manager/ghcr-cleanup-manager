@@ -26,7 +26,7 @@ export async function handleScan(args: string[]): Promise<number> {
     JSON.stringify(
       {
         packageName: metadata.packageName,
-        scannedAt: metadata.scannedAt,
+        scanCompletedAt: metadata.scanCompletedAt,
         packageVersions: repository.countPackageVersions(),
         tags: repository.countTags(),
         manifests: repository.countManifests(),

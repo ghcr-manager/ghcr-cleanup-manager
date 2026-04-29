@@ -10,7 +10,7 @@ test("core types describe a valid snapshot shape", () => {
   };
   const snapshot: PackageSnapshot = {
     packageName: "acme/example",
-    scannedAt: "2026-04-20T12:00:00.000Z",
+    scanCompletedAt: "2026-04-20T12:00:00.000Z",
     packageVersions: [],
     tags: [],
     manifests: [],

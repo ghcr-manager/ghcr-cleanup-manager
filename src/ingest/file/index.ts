@@ -4,7 +4,8 @@ import { ScanWriter } from "../../db/index.js";
 
 interface _FixtureScanDocument {
   packageName: string;
-  scannedAt: string;
+  scanCompletedAt?: string;
+  scannedAt?: string;
   packageVersions: PackageVersionRecord[];
   tags: TagRecord[];
   manifests: ManifestRecord[];
@@ -14,8 +15,12 @@ interface _FixtureScanDocument {
 export async function importFileScan(snapshotPath: string, writer: ScanWriter): Promise<void> {
   const rawSnapshot = await readFile(snapshotPath, "utf8");
   const document = JSON.parse(rawSnapshot) as _FixtureScanDocument;
+  const scanCompletedAt = document.scanCompletedAt ?? document.scannedAt;
+  if (!scanCompletedAt) {
+    throw new Error("fixture scan document is missing scanCompletedAt");
+  }
 
-  writer.resetScan(document.packageName, document.scannedAt);
+  writer.resetScan(document.packageName, scanCompletedAt);
   try {
     for (const version of document.packageVersions) {
       writer.insertPackageVersion(version);
@@ -30,7 +35,7 @@ export async function importFileScan(snapshotPath: string, writer: ScanWriter): 
       writer.insertManifestEdge(edge);
     }
     writer.rebuildManifestReachability();
-    writer.markScanCompleted(document.scannedAt);
+    writer.markScanCompleted(scanCompletedAt);
   } catch (error) {
     writer.markScanFailed(new Date().toISOString());
     throw error;

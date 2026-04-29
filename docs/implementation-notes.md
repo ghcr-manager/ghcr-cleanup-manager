@@ -252,3 +252,6 @@ src/
   - `markScanFailed(...)`
 - Updated GitHub and fixture ingest entrypoints to mark scan status transitions (`running -> completed|failed`).
 - Updated snapshot repository and reachability rebuild logic to read/write by active/latest `scan_id`.
+- Updated metadata naming and selection semantics:
+  - code and outputs now use `scanCompletedAt` instead of `scannedAt`
+  - repository metadata queries now select only completed scans (`status='completed'` with non-null completion time)

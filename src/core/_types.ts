@@ -46,7 +46,7 @@ export interface ManifestEdgeRecord {
 
 export interface PackageSnapshot {
   packageName: string;
-  scannedAt: string;
+  scanCompletedAt: string;
   packageVersions: PackageVersionRecord[];
   tags: TagRecord[];
   manifests: ManifestRecord[];
@@ -61,7 +61,7 @@ export interface PlanOptions {
 
 export interface PlanSummary {
   packageName: string;
-  scannedAt: string;
+  scanCompletedAt: string;
   totalPackageVersions: number;
   totalTaggedVersions: number;
   protectedVersionIds: number[];
