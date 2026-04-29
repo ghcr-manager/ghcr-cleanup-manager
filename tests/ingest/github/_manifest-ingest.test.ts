@@ -102,13 +102,13 @@ test("manifest ingest skips missing manifests (404) and continues", async () => 
     insertManifestEdge(edge: { parentDigest: string; childDigest: string; edgeKind: string }) {
       insertedEdges.push(edge);
     },
-    rebuildManifestReachability() {},
+    rebuildManifestReachability() {}
   } as unknown as ScanWriter;
 
   const repository = {
     listPackageVersionDigests() {
       return [...manifestDigests];
-    },
+    }
   } as unknown as SnapshotRepository;
 
   await ingestManifests(
@@ -120,7 +120,7 @@ test("manifest ingest skips missing manifests (404) and continues", async () => 
           headers: new Headers(),
           async json() {
             return { token: "registry-token", expires_in: 3600 };
-          },
+          }
         };
       }
 
@@ -135,7 +135,7 @@ test("manifest ingest skips missing manifests (404) and continues", async () => 
             headers: new Headers({ "content-type": "application/json" }),
             async json() {
               return { message: "manifest unknown" };
-            },
+            }
           };
         }
 
@@ -146,9 +146,9 @@ test("manifest ingest skips missing manifests (404) and continues", async () => 
           async json() {
             return {
               mediaType: "application/vnd.oci.image.index.v1+json",
-              manifests: [{ digest: "sha256:index-2", mediaType: "application/vnd.oci.image.manifest.v1+json" }],
+              manifests: [{ digest: "sha256:index-2", mediaType: "application/vnd.oci.image.manifest.v1+json" }]
             };
-          },
+          }
         };
       }
 
@@ -165,12 +165,12 @@ test("manifest ingest skips missing manifests (404) and continues", async () => 
         warn(message) {
           warnings.push(message);
         },
-        error() {},
-      },
+        error() {}
+      }
     },
     writer,
     repository,
-    scanId,
+    scanId
   );
 
   assert.deepEqual(fetchedManifestDigests.sort(), [...manifestDigests].sort());

@@ -26,9 +26,11 @@ export async function importGitHubScan(
   const scanId = writer.getActiveScanId();
   options.logger.info(`Starting GitHub package scan for ${packageName}`);
   try {
+    options.logger.info(`Starting remote data pull for ${packageName}`);
     const counts = await ingestPackageVersions(fetchImpl, _GITHUB_API_BASE_URL, options, writer);
     options.logger.info(`Loaded ${counts.packageVersions} package versions and ${counts.tags} tags`);
     await ingestManifests(fetchImpl, _REGISTRY_BASE_URL, options, writer, repository, scanId);
+    options.logger.info(`Completed remote data pull for ${packageName}`);
     writer.markScanCompleted(new Date().toISOString());
     options.logger.info(`Completed GitHub package scan for ${packageName}`);
   } catch (error) {

@@ -67,13 +67,18 @@ export async function ingestManifests(
     }
   }
 
+  options.logger.info(`Starting manifest graph processing for ${edgeRecords.length} edges`);
+  let persistedEdgeCount = 0;
   for (const edge of edgeRecords) {
     if (!persistedDigests.has(edge.parentDigest) || !persistedDigests.has(edge.childDigest)) {
       continue;
     }
     writer.insertManifestEdge(edge);
+    persistedEdgeCount += 1;
   }
+  options.logger.info(`Inserted ${persistedEdgeCount} manifest edges; rebuilding reachability`);
   writer.rebuildManifestReachability();
+  options.logger.info("Completed manifest graph processing");
 }
 
 async function _loadQueuedManifest(
