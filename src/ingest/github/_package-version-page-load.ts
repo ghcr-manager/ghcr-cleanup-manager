@@ -38,7 +38,7 @@ export async function loadPackageVersionPage(
           },
         });
         if (!response.ok && _shouldRetryStatus(response.status)) {
-          throw new Error(`GitHub Packages request for page ${page} failed - status ${response.status}`);
+          throw new Error(await buildHttpErrorMessage(response, `GitHub Packages request for page ${page} failed`));
         }
         return response;
       } catch (error) {

@@ -88,8 +88,9 @@ export async function withFetchRetry<T>(
         throw error;
       }
 
+      const errorMessage = error instanceof Error ? error.message : String(error);
       options.logger?.warn(
-        `${options.label} failed on attempt ${attempt}/${ingestRequestRetryCount + 1}; retrying in ${ingestRequestRetryDelayMs}ms`,
+        `${options.label} failed on attempt ${attempt}/${ingestRequestRetryCount + 1}; retrying in ${ingestRequestRetryDelayMs}ms - ${errorMessage}`,
       );
       await _sleep(ingestRequestRetryDelayMs);
     }

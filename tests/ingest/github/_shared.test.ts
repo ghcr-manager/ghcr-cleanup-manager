@@ -8,6 +8,7 @@ test("shared GitHub ingest constants include OCI artifact manifests", () => {
 
 test("shared retry helper retries and then succeeds", async () => {
   let attempts = 0;
+  const warnings: string[] = [];
   const result = await withFetchRetry(
     async () => {
       attempts += 1;
@@ -21,7 +22,9 @@ test("shared retry helper retries and then succeeds", async () => {
       logger: {
         debug() {},
         info() {},
-        warn() {},
+        warn(message) {
+          warnings.push(message);
+        },
         error() {},
       },
     },
@@ -29,4 +32,5 @@ test("shared retry helper retries and then succeeds", async () => {
 
   assert.equal(result, "ok");
   assert.equal(attempts, 3);
+  assert.match(warnings[0] ?? "", /test request failed on attempt 1\/4; retrying in 1000ms - fetch failed/);
 });

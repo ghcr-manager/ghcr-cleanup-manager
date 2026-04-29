@@ -59,7 +59,7 @@ export async function loadManifestGraph(
           },
         });
         if (!response.ok && _shouldRetryStatus(response.status)) {
-          throw new Error(`GHCR manifest request for ${digest} failed - status ${response.status}`);
+          throw new Error(await buildHttpErrorMessage(response, `GHCR manifest request for ${digest} failed`));
         }
         return response;
       } catch (error) {

@@ -25,7 +25,7 @@ export async function loadRegistryPullToken(
           headers: _buildTokenHeaders(options),
         });
         if (!response.ok && _shouldRetryStatus(response.status)) {
-          throw new Error(`GHCR token request failed - status ${response.status}`);
+          throw new Error(await buildHttpErrorMessage(response, "GHCR token request failed"));
         }
         return response;
       } catch (error) {
