@@ -4,32 +4,14 @@ description: Inspect, analyze, and manage GitHub Container Registry packages.
 inputs:
   owner:
     description: GitHub organization that owns the container package for live scans.
-    required: false
+    required: true
   package:
     description: Container package name for live scans.
-    required: false
-  token:
-    description: GitHub token used for live scans.
-    required: false
-  older-than-days:
-    description: Age threshold used by the planning command.
-    required: false
-  delete-untagged:
-    description: Whether planning should consider only untagged versions deletable.
-    required: false
-    default: "true"
-  exclude-tags:
-    description: Comma-separated tag names to protect explicitly.
-    required: false
-    default: ""
+    required: true
   upload-db-artifact:
     description: Whether to upload the scan database as a workflow artifact.
     required: false
     default: "false"
-  db-artifact-name:
-    description: Artifact name used when uploading the scan database.
-    required: false
-    default: "ghcr-manager-db"
   db-artifact-retention-days:
     description: Optional retention days override for uploaded database artifacts.
     required: false
@@ -38,13 +20,7 @@ inputs:
 outputs:
   db-path:
     description: Path to the SQLite database produced by scan runs.
-    value: ${{ steps.derive-db-path.outputs.db_path }}
-  db-artifact-name:
-    description: Name of the uploaded artifact when upload is enabled.
-    value: ${{ steps.prepare-db-artifact.outputs.artifact_name }}
-  db-artifact-path:
-    description: Uploaded file path when upload is enabled.
-    value: ${{ steps.prepare-db-artifact.outputs.artifact_path }}
+    value: ${{ steps.prepare-db.outputs.db_path }}
 
 runs:
   using: composite
@@ -62,79 +38,36 @@ runs:
       shell: bash
       run: npm run build
 
-    - name: Derive DB path
-      id: derive-db-path
+    - name: Prepare scan DB path
+      id: prepare-db
       shell: bash
       env:
-        INPUT_OWNER: ${{ inputs.owner }}
-        INPUT_PACKAGE: ${{ inputs.package }}
         RUNNER_TEMP: ${{ runner.temp }}
       run: |
         set -euo pipefail
+        db_file="${{ inputs.owner }}__${{ inputs.package }}.sqlite"
         scan_uuid="$(cat /proc/sys/kernel/random/uuid)"
-        safe_owner="$(printf '%s' "$INPUT_OWNER" | sed -E 's/[^a-zA-Z0-9._-]/_/g')"
-        safe_package="$(printf '%s' "$INPUT_PACKAGE" | sed -E 's/[^a-zA-Z0-9._-]/_/g')"
         db_dir="$RUNNER_TEMP/ghcr-manager/$scan_uuid"
-        db_path="$db_dir/${safe_owner}__${safe_package}.sqlite"
         mkdir -p "$db_dir"
+        db_path="$db_dir/$db_file"
+        echo "db_file=$db_file" >> "$GITHUB_OUTPUT"
         echo "db_path=$db_path" >> "$GITHUB_OUTPUT"
 
     - name: Run ghcr-manager
+      id: run-scan
       shell: bash
       run: |
         set -euo pipefail
-        args=("scan" "--db" "${{ steps.derive-db-path.outputs.db_path }}")
-        if [[ -n "${{ inputs.owner }}" ]]; then
-          args+=("--owner" "${{ inputs.owner }}")
-        fi
-        if [[ -n "${{ inputs.package }}" ]]; then
-          args+=("--package" "${{ inputs.package }}")
-        fi
-        if [[ -n "${{ inputs.token }}" ]]; then
-          args+=("--token" "${{ inputs.token }}")
-        fi
-        if [[ -n "${{ inputs.older-than-days }}" ]]; then
-          args+=("--older-than-days" "${{ inputs.older-than-days }}")
-        fi
-        if [[ "${{ inputs.delete-untagged }}" == "true" ]]; then
-          args+=("--delete-untagged")
-        fi
-        IFS=',' read -ra raw_tags <<< "${{ inputs.exclude-tags }}"
-        for raw_tag in "${raw_tags[@]}"; do
-          trimmed_tag="$(printf '%s' "$raw_tag" | xargs)"
-          if [[ -n "$trimmed_tag" ]]; then
-            args+=("--exclude-tag" "$trimmed_tag")
-          fi
-        done
-        node dist/cli/index.js "${args[@]}"
+        node dist/cli/index.js scan \
+          --db "${{ steps.prepare-db.outputs.db_path }}" \
+          --owner "${{ inputs.owner }}" \
+          --package "${{ inputs.package }}"
 
-    - name: Prepare DB artifact
-      id: prepare-db-artifact
+    - name: Upload DB artifact
       if: ${{ inputs.upload-db-artifact == 'true' }}
-      shell: bash
-      env:
-        INPUT_DB_PATH: ${{ steps.derive-db-path.outputs.db_path }}
-        INPUT_DB_ARTIFACT_NAME: ${{ inputs.db-artifact-name }}
-      run: |
-        set -euo pipefail
-        if [[ ! -f "$INPUT_DB_PATH" ]]; then
-          echo "database file not found: $INPUT_DB_PATH" >&2
-          exit 1
-        fi
-        echo "artifact_name=$INPUT_DB_ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
-        echo "artifact_path=$INPUT_DB_PATH" >> "$GITHUB_OUTPUT"
-
-    - name: Upload DB artifact (default retention)
-      if: ${{ inputs.upload-db-artifact == 'true' && inputs.db-artifact-retention-days == '' }}
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
       with:
-        name: ${{ steps.prepare-db-artifact.outputs.artifact_name }}
-        path: ${{ steps.prepare-db-artifact.outputs.artifact_path }}
+        name: ${{ steps.prepare-db.outputs.db_file }}
+        path: ${{ steps.prepare-db.outputs.db_path }}
+        retention-days: ${{ inputs.db-artifact-retention-days != '' && inputs.db-artifact-retention-days || github.retention_days }}
 
-    - name: Upload DB artifact (custom retention)
-      if: ${{ inputs.upload-db-artifact == 'true' && inputs.db-artifact-retention-days != '' }}
-      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
-      with:
-        name: ${{ steps.prepare-db-artifact.outputs.artifact_name }}
-        path: ${{ steps.prepare-db-artifact.outputs.artifact_path }}
-        retention-days: ${{ inputs.db-artifact-retention-days }}
