@@ -2,7 +2,8 @@ import { ScanWriter, SnapshotRepository } from "../../db/index.js";
 import type { ManifestEdgeRecord } from "../../core/index.js";
 import { loadManifestGraph } from "./_manifest-client.js";
 import { ingestPackageVersions } from "./_packages-client.js";
-import { defaultFetch, type GitHubScanOptions } from "./_shared.js";
+import { loadRegistryPullToken, type RegistryPullToken } from "./_registry-token-client.js";
+import { defaultFetch, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 export { type GitHubScanOptions } from "./_shared.js";
 
@@ -27,6 +28,7 @@ export async function importGitHubScan(
   const pendingDigests = repository.listPackageVersionDigests();
   const queuedDigests = new Set(pendingDigests);
   const fetchedDigests = new Set<string>();
+  let registryPullToken: RegistryPullToken | undefined;
   logger?.info(`Fetching manifests for ${pendingDigests.length} package versions`);
   let completed = 0;
   const edgeRecords: ManifestEdgeRecord[] = [];
@@ -37,7 +39,8 @@ export async function importGitHubScan(
     }
 
     logger?.debug(`Fetching manifest ${completed + 1}/${queuedDigests.size}: ${digest}`);
-    const manifest = await loadManifestGraph(fetchImpl, registryBaseUrl, digest, options);
+    registryPullToken = await _refreshRegistryTokenCache(fetchImpl, registryBaseUrl, options, registryPullToken);
+    const manifest = await loadManifestGraph(fetchImpl, registryBaseUrl, digest, registryPullToken.token, options);
     writer.insertManifest(manifest.record);
     writer.insertManifestPayload(manifest.record.digest, manifest.rawJson);
     for (const descriptor of manifest.descriptorRecords) {
@@ -60,6 +63,19 @@ export async function importGitHubScan(
   }
   writer.rebuildManifestReachability();
   logger?.info(`Completed GitHub package scan for ${packageName}`);
+}
+
+async function _refreshRegistryTokenCache(
+  fetchImpl: FetchLike,
+  registryBaseUrl: string,
+  options: GitHubScanOptions,
+  registryPullToken: RegistryPullToken | undefined,
+): Promise<RegistryPullToken> {
+  if (registryPullToken && Date.now() < registryPullToken.expiresAt - 5000) {
+    return registryPullToken;
+  }
+
+  return loadRegistryPullToken(fetchImpl, registryBaseUrl, options);
 }
 
 function _enqueueDigest(

@@ -46,6 +46,8 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Split fetched manifest documents from index child descriptors at the schema level.
 - ☑ Write index child descriptor rows into `manifest_descriptors` and recursively fetch child manifests.
 - ☑ Extract `config_media_type`, `subject_digest`, and `annotations_json` from fetched manifest JSON into `manifests`.
+- ☑ Cache and reuse GHCR pull tokens during manifest scans, refreshing based on token expiry instead of reloading per
+  manifest.
 - ☐ Expand planner output so it explains why versions are protected or deletable.
 - ☐ Add tests for multi-arch images, referrers, and explicit tag exclusion behavior.
 - ☐ Revisit action packaging after the live ingest path exists.
@@ -201,6 +203,8 @@ src/
 - Added `docs/terminology.md` to map Docker/GHCR/OCI terms to this repo's DB tables and normalized manifest relations.
 - Fetched manifest rows now also keep `config_media_type`, `subject_digest`, and `annotations_json` in `manifests` so
   common image-vs-artifact classification can be done without JSON-path expressions in every query.
+- GHCR pull tokens are now cached per scan and reused until shortly before expiry; when the token response omits
+  explicit expiry fields, the client falls back to a 60-second lifetime per the registry token spec.
 
 ## Next Increment
 

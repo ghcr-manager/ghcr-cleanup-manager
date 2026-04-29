@@ -1,10 +1,15 @@
 import { buildHttpErrorMessage, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
+export interface RegistryPullToken {
+  token: string;
+  expiresAt: number;
+}
+
 export async function loadRegistryPullToken(
   fetchImpl: FetchLike,
   registryBaseUrl: string,
   options: GitHubScanOptions,
-): Promise<string> {
+): Promise<RegistryPullToken> {
   const response = await fetchImpl(_buildRegistryTokenUrl(registryBaseUrl, options), {
     headers: _buildTokenHeaders(options),
   });
@@ -12,12 +17,19 @@ export async function loadRegistryPullToken(
     throw new Error(await buildHttpErrorMessage(response, "GHCR token request failed"));
   }
 
-  const body = (await response.json()) as { token?: string };
+  const body = (await response.json()) as {
+    token?: string;
+    expires_in?: unknown;
+    issued_at?: unknown;
+  };
   if (!body.token) {
     throw new Error("GHCR token response did not include a token");
   }
 
-  return body.token;
+  return {
+    token: body.token,
+    expiresAt: _getExpiresAt(body.expires_in, body.issued_at),
+  };
 }
 
 function _buildRegistryTokenUrl(registryBaseUrl: string, options: GitHubScanOptions): string {
@@ -39,4 +51,11 @@ function _buildTokenHeaders(options: GitHubScanOptions): Record<string, string> 
   }
 
   return headers;
+}
+
+function _getExpiresAt(expiresIn: unknown, issuedAt: unknown): number {
+  const expiresInSeconds = typeof expiresIn === "number" && expiresIn > 0 ? expiresIn : 60;
+  const issuedAtMilliseconds =
+    typeof issuedAt === "string" && !Number.isNaN(Date.parse(issuedAt)) ? Date.parse(issuedAt) : Date.now();
+  return issuedAtMilliseconds + expiresInSeconds * 1000;
 }

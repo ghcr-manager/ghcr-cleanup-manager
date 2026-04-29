@@ -5,6 +5,7 @@ import { importGitHubScan } from "../../../src/ingest/github/index.js";
 
 test("GitHub ingest writes package and manifest data directly into SQLite", async () => {
   const progressMessages: string[] = [];
+  let tokenRequestCount = 0;
   const responses = new Map<
     string,
     {
@@ -46,6 +47,7 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
       {
         body: {
           token: "registry-token",
+          expires_in: 3600,
         },
       },
     ],
@@ -139,6 +141,9 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
         }
 
         assert.ok(init?.headers);
+        if (input.includes("/token?")) {
+          tokenRequestCount += 1;
+        }
         if (input.includes("/manifests/")) {
           assert.equal((init.headers as Record<string, string>).Authorization, "Bearer registry-token");
         }
@@ -162,6 +167,7 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
   assert.equal(repository.countTags(), 1);
   assert.equal(repository.countManifests(), 3);
   assert.equal(repository.countManifestEdges(), 2);
+  assert.equal(tokenRequestCount, 1);
   assert.equal(
     (database.prepare("SELECT COUNT(*) AS total FROM manifest_descriptors").get() as { total: number }).total,
     1,

@@ -15,7 +15,7 @@ test("registry token client requests a pull token with optional basic auth", asy
         status: 200,
         headers: new Headers(),
         async json() {
-          return { token: "registry-token" };
+          return { token: "registry-token", expires_in: 120 };
         },
       };
     },
@@ -23,7 +23,8 @@ test("registry token client requests a pull token with optional basic auth", asy
     { owner: "acme", packageName: "example", token: "secret-token" },
   );
 
-  assert.equal(token, "registry-token");
+  assert.equal(token.token, "registry-token");
+  assert.ok(token.expiresAt > Date.now());
   assert.equal(seenAuthorization, `Basic ${Buffer.from("acme:secret-token").toString("base64")}`);
 });
 
@@ -37,7 +38,7 @@ test("registry token client omits auth for anonymous access", async () => {
         status: 200,
         headers: new Headers(),
         async json() {
-          return { token: "public-token" };
+          return { token: "public-token", issued_at: "2026-04-29T00:00:00.000Z", expires_in: 60 };
         },
       };
     },
@@ -45,7 +46,8 @@ test("registry token client omits auth for anonymous access", async () => {
     { owner: "acme", packageName: "example" },
   );
 
-  assert.equal(token, "public-token");
+  assert.equal(token.token, "public-token");
+  assert.equal(token.expiresAt, Date.parse("2026-04-29T00:00:00.000Z") + 60_000);
 });
 
 test("registry token client surfaces auth challenge details", async () => {

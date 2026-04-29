@@ -47,6 +47,7 @@ test("manifest client maps child and referrer edges", async () => {
     },
     "https://ghcr.test",
     "sha256:index",
+    "registry-token",
     { owner: "acme", packageName: "example", token: "token" },
   );
 

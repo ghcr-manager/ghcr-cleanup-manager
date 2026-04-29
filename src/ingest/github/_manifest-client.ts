@@ -1,5 +1,4 @@
 import type { ManifestDescriptorRecord, ManifestEdgeRecord, ManifestRecord } from "../../core/index.js";
-import { loadRegistryPullToken } from "./_registry-token-client.js";
 import {
   acceptedManifestMediaTypes,
   buildHttpErrorMessage,
@@ -37,6 +36,7 @@ export async function loadManifestGraph(
   fetchImpl: FetchLike,
   registryBaseUrl: string,
   digest: string,
+  registryToken: string,
   options: GitHubScanOptions,
 ): Promise<{
   record: ManifestRecord;
@@ -45,7 +45,6 @@ export async function loadManifestGraph(
   rawJson: string;
 }> {
   const url = new URL(`/v2/${options.owner}/${options.packageName}/manifests/${digest}`, registryBaseUrl);
-  const registryToken = await loadRegistryPullToken(fetchImpl, registryBaseUrl, options);
   const response = await fetchImpl(url.toString(), {
     headers: {
       Accept: acceptedManifestMediaTypes,
