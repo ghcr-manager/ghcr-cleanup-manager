@@ -16,8 +16,9 @@ export async function ingestManifests(
   options: GitHubScanOptions,
   writer: ScanWriter,
   repository: SnapshotRepository,
+  scanId: number,
 ): Promise<void> {
-  const pendingDigests = repository.listPackageVersionDigests();
+  const pendingDigests = repository.listPackageVersionDigests(scanId);
   const queuedDigests = new Set(pendingDigests);
   const fetchedDigests = new Set<string>();
   const registryPullTokenState: _RegistryPullTokenState = {};

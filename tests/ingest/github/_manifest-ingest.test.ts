@@ -4,6 +4,7 @@ import type { ScanWriter, SnapshotRepository } from "../../../src/db/index.js";
 import { ingestManifests } from "../../../src/ingest/github/_manifest-ingest.js";
 
 test("manifest ingest fetches manifests with shared token reuse", async () => {
+  const scanId = 123;
   let tokenRequests = 0;
   let activeManifestRequests = 0;
   let maxManifestRequests = 0;
@@ -22,7 +23,7 @@ test("manifest ingest fetches manifests with shared token reuse", async () => {
   } as unknown as ScanWriter;
 
   const repository = {
-    listPackageVersionDigests() {
+    listPackageVersionDigestsByScanId() {
       return [...manifestDigests];
     },
   } as unknown as SnapshotRepository;
@@ -75,6 +76,7 @@ test("manifest ingest fetches manifests with shared token reuse", async () => {
     },
     writer,
     repository,
+    scanId,
   );
 
   assert.equal(tokenRequests, 1);

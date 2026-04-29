@@ -45,7 +45,7 @@ test("rebuildManifestReachability builds reachability bottom-up from direct mani
     edgeKind: "referrer",
   });
 
-  rebuildManifestReachability(database);
+  rebuildManifestReachability(database, writer.getActiveScanId());
 
   const rows = database
     .prepare(
@@ -136,7 +136,7 @@ test("rebuildManifestReachability rejects cycles in manifest edges", () => {
     edgeKind: "image-child",
   });
 
-  assert.throws(() => rebuildManifestReachability(database), /detected a cycle/);
+  assert.throws(() => rebuildManifestReachability(database, writer.getActiveScanId()), /detected a cycle/);
 
   database.close();
 });

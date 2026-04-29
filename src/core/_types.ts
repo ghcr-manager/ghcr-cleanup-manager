@@ -52,18 +52,3 @@ export interface PackageSnapshot {
   manifests: ManifestRecord[];
   manifestEdges: ManifestEdgeRecord[];
 }
-
-export interface PlanOptions {
-  olderThanDays: number;
-  deleteUntagged: boolean;
-  excludeTags: string[];
-}
-
-export interface PlanSummary {
-  packageName: string;
-  scanCompletedAt: string;
-  totalPackageVersions: number;
-  totalTaggedVersions: number;
-  protectedVersionIds: number[];
-  deletableVersionIds: number[];
-}

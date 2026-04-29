@@ -33,12 +33,14 @@ test("scan writer stores scan metadata and rows incrementally", () => {
     edgeKind: "image-child",
   });
   writer.rebuildManifestReachability();
+  writer.markScanCompleted("2026-04-20T12:00:01.000Z");
+  const scanId = writer.getActiveScanId();
 
-  assert.equal(repository.getPackageMetadata().packageName, "acme/example");
-  assert.equal(repository.countPackageVersions(), 1);
-  assert.equal(repository.countTags(), 1);
-  assert.equal(repository.countManifests(), 2);
-  assert.equal(repository.countManifestEdges(), 1);
+  assert.equal(repository.getPackageMetadata(scanId).packageName, "acme/example");
+  assert.equal(repository.countPackageVersions(scanId), 1);
+  assert.equal(repository.countTags(scanId), 1);
+  assert.equal(repository.countManifests(scanId), 2);
+  assert.equal(repository.countManifestEdges(scanId), 1);
   assert.equal(
     (database.prepare("SELECT COUNT(*) AS total FROM manifest_reachability").get() as { total: number }).total,
     3,

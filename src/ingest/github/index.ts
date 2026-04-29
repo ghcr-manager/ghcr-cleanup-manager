@@ -18,11 +18,12 @@ export async function importGitHubScan(
   const logger = options.logger;
 
   writer.resetScan(packageName, scanStartedAt);
+  const scanId = writer.getActiveScanId();
   logger?.info(`Starting GitHub package scan for ${packageName}`);
   try {
     const counts = await ingestPackageVersions(fetchImpl, githubApiBaseUrl, options, writer);
     logger?.info(`Loaded ${counts.packageVersions} package versions and ${counts.tags} tags`);
-    await ingestManifests(fetchImpl, registryBaseUrl, options, writer, repository);
+    await ingestManifests(fetchImpl, registryBaseUrl, options, writer, repository, scanId);
     writer.markScanCompleted(new Date().toISOString());
     logger?.info(`Completed GitHub package scan for ${packageName}`);
   } catch (error) {

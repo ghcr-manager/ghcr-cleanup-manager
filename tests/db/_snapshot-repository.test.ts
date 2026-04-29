@@ -12,13 +12,15 @@ test("snapshot repository exposes counts and metadata after import", async () =>
 
   try {
     const database = openDatabase(databasePath);
+    const writer = new ScanWriter(database);
     const repository = new SnapshotRepository(database);
-    await importFileScan("tests/fixtures/sample-package.json", new ScanWriter(database));
+    await importFileScan("tests/fixtures/sample-package.json", writer);
+    const scanId = writer.getActiveScanId();
 
-    assert.equal(repository.countPackageVersions(), 5);
-    assert.equal(repository.countTaggedVersions(), 2);
-    assert.equal(repository.countTags(), 2);
-    assert.equal(repository.getPackageMetadata().packageName, "acme/example");
+    assert.equal(repository.countPackageVersions(scanId), 5);
+    assert.equal(repository.countTaggedVersions(scanId), 2);
+    assert.equal(repository.countTags(scanId), 2);
+    assert.equal(repository.getPackageMetadata(scanId).packageName, "acme/example");
 
     database.close();
   } finally {

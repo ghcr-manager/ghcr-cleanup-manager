@@ -143,7 +143,6 @@ src/
 3. Add a CLI with these initial commands:
    - `init-db`
    - `scan` using a local JSON snapshot file as the initial input source
-   - `plan-summary`
 4. Add a thin composite GitHub Action wrapper that invokes the same CLI.
 5. Add focused tests for schema creation, import, and planning behavior.
 
@@ -163,7 +162,7 @@ src/
 - Chosen first increment: real SQLite-backed core plus fixture-backed import flow.
 - Added the initial TypeScript package, build scripts, and test setup.
 - Added SQLite schema and repository modules for package scans.
-- Added the first CLI commands: `init-db`, `scan`, and `plan-summary`.
+- Added the first CLI commands: `init-db` and `scan`.
 - Added a composite GitHub Action wrapper that invokes the shared CLI code.
 - Added one representative package snapshot fixture and a planner test.
 - Replaced Python-based Markdown and YAML linting with Node-native linting and formatting tools.

@@ -9,9 +9,8 @@ interface _ManifestEdgeRow {
   child_digest: string;
 }
 
-export function rebuildManifestReachability(database: Database.Database, scanId?: number): void {
-  const resolvedScanId = scanId ?? _loadLatestScanId(database);
-  const manifestDigests = _loadManifestDigests(database, resolvedScanId);
+export function rebuildManifestReachability(database: Database.Database, scanId: number): void {
+  const manifestDigests = _loadManifestDigests(database, scanId);
   const childDigestsByParent = new Map<string, Set<string>>();
   const parentDigestsByChild = new Map<string, Set<string>>();
 
@@ -20,7 +19,7 @@ export function rebuildManifestReachability(database: Database.Database, scanId?
     parentDigestsByChild.set(digest, new Set());
   }
 
-  for (const manifestEdge of _loadManifestEdges(database, resolvedScanId)) {
+  for (const manifestEdge of _loadManifestEdges(database, scanId)) {
     childDigestsByParent.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest);
     parentDigestsByChild.get(manifestEdge.child_digest)?.add(manifestEdge.parent_digest);
   }
@@ -88,11 +87,11 @@ export function rebuildManifestReachability(database: Database.Database, scanId?
   );
 
   const rebuild = database.transaction(() => {
-    database.prepare("DELETE FROM manifest_reachability WHERE scan_id = ?").run(resolvedScanId);
+    database.prepare("DELETE FROM manifest_reachability WHERE scan_id = ?").run(scanId);
 
     for (const digest of manifestDigests) {
       for (const [descendantDigest, distance] of descendantDistancesByDigest.get(digest) ?? []) {
-        insertRow.run(resolvedScanId, digest, descendantDigest, distance);
+        insertRow.run(scanId, digest, descendantDigest, distance);
       }
     }
   });
@@ -118,25 +117,6 @@ function _loadManifestEdges(database: Database.Database, scanId: number): _Manif
       `,
     )
     .all(scanId) as _ManifestEdgeRow[];
-}
-
-function _loadLatestScanId(database: Database.Database): number {
-  const row = database
-    .prepare(
-      `
-        SELECT scan_id
-        FROM package_scans
-        ORDER BY scan_started_at DESC, scan_id DESC
-        LIMIT 1
-      `,
-    )
-    .get() as { scan_id: number } | undefined;
-
-  if (!row) {
-    throw new Error("database does not contain a package scan");
-  }
-
-  return row.scan_id;
 }
 
 function _setMinDistance(distances: Map<string, number>, digest: string, distance: number): void {

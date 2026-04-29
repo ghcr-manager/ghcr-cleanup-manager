@@ -4,7 +4,5 @@ export type {
   ManifestRecord,
   PackageSnapshot,
   PackageVersionRecord,
-  PlanOptions,
-  PlanSummary,
   TagRecord,
 } from "./_types.js";

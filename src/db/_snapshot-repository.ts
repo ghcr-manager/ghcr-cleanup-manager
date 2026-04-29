@@ -1,5 +1,4 @@
 import type Database from "better-sqlite3";
-import type { PlanSummary } from "../core/index.js";
 
 interface _ScanRow {
   scan_id: number;
@@ -20,10 +19,21 @@ export class SnapshotRepository {
     this.#database = database;
   }
 
-  getPackageMetadata(): { packageName: string; scanCompletedAt: string } {
-    const row = this.#getActivePackageRow();
+  getPackageMetadata(scanId: number): { packageName: string; scanCompletedAt: string } {
+    const row = this.#database
+      .prepare(
+        `
+          SELECT package_name, scan_completed_at
+          FROM package_scans
+          WHERE scan_id = ?
+        `,
+      )
+      .get(scanId) as Pick<_ScanRow, "package_name" | "scan_completed_at"> | undefined;
     if (!row) {
-      throw new Error("database does not contain a completed package scan");
+      throw new Error(`database does not contain package scan for scan_id=${scanId}`);
+    }
+    if (!row.scan_completed_at) {
+      throw new Error(`scan ${scanId} has not completed`);
     }
 
     return {
@@ -32,8 +42,7 @@ export class SnapshotRepository {
     };
   }
 
-  getTaggedDigests(): Set<string> {
-    const scanId = this.#requireActiveScanId();
+  getTaggedDigests(scanId: number): Set<string> {
     return _getDigestSet(
       this.#database.prepare("SELECT DISTINCT digest FROM tags WHERE scan_id = ?").all(scanId) as Array<{
         digest: string;
@@ -42,8 +51,7 @@ export class SnapshotRepository {
     );
   }
 
-  getDigestsForTags(tags: string[]): Set<string> {
-    const scanId = this.#requireActiveScanId();
+  getDigestsForTags(scanId: number, tags: string[]): Set<string> {
     if (tags.length === 0) {
       return new Set();
     }
@@ -55,22 +63,20 @@ export class SnapshotRepository {
     return _getDigestSet(rows, "digest");
   }
 
-  getChildDigests(parentDigests: Iterable<string>): string[] {
+  getChildDigests(scanId: number, parentDigests: Iterable<string>): string[] {
     const digestList = [...parentDigests];
     if (digestList.length === 0) {
       return [];
     }
 
     const placeholders = digestList.map(() => "?").join(", ");
-    const scanId = this.#requireActiveScanId();
     const rows = this.#database
       .prepare(`SELECT child_digest FROM manifest_edges WHERE scan_id = ? AND parent_digest IN (${placeholders})`)
       .all(scanId, ...digestList) as Array<{ child_digest: string }>;
     return rows.map((row) => row.child_digest);
   }
 
-  getVersionsCreatedBefore(cutoffTimestamp: string): Array<{ versionId: number; digest: string }> {
-    const scanId = this.#requireActiveScanId();
+  getVersionsCreatedBefore(scanId: number, cutoffTimestamp: string): Array<{ versionId: number; digest: string }> {
     const rows = this.#database
       .prepare(
         `
@@ -88,99 +94,43 @@ export class SnapshotRepository {
     }));
   }
 
-  getTaggedVersionIds(): number[] {
-    const scanId = this.#requireActiveScanId();
+  getTaggedVersionIds(scanId: number): number[] {
     const rows = this.#database
       .prepare("SELECT DISTINCT version_id FROM tags WHERE scan_id = ? ORDER BY version_id")
       .all(scanId) as Array<{ version_id: number }>;
     return rows.map((row) => row.version_id);
   }
 
-  countPackageVersions(): number {
-    return _count(
-      this.#database,
-      "SELECT COUNT(*) AS total FROM package_versions WHERE scan_id = ?",
-      "total",
-      this.#requireActiveScanId(),
-    );
+  countPackageVersions(scanId: number): number {
+    return _count(this.#database, "SELECT COUNT(*) AS total FROM package_versions WHERE scan_id = ?", "total", scanId);
   }
 
-  countTaggedVersions(): number {
+  countTaggedVersions(scanId: number): number {
     return _count(
       this.#database,
       "SELECT COUNT(DISTINCT version_id) AS total FROM tags WHERE scan_id = ?",
       "total",
-      this.#requireActiveScanId(),
+      scanId,
     );
   }
 
-  countTags(): number {
-    return _count(
-      this.#database,
-      "SELECT COUNT(*) AS total FROM tags WHERE scan_id = ?",
-      "total",
-      this.#requireActiveScanId(),
-    );
+  countTags(scanId: number): number {
+    return _count(this.#database, "SELECT COUNT(*) AS total FROM tags WHERE scan_id = ?", "total", scanId);
   }
 
-  countManifests(): number {
-    return _count(
-      this.#database,
-      "SELECT COUNT(*) AS total FROM manifests WHERE scan_id = ?",
-      "total",
-      this.#requireActiveScanId(),
-    );
+  countManifests(scanId: number): number {
+    return _count(this.#database, "SELECT COUNT(*) AS total FROM manifests WHERE scan_id = ?", "total", scanId);
   }
 
-  countManifestEdges(): number {
-    return _count(
-      this.#database,
-      "SELECT COUNT(*) AS total FROM manifest_edges WHERE scan_id = ?",
-      "total",
-      this.#requireActiveScanId(),
-    );
+  countManifestEdges(scanId: number): number {
+    return _count(this.#database, "SELECT COUNT(*) AS total FROM manifest_edges WHERE scan_id = ?", "total", scanId);
   }
 
-  listPackageVersionDigests(): string[] {
+  listPackageVersionDigests(scanId: number): string[] {
     const rows = this.#database
       .prepare("SELECT digest FROM package_versions WHERE scan_id = ? ORDER BY version_id")
-      .all(this.#requireActiveScanId()) as Array<{ digest: string }>;
+      .all(scanId) as Array<{ digest: string }>;
     return rows.map((row) => row.digest);
-  }
-
-  buildPlanSummary(protectedVersionIds: number[], deletableVersionIds: number[]): PlanSummary {
-    const metadata = this.getPackageMetadata();
-    return {
-      packageName: metadata.packageName,
-      scanCompletedAt: metadata.scanCompletedAt,
-      totalPackageVersions: this.countPackageVersions(),
-      totalTaggedVersions: this.countTaggedVersions(),
-      protectedVersionIds: [...protectedVersionIds].sort((left, right) => left - right),
-      deletableVersionIds: [...deletableVersionIds].sort((left, right) => left - right),
-    };
-  }
-
-  #getActivePackageRow(): _ScanRow | undefined {
-    return this.#database
-      .prepare(
-        `
-          SELECT scan_id, package_name, scan_completed_at
-          FROM package_scans
-          WHERE status = 'completed' AND scan_completed_at IS NOT NULL
-          ORDER BY scan_completed_at DESC, scan_id DESC
-          LIMIT 1
-        `,
-      )
-      .get() as _ScanRow | undefined;
-  }
-
-  #requireActiveScanId(): number {
-    const row = this.#getActivePackageRow();
-    if (!row) {
-      throw new Error("database does not contain a completed package scan");
-    }
-
-    return row.scan_id;
   }
 }
 

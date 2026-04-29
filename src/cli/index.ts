@@ -4,7 +4,6 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { openDatabase } from "../db/index.js";
 import { requireOption } from "./_args.js";
-import { handlePlanSummary } from "./_plan-summary-command.js";
 import { handleScan } from "./_scan-command.js";
 
 export async function main(argv: string[]): Promise<number> {
@@ -19,8 +18,6 @@ export async function main(argv: string[]): Promise<number> {
       return handleInitDb(rest);
     case "scan":
       return handleScan(rest);
-    case "plan-summary":
-      return handlePlanSummary(rest);
     default:
       throw new Error(`unknown command: ${command}`);
   }
@@ -36,8 +33,7 @@ async function handleInitDb(args: string[]): Promise<number> {
 function printUsage(): void {
   console.error(`Usage:
   ghcr-manager init-db --db <path>
-  ghcr-manager scan --db <path> [--log-level <debug|info|warn|error|silent>] --owner <org> --package <name> [--token <token>]
-  ghcr-manager plan-summary --db <path> --older-than-days <days> [--delete-untagged] [--exclude-tag <tag>]`);
+  ghcr-manager scan --db <path> [--log-level <debug|info|warn|error|silent>] --owner <org> --package <name> [--token <token>]`);
 }
 
 const _entryPath = process.argv[1];

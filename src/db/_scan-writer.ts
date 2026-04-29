@@ -223,6 +223,10 @@ export class ScanWriter {
     rebuildManifestReachability(this.#database, this.#requireScanId());
   }
 
+  getActiveScanId(): number {
+    return this.#requireScanId();
+  }
+
   #requireScanId(): number {
     if (this.#activeScanId === null) {
       throw new Error("package not initialized; call resetScan(packageName, scanStartedAt) first");

@@ -21,16 +21,17 @@ export async function handleScan(args: string[]): Promise<number> {
     writer,
     repository,
   );
-  const metadata = repository.getPackageMetadata();
+  const scanId = writer.getActiveScanId();
+  const metadata = repository.getPackageMetadata(scanId);
   console.log(
     JSON.stringify(
       {
         packageName: metadata.packageName,
         scanCompletedAt: metadata.scanCompletedAt,
-        packageVersions: repository.countPackageVersions(),
-        tags: repository.countTags(),
-        manifests: repository.countManifests(),
-        manifestEdges: repository.countManifestEdges(),
+        packageVersions: repository.countPackageVersions(scanId),
+        tags: repository.countTags(scanId),
+        manifests: repository.countManifests(scanId),
+        manifestEdges: repository.countManifestEdges(scanId),
       },
       null,
       2,
