@@ -1,4 +1,5 @@
 import type Database from "better-sqlite3";
+import { randomUUID } from "node:crypto";
 import type {
   ManifestDescriptorRecord,
   ManifestEdgeRecord,
@@ -20,11 +21,11 @@ export class ScanWriter {
     const result = this.#database
       .prepare(
         `
-        INSERT INTO package_scans(package_name, scan_started_at, scan_completed_at, status)
-        VALUES(?, ?, NULL, 'running')
+        INSERT INTO package_scans(scan_uuid, package_name, scan_started_at, scan_completed_at, status)
+        VALUES(?, ?, ?, NULL, 'running')
       `
       )
-      .run(packageName, scanStartedAt);
+      .run(randomUUID(), packageName, scanStartedAt);
 
     this.#activeScanId = Number(result.lastInsertRowid);
   }

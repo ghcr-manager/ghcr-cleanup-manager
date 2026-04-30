@@ -5,6 +5,7 @@ const _schemaStatements = [
   `
     CREATE TABLE IF NOT EXISTS package_scans (
       scan_id INTEGER PRIMARY KEY,
+      scan_uuid TEXT NOT NULL UNIQUE,
       package_name TEXT NOT NULL,
       scan_started_at TEXT NOT NULL,
       scan_completed_at TEXT,
@@ -107,6 +108,7 @@ const _schemaStatements = [
   `,
   `CREATE INDEX IF NOT EXISTS idx_package_versions_scan_created_at ON package_versions(scan_id, created_at)`,
   `CREATE INDEX IF NOT EXISTS idx_package_versions_scan_digest ON package_versions(scan_id, digest)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_package_scans_scan_uuid ON package_scans(scan_uuid)`,
   `CREATE INDEX IF NOT EXISTS idx_package_scans_name_started_at ON package_scans(package_name, scan_started_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_tags_scan_digest ON tags(scan_id, digest)`,
   `CREATE INDEX IF NOT EXISTS idx_manifest_descriptors_scan_child ON manifest_descriptors(scan_id, child_digest)`,
@@ -119,4 +121,30 @@ export function initializeSchema(database: Database.Database): void {
   for (const statement of _schemaStatements) {
     database.exec(statement);
   }
+
+  _ensurePackageScanUuidColumn(database);
+}
+
+function _ensurePackageScanUuidColumn(database: Database.Database): void {
+  const hasScanUuid = (
+    database.prepare("SELECT name FROM pragma_table_info('package_scans') WHERE name = 'scan_uuid' LIMIT 1").get() as
+      | { name: string }
+      | undefined
+  ) !== undefined;
+
+  if (!hasScanUuid) {
+    database.exec("ALTER TABLE package_scans ADD COLUMN scan_uuid TEXT");
+  }
+
+  database.exec(`
+    UPDATE package_scans
+    SET scan_uuid = (
+      lower(hex(randomblob(4))) || '-' ||
+      lower(hex(randomblob(2))) || '-' ||
+      lower(hex(randomblob(2))) || '-' ||
+      lower(hex(randomblob(2))) || '-' ||
+      lower(hex(randomblob(6)))
+    )
+    WHERE scan_uuid IS NULL OR scan_uuid = ''
+  `);
 }

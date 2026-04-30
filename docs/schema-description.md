@@ -17,7 +17,7 @@ One scan of one package does this:
 
 - `package_scans`
   - One row per scan run.
-  - Stores package name, start/end timestamps, status (`running|completed|failed`).
+  - Stores immutable scan UUID, package name, start/end timestamps, status (`running|completed|failed`).
 
 - `package_versions`
   - Rows from GitHub Packages API version list.

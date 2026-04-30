@@ -60,16 +60,18 @@ test("markScanFailed records failed status and completion timestamp", () => {
   const scanRow = database
     .prepare(
       `
-        SELECT status, scan_completed_at
+        SELECT scan_uuid, status, scan_completed_at
         FROM package_scans
         WHERE scan_id = ?
       `
     )
     .get(scanId) as {
+    scan_uuid: string;
     status: string;
     scan_completed_at: string | null;
   };
 
+  assert.match(scanRow.scan_uuid, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   assert.equal(scanRow.status, "failed");
   assert.equal(scanRow.scan_completed_at, "2026-04-20T12:00:42.000Z");
 
