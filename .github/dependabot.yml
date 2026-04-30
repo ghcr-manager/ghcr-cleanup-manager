@@ -13,7 +13,7 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: "pip"
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -21,6 +21,6 @@ updates:
     labels:
       - "dependencies"
     groups:
-      pip:
+      npm:
         patterns:
           - "*"
