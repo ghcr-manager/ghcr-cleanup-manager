@@ -41,6 +41,8 @@ packages and correct handling of multi-arch images, referrers, and attestations.
 ## Usage
 
 ```yaml
+concurrency:
+  group: ghcr-manager__${{ inputs.owner }}__${{ inputs.package }}
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -48,6 +50,8 @@ jobs:
       contents: read
       packages: read
       actions: write # only required when upload-db-artifact is true
+    concurrency:
+      group: ghcr-manager
     steps:
       - uses: actions/checkout@v6
 
