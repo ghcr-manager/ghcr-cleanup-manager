@@ -292,3 +292,10 @@ src/
 
 - [x] Added immutable `scan_uuid` on `package_scans` and started writing it on scan insert.
 - [x] Added a scan-writer test assertion that new scan rows include UUID-formatted `scan_uuid`.
+
+### 2026-04-30 (external SQL view loading)
+
+- [x] Added SQL file loading from `resources/sql/schema/*.sql` and `resources/sql/views/*.sql` during schema
+      initialization.
+- [x] Added `v_missing_digests_related_manifests` as DB view SQL file under `resources/sql/views/`.
+- [x] Added schema test coverage that the view is created by `initializeSchema(...)`.

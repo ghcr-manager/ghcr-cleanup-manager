@@ -31,3 +31,22 @@ test("initializeSchema creates manifest_reachability for precomputed graph reads
 
   database.close();
 });
+
+test("initializeSchema creates SQL views from sql/views", () => {
+  const database = new Database(":memory:");
+  initializeSchema(database);
+
+  const row = database
+    .prepare(
+      `
+        SELECT sql
+        FROM sqlite_master
+        WHERE type = 'view' AND name = 'v_missing_digests_related_manifests'
+      `
+    )
+    .get() as { sql?: string } | undefined;
+
+  assert.match(row?.sql ?? "", /CREATE VIEW v_missing_digests_related_manifests AS/);
+
+  database.close();
+});
