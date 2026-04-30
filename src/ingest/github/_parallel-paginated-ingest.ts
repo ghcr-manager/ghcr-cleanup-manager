@@ -43,9 +43,6 @@ export async function ingestParallelPaginated<T>(
     while (nextPage < stopPageExclusive) {
       const page = nextPage;
       nextPage += 1;
-      if (page >= stopPageExclusive) {
-        return;
-      }
 
       const pageItems = await options.loadPage(page);
       if (pageItems.length === 0) {
