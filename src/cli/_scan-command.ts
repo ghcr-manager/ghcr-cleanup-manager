@@ -26,6 +26,7 @@ export async function handleScan(args: string[]): Promise<number> {
   console.log(
     JSON.stringify(
       {
+        owner: metadata.owner,
         packageName: metadata.packageName,
         scanCompletedAt: metadata.scanCompletedAt,
         packageVersions: repository.countPackageVersions(scanId),

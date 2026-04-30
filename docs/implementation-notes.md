@@ -243,7 +243,7 @@ src/
 ### 2026-04-29 (scan-history schema refactor)
 
 - Replaced package-anchored tenancy with scan-anchored tenancy:
-  - `package_scans(scan_id, package_name, scan_started_at, scan_completed_at, status)`
+  - `package_scans(scan_id, scan_uuid, owner, package_name, scan_started_at, scan_completed_at, status)`
   - all snapshot tables now key and reference by `scan_id`.
 - Updated writer persistence so `resetScan(...)` creates a new `running` scan row instead of truncating prior data.
 - Added scan lifecycle updates in writer:

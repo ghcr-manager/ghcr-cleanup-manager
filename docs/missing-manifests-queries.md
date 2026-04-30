@@ -17,7 +17,7 @@ All queries below use this base CTE:
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 )
@@ -33,7 +33,7 @@ Descriptor child digest exists, but no manifest row exists for that digest.
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 )
@@ -55,7 +55,7 @@ A manifest `subject_digest` points to a digest that has no manifest row.
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 )
@@ -78,7 +78,7 @@ Distinct missing digests from descriptor children and subjects combined.
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),
@@ -118,7 +118,7 @@ Useful to explain why warn-line count and one single query can differ.
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),
@@ -162,7 +162,7 @@ Why this indirection is needed:
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),
@@ -243,7 +243,7 @@ WITH RECURSIVE
 target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),
@@ -364,7 +364,7 @@ digest anchor.
 WITH target_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),
@@ -435,7 +435,7 @@ Use missing digests from one source package scan, then search tags in latest com
 WITH source_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),
@@ -533,7 +533,7 @@ One row per related manifest. Tags are optional (`NULL` when a related manifest 
 WITH source_scan AS (
   SELECT scan_id
   FROM package_scans
-  WHERE package_name = 'aicage/aicage' AND status = 'completed'
+  WHERE owner = 'aicage' AND package_name = 'aicage' AND status = 'completed'
   ORDER BY scan_started_at DESC
   LIMIT 1
 ),

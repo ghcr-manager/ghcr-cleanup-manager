@@ -3,6 +3,7 @@ import type { ManifestEdgeRecord, ManifestRecord, PackageVersionRecord, TagRecor
 import { ScanWriter } from "../../src/db/index.js";
 
 interface _FixtureScanDocument {
+  owner: string;
   packageName: string;
   scanCompletedAt: string;
   packageVersions: PackageVersionRecord[];
@@ -16,7 +17,7 @@ export async function importFileScan(snapshotPath: string, writer: ScanWriter): 
   const document = JSON.parse(rawSnapshot) as _FixtureScanDocument;
   const scanCompletedAt = document.scanCompletedAt;
 
-  writer.resetScan(document.packageName, scanCompletedAt);
+  writer.resetScan(document.owner, document.packageName, scanCompletedAt);
   try {
     for (const version of document.packageVersions) {
       writer.insertPackageVersion(version);

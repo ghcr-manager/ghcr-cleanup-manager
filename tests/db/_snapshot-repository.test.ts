@@ -20,7 +20,9 @@ test("snapshot repository exposes counts and metadata after import", async () =>
     assert.equal(repository.countPackageVersions(scanId), 5);
     assert.equal(repository.countTaggedVersions(scanId), 2);
     assert.equal(repository.countTags(scanId), 2);
-    assert.equal(repository.getPackageMetadata(scanId).packageName, "acme/example");
+    const metadata = repository.getPackageMetadata(scanId);
+    assert.equal(metadata.owner, "acme");
+    assert.equal(metadata.packageName, "example");
 
     database.close();
   } finally {

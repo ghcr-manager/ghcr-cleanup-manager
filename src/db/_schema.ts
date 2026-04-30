@@ -6,6 +6,7 @@ const _schemaStatements = [
     CREATE TABLE IF NOT EXISTS package_scans (
       scan_id INTEGER PRIMARY KEY,
       scan_uuid TEXT NOT NULL UNIQUE,
+      owner TEXT NOT NULL,
       package_name TEXT NOT NULL,
       scan_started_at TEXT NOT NULL,
       scan_completed_at TEXT,
@@ -109,7 +110,7 @@ const _schemaStatements = [
   `CREATE INDEX IF NOT EXISTS idx_package_versions_scan_created_at ON package_versions(scan_id, created_at)`,
   `CREATE INDEX IF NOT EXISTS idx_package_versions_scan_digest ON package_versions(scan_id, digest)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_package_scans_scan_uuid ON package_scans(scan_uuid)`,
-  `CREATE INDEX IF NOT EXISTS idx_package_scans_name_started_at ON package_scans(package_name, scan_started_at DESC)`,
+  `CREATE INDEX IF NOT EXISTS idx_package_scans_owner_name_started_at ON package_scans(owner, package_name, scan_started_at DESC)`,
   `CREATE INDEX IF NOT EXISTS idx_tags_scan_digest ON tags(scan_id, digest)`,
   `CREATE INDEX IF NOT EXISTS idx_manifest_descriptors_scan_child ON manifest_descriptors(scan_id, child_digest)`,
   `CREATE INDEX IF NOT EXISTS idx_manifest_edges_scan_parent ON manifest_edges(scan_id, parent_digest)`,

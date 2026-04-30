@@ -163,7 +163,9 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
   );
   const scanId = writer.getActiveScanId();
 
-  assert.equal(repository.getPackageMetadata(scanId).packageName, "acme/example");
+  const metadata = repository.getPackageMetadata(scanId);
+  assert.equal(metadata.owner, "acme");
+  assert.equal(metadata.packageName, "example");
   assert.deepEqual(repository.listPackageVersionDigests(scanId), ["sha256:index", "sha256:attestation"]);
   assert.equal(repository.countTags(scanId), 1);
   assert.equal(repository.countManifests(scanId), 3);

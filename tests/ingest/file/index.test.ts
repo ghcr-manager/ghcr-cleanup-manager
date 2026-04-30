@@ -11,7 +11,9 @@ test("file ingest writes fixture data directly into SQLite", async () => {
   await importFileScan("tests/fixtures/sample-package.json", writer);
   const scanId = writer.getActiveScanId();
 
-  assert.equal(repository.getPackageMetadata(scanId).packageName, "acme/example");
+  const metadata = repository.getPackageMetadata(scanId);
+  assert.equal(metadata.owner, "acme");
+  assert.equal(metadata.packageName, "example");
   assert.equal(repository.countPackageVersions(scanId), 5);
   assert.equal(repository.countManifestEdges(scanId), 2);
   assert.equal(

@@ -7,7 +7,7 @@ test("rebuildManifestReachability builds reachability bottom-up from direct mani
   const database = openDatabase(":memory:");
   const writer = new ScanWriter(database);
 
-  writer.resetScan("acme/example", "2026-04-20T12:00:00.000Z");
+  writer.resetScan("acme", "example", "2026-04-20T12:00:00.000Z");
   writer.insertManifest({
     digest: "sha256:index",
     mediaType: "application/vnd.oci.image.index.v1+json"
@@ -116,7 +116,7 @@ test("rebuildManifestReachability rejects cycles in manifest edges", () => {
   const database = openDatabase(":memory:");
   const writer = new ScanWriter(database);
 
-  writer.resetScan("acme/example", "2026-04-20T12:00:00.000Z");
+  writer.resetScan("acme", "example", "2026-04-20T12:00:00.000Z");
   writer.insertManifest({
     digest: "sha256:a",
     mediaType: "application/vnd.oci.image.manifest.v1+json"

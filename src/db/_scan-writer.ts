@@ -17,15 +17,15 @@ export class ScanWriter {
     this.#database = database;
   }
 
-  resetScan(packageName: string, scanStartedAt: string): void {
+  resetScan(owner: string, packageName: string, scanStartedAt: string): void {
     const result = this.#database
       .prepare(
         `
-        INSERT INTO package_scans(scan_uuid, package_name, scan_started_at, scan_completed_at, status)
-        VALUES(?, ?, ?, NULL, 'running')
+        INSERT INTO package_scans(scan_uuid, owner, package_name, scan_started_at, scan_completed_at, status)
+        VALUES(?, ?, ?, ?, NULL, 'running')
       `
       )
-      .run(randomUUID(), packageName, scanStartedAt);
+      .run(randomUUID(), owner, packageName, scanStartedAt);
 
     this.#activeScanId = Number(result.lastInsertRowid);
   }
@@ -213,7 +213,7 @@ export class ScanWriter {
 
   #requireScanId(): number {
     if (this.#activeScanId === null) {
-      throw new Error("package not initialized; call resetScan(packageName, scanStartedAt) first");
+      throw new Error("package not initialized; call resetScan(owner, packageName, scanStartedAt) first");
     }
 
     return this.#activeScanId;

@@ -16,7 +16,7 @@ Short glossary for developers working on `ghcr-manager`.
 
 | Term              | Short meaning here                                                | Where it shows up                                                                 |
 | ----------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| package           | One GHCR package, for example `acme/example`                      | `package_scans.package_name`                                                      |
+| package           | One GHCR package, for example `acme/example`                      | `package_scans.owner` + `package_scans.package_name`                              |
 | package version   | One GitHub Packages version entry for a package                   | `package_versions`                                                                |
 | tag               | Human-readable name like `latest` or `1.2.3`                      | `tags.tag`                                                                        |
 | digest            | Content address like `sha256:...`                                 | used across all main tables                                                       |
