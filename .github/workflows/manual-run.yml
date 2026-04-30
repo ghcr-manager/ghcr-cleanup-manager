@@ -37,7 +37,7 @@ jobs:
 
       - name: Run ghcr-manager action
         id: ghcr-manager
-        uses: gh-workflow/ghcr-manager@0.0.5
+        uses: gh-workflow/ghcr-manager@0.0.6
         with:
           github-token: ${{ github.token }}
           owner: ${{ inputs.owner }}
