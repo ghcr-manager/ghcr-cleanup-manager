@@ -1,4 +1,4 @@
-name: "Test Registry: Fill"
+name: "Test Registry: Fill Single"
 
 "on":
   workflow_dispatch:
@@ -11,7 +11,6 @@ permissions:
 
 env:
   IMAGE_REF: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-test
-  LATEST_TAG: latest
 
 jobs:
   build_amd64:
@@ -66,23 +65,15 @@ jobs:
         uses: gh-workflow/multiarch-image-publish@0.1.11
         with:
           image_ref: ${{ env.IMAGE_REF }}
-          # Image tag list:
-          # - github.ref_name:
-          #   - On workflow_dispatch equals the branch name.
-          #   - On a git tag push equals the git-tag
-          # - env.LATEST_TAG:
-          #   - default=latest
           tags: |
-            ${{ github.ref_name }}
-            ${{ env.LATEST_TAG }}
+            single
           platform_digests: |
             linux/amd64=${{ needs.build_amd64.outputs.digest }}
             linux/arm64=${{ needs.build_arm64.outputs.digest }}
           annotations: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.version=${{ github.ref_name }}
+            org.opencontainers.image.version=single
 
       - name: Print result
         run: |
-          echo "Published ${{ env.IMAGE_REF }}:${{ github.ref_name }}"
-          echo "Published ${{ env.IMAGE_REF }}:${{ env.LATEST_TAG }}"
+          echo "Published ${{ env.IMAGE_REF }}:single"

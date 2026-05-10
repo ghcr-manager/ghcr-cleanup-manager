@@ -1,0 +1,175 @@
+name: "Test Registry: Fill Complex"
+
+"on":
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+env:
+  IMAGE_REF: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-test
+
+# Builds:
+# - alpha: multi-arch manifest
+#   - alpha-amd64: image
+#   - alpha-arm64: image
+# - beta: multi-arch manifest
+#   - beta-amd64: image
+#   - alpha-arm64: image (from alpha)
+# - gamma: multi-arch manifest
+#   - beta-amd64: image (from beta)
+#   - alpha-arm64: image (from alpha)
+
+jobs:
+  build_alpha_amd64:
+    name: Build image (alpha-amd64)
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Build and test image
+        id: build
+        uses: ./.github/actions/test-registry-build-image
+        with:
+          image_ref: ${{ env.IMAGE_REF }}
+          arch: amd64
+          platform: linux/amd64
+
+  build_alpha_arm64:
+    name: Build image (alpha-arm64)
+    runs-on: ubuntu-24.04-arm
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Build and test image
+        id: build
+        uses: ./.github/actions/test-registry-build-image
+        with:
+          image_ref: ${{ env.IMAGE_REF }}
+          arch: arm64
+          platform: linux/arm64
+
+  publish_alpha:
+    name: Publish alpha multi-arch image
+    needs:
+      - build_alpha_amd64
+      - build_alpha_arm64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Publish multi-arch image
+        uses: gh-workflow/multiarch-image-publish@0.1.11
+        with:
+          image_ref: ${{ env.IMAGE_REF }}
+          tags: |
+            alpha
+          platform_digests: |
+            linux/amd64=${{ needs.build_alpha_amd64.outputs.digest }}
+            linux/arm64=${{ needs.build_alpha_arm64.outputs.digest }}
+          annotations: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=alpha
+
+      - name: Print result
+        run: |
+          echo "Published ${{ env.IMAGE_REF }}:alpha"
+
+  build_beta_amd64:
+    name: Build image (beta-amd64)
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      #      - name: Sleep delay 2 minutes
+      #        run: sleep 120
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Build and test image
+        id: build
+        uses: ./.github/actions/test-registry-build-image
+        with:
+          image_ref: ${{ env.IMAGE_REF }}
+          arch: amd64
+          platform: linux/amd64
+
+  publish_beta:
+    name: Publish beta multi-arch image
+    needs:
+      - build_beta_amd64
+      - build_alpha_arm64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Publish multi-arch image
+        uses: gh-workflow/multiarch-image-publish@0.1.11
+        with:
+          image_ref: ${{ env.IMAGE_REF }}
+          tags: |
+            beta
+          platform_digests: |
+            linux/amd64=${{ needs.build_beta_amd64.outputs.digest }}
+            linux/arm64=${{ needs.build_alpha_arm64.outputs.digest }}
+          annotations: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=beta
+
+      - name: Print result
+        run: |
+          echo "Published ${{ env.IMAGE_REF }}:beta"
+
+  publish_gamma:
+    name: Publish gamma multi-arch image
+    needs:
+      - build_beta_amd64
+      - build_alpha_arm64
+      - publish_beta
+    runs-on: ubuntu-latest
+    steps:
+      #      - name: Sleep delay 2 minutes
+      #        run: sleep 120
+      - name: Log in to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Publish multi-arch image
+        uses: gh-workflow/multiarch-image-publish@0.1.11
+        with:
+          image_ref: ${{ env.IMAGE_REF }}
+          tags: |
+            gamma
+          platform_digests: |
+            linux/amd64=${{ needs.build_beta_amd64.outputs.digest }}
+            linux/arm64=${{ needs.build_alpha_arm64.outputs.digest }}
+          annotations: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=gamma
+
+      - name: Print result
+        run: |
+          echo "Published ${{ env.IMAGE_REF }}:gamma"
