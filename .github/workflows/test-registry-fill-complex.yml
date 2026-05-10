@@ -91,6 +91,7 @@ jobs:
 
   build_beta_amd64:
     name: Build image (beta-amd64)
+    needs: publish_alpha
     runs-on: ubuntu-latest
     outputs:
       digest: ${{ steps.build.outputs.digest }}
@@ -112,8 +113,8 @@ jobs:
   publish_beta:
     name: Publish beta multi-arch image
     needs:
+      - publish_alpha
       - build_beta_amd64
-      - build_alpha_arm64
     runs-on: ubuntu-latest
     steps:
       - name: Log in to GHCR
@@ -143,8 +144,6 @@ jobs:
   publish_gamma:
     name: Publish gamma multi-arch image
     needs:
-      - build_beta_amd64
-      - build_alpha_arm64
       - publish_beta
     runs-on: ubuntu-latest
     steps:
