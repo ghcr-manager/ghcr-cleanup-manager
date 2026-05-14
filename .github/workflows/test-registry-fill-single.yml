@@ -1,3 +1,8 @@
+# Builds:
+# - single: multi-arch manifest
+#   - single-amd64: image
+#   - single-arm64: image
+
 name: "Test Registry: Fill Single"
 
 "on":
