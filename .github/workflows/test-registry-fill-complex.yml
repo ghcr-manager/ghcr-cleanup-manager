@@ -73,7 +73,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@0.1.11
+        uses: gh-workflow/multiarch-image-publish@18bae3b10aa88499153a3260014f74fa990c5182 # 0.2.0
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
@@ -84,6 +84,7 @@ jobs:
           annotations: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.version=alpha
+          publish_platform_tags: "true"
 
       - name: Print result
         run: |
@@ -126,7 +127,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@0.1.11
+        uses: gh-workflow/multiarch-image-publish@18bae3b10aa88499153a3260014f74fa990c5182 # 0.2.0
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
@@ -137,6 +138,7 @@ jobs:
           annotations: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.version=beta
+          publish_platform_tags: "true"
 
       - name: Print result
         run: |
@@ -161,7 +163,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@0.1.11
+        uses: gh-workflow/multiarch-image-publish@18bae3b10aa88499153a3260014f74fa990c5182 # 0.2.0
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
@@ -172,6 +174,7 @@ jobs:
           annotations: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.version=gamma
+          publish_platform_tags: "true"
 
       - name: Print result
         run: |
