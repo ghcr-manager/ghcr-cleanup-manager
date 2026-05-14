@@ -8,7 +8,7 @@ WITH source_manifests AS (
     lsp.package_name,
     m.version_id,
     m.digest,
-    m.media_type
+    m.manifest_kind
   FROM manifests m
   JOIN v_latest_scan_per_package lsp
     ON lsp.scan_id = m.scan_id
@@ -20,10 +20,10 @@ related_manifests AS (
     sm.package_name,
     sm.version_id AS source_version_id,
     sm.digest AS source_digest,
-    sm.media_type AS source_media_type,
+    sm.manifest_kind AS source_manifest_kind,
     sm.version_id AS related_version_id,
     sm.digest AS related_digest,
-    sm.media_type AS related_media_type,
+    sm.manifest_kind AS related_manifest_kind,
     0 AS hops_manifest_to_related_manifest
   FROM source_manifests sm
 
@@ -35,10 +35,10 @@ related_manifests AS (
     sm.package_name,
     sm.version_id AS source_version_id,
     sm.digest AS source_digest,
-    sm.media_type AS source_media_type,
+    sm.manifest_kind AS source_manifest_kind,
     m.version_id AS related_version_id,
     m.digest AS related_digest,
-    m.media_type AS related_media_type,
+    m.manifest_kind AS related_manifest_kind,
     r.min_distance AS hops_manifest_to_related_manifest
   FROM source_manifests sm
   JOIN manifest_reachability r
@@ -56,10 +56,10 @@ related_manifests AS (
     sm.package_name,
     sm.version_id AS source_version_id,
     sm.digest AS source_digest,
-    sm.media_type AS source_media_type,
+    sm.manifest_kind AS source_manifest_kind,
     m.version_id AS related_version_id,
     m.digest AS related_digest,
-    m.media_type AS related_media_type,
+    m.manifest_kind AS related_manifest_kind,
     r.min_distance AS hops_manifest_to_related_manifest
   FROM source_manifests sm
   JOIN manifest_reachability r
@@ -76,10 +76,10 @@ closest_related_manifests AS (
     package_name,
     source_version_id,
     source_digest,
-    source_media_type,
+    source_manifest_kind,
     related_version_id,
     related_digest,
-    related_media_type,
+    related_manifest_kind,
     MIN(hops_manifest_to_related_manifest) AS hops_manifest_to_related_manifest
   FROM related_manifests
   GROUP BY
@@ -88,23 +88,23 @@ closest_related_manifests AS (
     package_name,
     source_version_id,
     source_digest,
-    source_media_type,
+    source_manifest_kind,
     related_version_id,
     related_digest,
-    related_media_type
+    related_manifest_kind
 )
 SELECT
   crm.scan_id,
   crm.owner,
   crm.package_name,
   crm.source_digest,
-  crm.source_media_type,
+  crm.source_manifest_kind,
   crm.source_version_id,
   spv.created_at AS source_created_at,
   spv.updated_at AS source_updated_at,
   st.tag AS source_tag,
   crm.related_digest,
-  crm.related_media_type,
+  crm.related_manifest_kind,
   crm.related_version_id,
   rpv.created_at AS related_created_at,
   rpv.updated_at AS related_updated_at,

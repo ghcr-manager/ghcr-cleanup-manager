@@ -16,6 +16,7 @@ test("rebuildManifestReachability builds reachability bottom-up from direct mani
   writer.insertManifest({
     versionId: 1,
     digest: "sha256:index",
+    manifestKind: "image_index",
     mediaType: "application/vnd.oci.image.index.v1+json"
   });
   writer.insertPackageVersion({
@@ -26,6 +27,7 @@ test("rebuildManifestReachability builds reachability bottom-up from direct mani
   writer.insertManifest({
     versionId: 2,
     digest: "sha256:child-a",
+    manifestKind: "image_manifest",
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertPackageVersion({
@@ -36,6 +38,7 @@ test("rebuildManifestReachability builds reachability bottom-up from direct mani
   writer.insertManifest({
     versionId: 3,
     digest: "sha256:child-b",
+    manifestKind: "image_manifest",
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertPackageVersion({
@@ -46,6 +49,7 @@ test("rebuildManifestReachability builds reachability bottom-up from direct mani
   writer.insertManifest({
     versionId: 4,
     digest: "sha256:leaf",
+    manifestKind: "artifact_manifest",
     mediaType: "application/vnd.oci.artifact.manifest.v1+json"
   });
   writer.insertManifestEdge({
@@ -149,6 +153,7 @@ test("rebuildManifestReachability rejects cycles in manifest edges", () => {
   writer.insertManifest({
     versionId: 1,
     digest: "sha256:a",
+    manifestKind: "image_manifest",
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertPackageVersion({
@@ -159,6 +164,7 @@ test("rebuildManifestReachability rejects cycles in manifest edges", () => {
   writer.insertManifest({
     versionId: 2,
     digest: "sha256:b",
+    manifestKind: "image_manifest",
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertManifestEdge({

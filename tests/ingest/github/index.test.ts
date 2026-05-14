@@ -191,6 +191,7 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
       .prepare(
         `
           SELECT config_media_type, subject_digest, annotations_json
+               , manifest_kind
           FROM manifests
           WHERE digest = 'sha256:attestation'
         `
@@ -199,7 +200,8 @@ test("GitHub ingest writes package and manifest data directly into SQLite", asyn
     {
       config_media_type: "application/vnd.oci.empty.v1+json",
       subject_digest: "sha256:index",
-      annotations_json: '{"dev.sigstore.bundle.content":"dsse-envelope"}'
+      annotations_json: '{"dev.sigstore.bundle.content":"dsse-envelope"}',
+      manifest_kind: "attestation_manifest"
     }
   );
   assert.equal(

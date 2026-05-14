@@ -110,7 +110,8 @@ export class ScanWriter {
           annotations_json,
           platform_os,
           platform_architecture,
-          platform_variant
+          platform_variant,
+          manifest_kind
         )
         VALUES(
           @scanId,
@@ -123,7 +124,8 @@ export class ScanWriter {
           @annotationsJson,
           @platformOs,
           @platformArchitecture,
-          @platformVariant
+          @platformVariant,
+          @manifestKind
         )
       `
       )
@@ -138,7 +140,8 @@ export class ScanWriter {
         annotationsJson: manifest.annotations ? JSON.stringify(manifest.annotations) : null,
         platformOs: manifest.platform?.os ?? null,
         platformArchitecture: manifest.platform?.architecture ?? null,
-        platformVariant: manifest.platform?.variant ?? null
+        platformVariant: manifest.platform?.variant ?? null,
+        manifestKind: manifest.manifestKind ?? null
       });
   }
 

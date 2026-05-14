@@ -1,6 +1,7 @@
 export type {
   ManifestEdgeRecord,
   ManifestDescriptorRecord,
+  ManifestKind,
   ManifestRecord,
   PackageSnapshot,
   PackageVersionRecord,

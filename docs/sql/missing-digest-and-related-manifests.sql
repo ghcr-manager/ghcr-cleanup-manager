@@ -15,7 +15,7 @@ SELECT
     package_name,
     missing_digest,
     related_manifest_digest,
-    media_type,
+    manifest_kind,
     hops_missing_to_related_manifest,
     tag,
     version_id

@@ -32,6 +32,27 @@ test("initializeSchema creates manifest_reachability for precomputed graph reads
   database.close();
 });
 
+test("initializeSchema stores manifests with an optional checked manifest kind", () => {
+  const database = new Database(":memory:");
+  initializeSchema(database);
+
+  const row = database
+    .prepare(
+      `
+        SELECT sql
+        FROM sqlite_master
+        WHERE type = 'table' AND name = 'manifests'
+      `
+    )
+    .get() as { sql?: string } | undefined;
+
+  assert.match(row?.sql ?? "", /manifest_kind TEXT/);
+  assert.doesNotMatch(row?.sql ?? "", /manifest_kind TEXT NOT NULL/);
+  assert.match(row?.sql ?? "", /CHECK\(manifest_kind IN/);
+
+  database.close();
+});
+
 test("initializeSchema links manifests to package versions and uniquely stores digests", () => {
   const database = new Database(":memory:");
   initializeSchema(database);

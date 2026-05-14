@@ -48,6 +48,14 @@ CREATE TABLE IF NOT EXISTS manifests (
   platform_os TEXT,
   platform_architecture TEXT,
   platform_variant TEXT,
+  manifest_kind TEXT,
+  CHECK(manifest_kind IN (
+    'image_index',
+    'image_manifest',
+    'artifact_manifest',
+    'attestation_manifest',
+    'signature_manifest'
+  )),
   PRIMARY KEY(scan_id, version_id),
   UNIQUE(scan_id, digest),
   FOREIGN KEY(scan_id, version_id) REFERENCES package_versions(scan_id, version_id)

@@ -1,3 +1,10 @@
+export type ManifestKind =
+  | "image_index"
+  | "image_manifest"
+  | "artifact_manifest"
+  | "attestation_manifest"
+  | "signature_manifest";
+
 export interface PackageVersionRecord {
   versionId: number;
   createdAt: string;
@@ -18,6 +25,7 @@ export interface ManifestRecord {
   configMediaType?: string;
   subjectDigest?: string;
   annotations?: Record<string, unknown>;
+  manifestKind?: ManifestKind;
   platform?: {
     architecture?: string;
     os?: string;

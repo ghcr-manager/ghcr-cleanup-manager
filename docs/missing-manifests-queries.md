@@ -62,7 +62,7 @@ WITH target_scan AS (
 SELECT
   md.missing_digest,
   md.anchor_digest,
-  m.media_type AS source_media_type,
+  m.manifest_kind AS source_manifest_kind,
   pv.version_id,
   pv.created_at,
   pv.updated_at,
@@ -91,7 +91,7 @@ SELECT
   package_name,
   missing_digest,
   related_manifest_digest,
-  media_type,
+  manifest_kind,
   hops_missing_to_related_manifest,
   tag,
   version_id

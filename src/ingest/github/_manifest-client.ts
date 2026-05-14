@@ -1,4 +1,5 @@
 import type { ManifestDescriptorRecord, ManifestEdgeRecord, ManifestRecord } from "../../core/index.js";
+import { classifyManifestKind } from "./_manifest-kind.js";
 import {
   acceptedManifestMediaTypes,
   buildFetchTransportErrorMessage,
@@ -28,6 +29,10 @@ interface _RegistryManifestDocument {
   config?: {
     mediaType?: string;
   };
+  layers?: Array<{
+    mediaType?: string;
+    annotations?: Record<string, unknown>;
+  }>;
   manifests?: _RegistryDescriptor[];
   subject?: {
     digest?: string;
@@ -95,6 +100,7 @@ export async function loadManifestGraph(
     rawJson,
     record: {
       digest,
+      manifestKind: classifyManifestKind(document),
       mediaType,
       artifactType: document.artifactType,
       configMediaType: document.config?.mediaType,

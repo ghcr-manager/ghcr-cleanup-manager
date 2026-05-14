@@ -24,6 +24,7 @@ Short glossary for developers working on `ghcr-manager`.
 | image index       | Multi-arch manifest document that points to child image manifests | `manifests.media_type = application/vnd.oci.image.index.v1+json`                  |
 | image manifest    | Single-platform image manifest, for example linux/amd64           | `manifests.media_type = application/vnd.oci.image.manifest.v1+json`               |
 | artifact manifest | OCI artifact document, for example provenance or attestation      | `manifests.media_type = application/vnd.oci.artifact.manifest.v1+json`            |
+| manifest kind     | Best-effort debug classification for exploratory SQL queries      | `manifests.manifest_kind`                                                         |
 | referrer          | Artifact manifest that points back to some subject digest         | stored in `manifest_edges` when both manifests exist                              |
 | subject           | The digest that an artifact refers to                             | source field from GHCR manifest JSON, becomes `parent_digest` for `referrer` rows |
 
@@ -60,6 +61,13 @@ This is how the planner knows which digests are tagged.
 
 - One row per package-version manifest fetched from GHCR.
 - That can be an image index, an image manifest, or an artifact manifest.
+- `manifest_kind` provides an optional best-effort category for debugging:
+  - `image_index`
+  - `image_manifest`
+  - `artifact_manifest`
+  - `attestation_manifest`
+  - `signature_manifest`
+- If no reliable classification is assigned, `manifest_kind` is `NULL`.
 - Every row has a matching `package_versions(scan_id, version_id)` row.
 
 This is the registry-document view of the world.

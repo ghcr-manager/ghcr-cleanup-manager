@@ -20,6 +20,7 @@ test("scan writer stores scan metadata and rows incrementally", () => {
   writer.insertManifest({
     versionId: 1,
     digest: "sha256:index",
+    manifestKind: "image_index",
     mediaType: "application/vnd.oci.image.index.v1+json"
   });
   writer.insertPackageVersion({
@@ -30,6 +31,7 @@ test("scan writer stores scan metadata and rows incrementally", () => {
   writer.insertManifest({
     versionId: 2,
     digest: "sha256:child",
+    manifestKind: "image_manifest",
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertManifestEdge({

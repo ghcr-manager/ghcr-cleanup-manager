@@ -31,7 +31,8 @@ One scan of one package does this:
 
 - `manifests`
   - One row per fetched package-version manifest digest.
-  - Includes media type and some extracted fields (`subject_digest`, config/media info, annotations).
+  - Includes media type, an optional best-effort `manifest_kind`, and some extracted fields (`subject_digest`,
+    config/media info, annotations).
   - Each row must have a matching `package_versions(scan_id, version_id)` row.
 
 - `manifest_payloads`
@@ -76,3 +77,20 @@ Sometimes a fetched manifest payload references a digest that is not part of the
 
 - `package_version_payloads`: full raw GitHub package-version JSON items.
 - `manifest_payloads`: full raw GHCR manifest JSON items.
+
+## Manifest Classification
+
+Each `manifests` row may have a derived `manifest_kind` field for debugging and exploratory SQL filtering.
+
+Current values:
+
+- `image_index`
+- `image_manifest`
+- `artifact_manifest`
+- `attestation_manifest`
+- `signature_manifest`
+
+When the classifier does not assign a reliable category, `manifest_kind` stays `NULL`.
+
+Treat this as best-effort helper data, not as authoritative OCI/GHCR fact. When correctness matters, fall back to
+`media_type`, `artifact_type`, `subject_digest`, and raw JSON payloads.

@@ -56,6 +56,8 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Add bounded retry handling for GitHub/GHCR requests; after the retry budget is exhausted, the scan fails immediately
   with context-rich errors.
 - ☐ Expand planner output so it explains why versions are protected or deletable.
+- ☑ Add manifest kind classification so image indexes, image manifests, signatures, and attestations are queryable
+  without ad-hoc JSON inspection.
 - ☐ Add tests for multi-arch images, referrers, and explicit tag exclusion behavior.
 - ☐ Revisit action packaging after the live ingest path exists.
 
@@ -219,6 +221,16 @@ src/
   transport failures and selected transient HTTP statuses before failing the scan.
 - Removed the public `--source` / `--snapshot` scan mode split; the app now exposes only the real GitHub/GHCR scan path
   while keeping fixture loading in test-only helpers.
+
+### 2026-05-14
+
+- Added a derived `manifests.manifest_kind` helper field as best-effort debug classification without repeating
+  media-type and JSON-path inspection in downstream SQL.
+- Manifest classification now happens at GHCR manifest fetch time from the fetched document's media type, artifact
+  markers, subject, and selected signature/attestation hints.
+- Kept platform lookup out of the manifest kind classification scope; platform remains descriptor-context data.
+- Updated the related-manifest SQL views to expose `manifest_kind` instead of `media_type` where the column was mainly
+  being used as a human-facing manifest classification hint.
 
 ## Next Increment
 

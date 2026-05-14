@@ -7,7 +7,7 @@ related_manifests AS (
     m.scan_id,
     md.missing_digest,
     m.digest AS related_manifest_digest,
-    m.media_type,
+    m.manifest_kind,
     1 AS hops_missing_to_related_manifest
   FROM v_missing_digests md
   JOIN manifests m
@@ -20,7 +20,7 @@ related_manifests AS (
     m.scan_id,
     md.missing_digest,
     m.digest AS related_manifest_digest,
-    m.media_type,
+    m.manifest_kind,
     r.min_distance + 1 AS hops_missing_to_related_manifest
   FROM v_missing_digests md
   JOIN manifests m
@@ -36,7 +36,7 @@ related_manifests AS (
     m.scan_id,
     md.missing_digest,
     m.digest AS related_manifest_digest,
-    m.media_type,
+    m.manifest_kind,
     r.min_distance + 1 AS hops_missing_to_related_manifest
   FROM v_missing_digests md
   JOIN manifests m
@@ -51,14 +51,14 @@ closest_related_manifests AS (
     scan_id,
     missing_digest,
     related_manifest_digest,
-    media_type,
+    manifest_kind,
     MIN(hops_missing_to_related_manifest) AS hops_missing_to_related_manifest
   FROM related_manifests
   GROUP BY
     missing_digest,
     scan_id,
     related_manifest_digest,
-    media_type
+    manifest_kind
 )
 SELECT
   ps.scan_id,
@@ -66,7 +66,7 @@ SELECT
   ps.package_name,
   crm.missing_digest,
   crm.related_manifest_digest,
-  crm.media_type,
+  crm.manifest_kind,
   crm.hops_missing_to_related_manifest,
   t.tag,
   t.version_id
