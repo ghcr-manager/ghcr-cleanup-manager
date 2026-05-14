@@ -32,6 +32,70 @@ test("handlePlan rejects mixed selector families", async () => {
   );
 });
 
+test("handlePlan allows delete-tag combined with keep-n-tagged", async () => {
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const databasePath = join(tempDirectory, "scan.sqlite");
+  const database = openDatabase(databasePath);
+  const writer = new ScanWriter(database);
+  await importFileScan("tests/fixtures/sample-package.json", writer);
+  database.close();
+
+  const originalLog = console.log;
+  const writes: string[] = [];
+  console.log = (message?: unknown) => {
+    writes.push(String(message));
+  };
+
+  try {
+    assert.equal(
+      await handlePlan([
+        "--db",
+        databasePath,
+        "--owner",
+        "acme",
+        "--package",
+        "example",
+        "--delete-tag",
+        "latest",
+        "--keep-n-tagged",
+        "0"
+      ]),
+      0
+    );
+  } finally {
+    console.log = originalLog;
+    rmSync(tempDirectory, { recursive: true, force: true });
+  }
+
+  assert.equal(writes.length, 1);
+  const plan = JSON.parse(writes[0] as string) as {
+    plannerInputs: { deleteTags: string[]; keepNTagged?: number };
+    directTargetRoots: Array<{
+      versionId: number;
+      digest: string;
+      manifestKind?: string;
+      reason: string;
+      selectionMode: string;
+    }>;
+  };
+  assert.deepEqual(plan.plannerInputs.deleteTags, ["latest"]);
+  assert.equal(plan.plannerInputs.keepNTagged, 0);
+  assert.deepEqual(
+    plan.directTargetRoots.map((root) => ({
+      digest: root.digest,
+      reason: root.reason,
+      selectionMode: root.selectionMode
+    })),
+    [
+      {
+        digest: "sha256:index-current",
+        reason: "keep-n-tagged-overflow",
+        selectionMode: "delete-root"
+      }
+    ]
+  );
+});
+
 test("handlePlan rejects repeated older-than options", async () => {
   await assert.rejects(
     () =>

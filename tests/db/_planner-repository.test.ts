@@ -195,7 +195,7 @@ test("planner repository keeps the newest eligible tagged roots and selects only
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertTag({
-    tag: "beta",
+    tag: "beta-new",
     versionId: 2
   });
   writer.insertPackageVersion({
@@ -267,7 +267,7 @@ test("planner repository applies older-than before keep-n-tagged recency selecti
     mediaType: "application/vnd.oci.image.manifest.v1+json"
   });
   writer.insertTag({
-    tag: "beta",
+    tag: "beta-new",
     versionId: 2
   });
   writer.insertPackageVersion({
@@ -287,7 +287,7 @@ test("planner repository applies older-than before keep-n-tagged recency selecti
   });
   writer.markScanCompleted("2026-05-14T10:00:00.000Z");
 
-  const plan = repository.getKeepNTaggedPlanWithCutoff("acme", "keep-tagged-age", 1, {
+  const plan = repository.getKeepNTaggedPlanWithCutoff("acme", "keep-tagged-age", 1, [], {
     olderThan: "30 days",
     cutoffTimestamp: "2026-04-14T10:00:00.000Z"
   });
@@ -304,6 +304,140 @@ test("planner repository applies older-than before keep-n-tagged recency selecti
       selectionMode: "delete-root"
     }
   ]);
+
+  database.close();
+});
+
+test("planner repository applies keep-n-tagged within the matched delete-tag subset", () => {
+  const database = openDatabase(":memory:");
+  const writer = new ScanWriter(database);
+  const repository = new PlannerRepository(database);
+
+  writer.resetScan("acme", "tagged-combined", "2026-05-14T10:00:00.000Z");
+  writer.insertPackageVersion({
+    versionId: 1,
+    createdAt: "2026-05-03T10:00:00.000Z",
+    updatedAt: "2026-05-03T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 1,
+    digest: "sha256:retained-unrelated",
+    manifestKind: "image_manifest",
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  writer.insertTag({
+    tag: "latest",
+    versionId: 1
+  });
+  writer.insertPackageVersion({
+    versionId: 2,
+    createdAt: "2026-05-02T10:00:00.000Z",
+    updatedAt: "2026-05-02T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 2,
+    digest: "sha256:matched-kept",
+    manifestKind: "image_manifest",
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  writer.insertTag({
+    tag: "beta-new",
+    versionId: 2
+  });
+  writer.insertPackageVersion({
+    versionId: 3,
+    createdAt: "2026-05-01T10:00:00.000Z",
+    updatedAt: "2026-05-01T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 3,
+    digest: "sha256:matched-deleted",
+    manifestKind: "image_manifest",
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  writer.insertTag({
+    tag: "beta-old",
+    versionId: 3
+  });
+  writer.markScanCompleted("2026-05-14T10:00:00.000Z");
+
+  const plan = repository.getDeleteTagsPlanWithCutoff("acme", "tagged-combined", ["beta-new", "beta-old"], [], {
+    keepNTagged: 1
+  });
+
+  assert.deepEqual(plan.directTargetTags, ["beta-new", "beta-old"]);
+  assert.equal(plan.plannerInputs.keepNTagged, 1);
+  assert.deepEqual(plan.directTargetRoots, [
+    {
+      versionId: 3,
+      digest: "sha256:matched-deleted",
+      manifestKind: "image_manifest",
+      reason: "keep-n-tagged-overflow",
+      selectionMode: "delete-root"
+    }
+  ]);
+
+  database.close();
+});
+
+test("planner repository keeps non-matched tags on shared matched roots as untag-only after keep overflow", () => {
+  const database = openDatabase(":memory:");
+  const writer = new ScanWriter(database);
+  const repository = new PlannerRepository(database);
+
+  writer.resetScan("acme", "tagged-combined-partial", "2026-05-14T10:00:00.000Z");
+  writer.insertPackageVersion({
+    versionId: 1,
+    createdAt: "2026-05-03T10:00:00.000Z",
+    updatedAt: "2026-05-03T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 1,
+    digest: "sha256:matched-kept",
+    manifestKind: "image_manifest",
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  writer.insertTag({
+    tag: "beta-new",
+    versionId: 1
+  });
+  writer.insertPackageVersion({
+    versionId: 2,
+    createdAt: "2026-05-01T10:00:00.000Z",
+    updatedAt: "2026-05-01T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 2,
+    digest: "sha256:matched-shared",
+    manifestKind: "image_manifest",
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  writer.insertTag({
+    tag: "beta-old",
+    versionId: 2
+  });
+  writer.insertTag({
+    tag: "alpha",
+    versionId: 2
+  });
+  writer.markScanCompleted("2026-05-14T10:00:00.000Z");
+
+  const plan = repository.getDeleteTagsPlanWithCutoff("acme", "tagged-combined-partial", ["beta-new", "beta-old"], [], {
+    keepNTagged: 1
+  });
+
+  assert.deepEqual(plan.directTargetTags, ["beta-new", "beta-old"]);
+  assert.equal(plan.plannerInputs.keepNTagged, 1);
+  assert.deepEqual(plan.directTargetRoots, [
+    {
+      versionId: 2,
+      digest: "sha256:matched-shared",
+      manifestKind: "image_manifest",
+      reason: "delete-tags-partial-tag-match",
+      selectionMode: "untag-only"
+    }
+  ]);
+  assert.deepEqual(plan.fullyDeletableRoots, []);
 
   database.close();
 });

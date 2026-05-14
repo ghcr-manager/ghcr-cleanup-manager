@@ -105,7 +105,7 @@ export class PlannerRepository {
   }
 
   getKeepNTaggedPlan(owner: string, packageName: string, keepCount: number): DeletePlan {
-    return this.getKeepNTaggedPlanWithCutoff(owner, packageName, keepCount);
+    return this.getKeepNTaggedPlanWithCutoff(owner, packageName, keepCount, []);
   }
 
   getDeleteUntaggedPlanWithCutoff(
@@ -191,13 +191,19 @@ export class PlannerRepository {
     owner: string,
     packageName: string,
     keepCount: number,
+    excludeTags: string[],
     options?: {
       olderThan?: string;
       cutoffTimestamp?: string;
     }
   ): DeletePlan {
     const scan = this.#getLatestCompletedScan(owner, packageName);
-    const directTargetRoots = this.#listKeepNTaggedDirectTargetRoots(scan.scan_id, keepCount, options?.cutoffTimestamp);
+    const directTargetRoots = this.#listTaggedDirectTargetRoots(scan.scan_id, {
+      deleteTags: [],
+      excludeTags,
+      keepCount,
+      cutoffTimestamp: options?.cutoffTimestamp
+    });
     const deleteRootCandidates = this.#listDeleteRootCandidates(directTargetRoots);
     const blockedRoots = this.#listBlockedRoots(scan.scan_id, deleteRootCandidates);
     const blockedVersionIds = new Set(blockedRoots.map((root) => root.blockedVersionId));
@@ -210,7 +216,7 @@ export class PlannerRepository {
       plannerInputs: {
         deleteUntagged: false,
         deleteTags: [],
-        excludeTags: [],
+        excludeTags,
         keepNTagged: keepCount,
         keepNUntagged: undefined,
         olderThan: options?.olderThan,
@@ -235,6 +241,7 @@ export class PlannerRepository {
     deleteTags: string[],
     excludeTags: string[],
     options?: {
+      keepNTagged?: number;
       olderThan?: string;
       cutoffTimestamp?: string;
     }
@@ -246,12 +253,12 @@ export class PlannerRepository {
       excludeTags,
       options?.cutoffTimestamp
     );
-    const directTargetRoots = this.#listDeleteTagDirectTargetRoots(
-      scan.scan_id,
+    const directTargetRoots = this.#listTaggedDirectTargetRoots(scan.scan_id, {
       deleteTags,
       excludeTags,
-      options?.cutoffTimestamp
-    );
+      keepCount: options?.keepNTagged,
+      cutoffTimestamp: options?.cutoffTimestamp
+    });
     const deleteRootCandidates = this.#listDeleteRootCandidates(directTargetRoots);
     const blockedRoots = this.#listBlockedRoots(scan.scan_id, deleteRootCandidates);
     const blockedVersionIds = new Set(blockedRoots.map((root) => root.blockedVersionId));
@@ -265,7 +272,7 @@ export class PlannerRepository {
         deleteUntagged: false,
         deleteTags,
         excludeTags,
-        keepNTagged: undefined,
+        keepNTagged: options?.keepNTagged,
         keepNUntagged: undefined,
         olderThan: options?.olderThan,
         cutoffTimestamp: options?.cutoffTimestamp
@@ -375,50 +382,6 @@ export class PlannerRepository {
     }));
   }
 
-  #listKeepNTaggedDirectTargetRoots(scanId: number, keepCount: number, cutoffTimestamp?: string): DeletePlanRoot[] {
-    const cutoffSql = cutoffTimestamp ? "AND pv.created_at < ?" : "";
-    const rows = this.#database
-      .prepare(
-        `
-          WITH eligible_tagged_roots AS (
-            SELECT
-              rm.root_version_id AS version_id,
-              rm.root_digest,
-              rm.root_manifest_kind,
-              ROW_NUMBER() OVER (
-                ORDER BY pv.created_at DESC, rm.root_version_id DESC, rm.root_digest DESC
-              ) AS recency_rank
-            FROM v_scan_root_manifests rm
-            JOIN package_versions pv
-              ON pv.scan_id = rm.scan_id
-             AND pv.version_id = rm.root_version_id
-            WHERE rm.scan_id = ?
-              AND rm.is_tagged = 1
-              AND rm.has_ancestor = 0
-              ${cutoffSql}
-          )
-          SELECT
-            version_id,
-            root_digest,
-            root_manifest_kind,
-            'keep-n-tagged-overflow' AS direct_target_reason,
-            'delete-root' AS selection_mode
-          FROM eligible_tagged_roots
-          WHERE recency_rank > ?
-          ORDER BY root_digest
-        `
-      )
-      .all(...[scanId, ...(cutoffTimestamp ? [cutoffTimestamp] : []), keepCount]) as _PlanRootRow[];
-
-    return rows.map((row) => ({
-      versionId: row.version_id,
-      digest: row.root_digest,
-      manifestKind: row.root_manifest_kind ?? undefined,
-      reason: row.direct_target_reason,
-      selectionMode: row.selection_mode
-    }));
-  }
-
   #listDeleteTagDirectTargetTags(
     scanId: number,
     deleteTags: string[],
@@ -470,67 +433,103 @@ export class PlannerRepository {
     return rows.map((row) => row.target_tag);
   }
 
-  #listDeleteTagDirectTargetRoots(
+  #listTaggedDirectTargetRoots(
     scanId: number,
-    deleteTags: string[],
-    excludeTags: string[],
-    cutoffTimestamp?: string
+    options: {
+      deleteTags: string[];
+      excludeTags: string[];
+      keepCount?: number;
+      cutoffTimestamp?: string;
+    }
   ): DeletePlanRoot[] {
-    if (deleteTags.length === 0) {
-      return [];
+    const selectedTagPlaceholders =
+      options.deleteTags.length > 0 ? buildInClausePlaceholders(options.deleteTags.length) : "";
+    const excludedTagPlaceholders =
+      options.excludeTags.length > 0 ? buildInClausePlaceholders(options.excludeTags.length) : "";
+    const deleteMatchSelect =
+      options.deleteTags.length > 0
+        ? `SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END)`
+        : "COUNT(t.tag)";
+    const excludedTagSelect =
+      options.excludeTags.length > 0 ? `SUM(CASE WHEN t.tag IN (${excludedTagPlaceholders}) THEN 1 ELSE 0 END)` : "0";
+    const cutoffSql = options.cutoffTimestamp ? "AND pv.created_at < ?" : "";
+    const keepSql = options.keepCount !== undefined ? "WHERE recency_rank > ?" : "";
+    const params: Array<number | string> = [];
+    if (options.deleteTags.length > 0) {
+      params.push(...options.deleteTags);
     }
-
-    const selectedTagPlaceholders = buildInClausePlaceholders(deleteTags.length);
-    const params: Array<number | string> = [...deleteTags, ...deleteTags, scanId];
-    let excludedTagSelect = "0";
-    let olderThanSql = "";
-    if (excludeTags.length > 0) {
-      const excludedTagPlaceholders = buildInClausePlaceholders(excludeTags.length);
-      excludedTagSelect = `SUM(CASE WHEN t.tag IN (${excludedTagPlaceholders}) THEN 1 ELSE 0 END)`;
+    if (options.excludeTags.length > 0) {
+      params.push(...options.excludeTags);
     }
-    if (cutoffTimestamp) {
-      olderThanSql = "AND pv.created_at < ?";
-      params.push(cutoffTimestamp);
+    params.push(scanId);
+    if (options.cutoffTimestamp) {
+      params.push(options.cutoffTimestamp);
     }
-    params.push(...deleteTags);
-    if (excludeTags.length > 0) {
-      params.push(...excludeTags);
+    const tailParams: Array<number> = [options.keepCount !== undefined ? 1 : 0];
+    if (options.keepCount !== undefined) {
+      tailParams.push(options.keepCount);
     }
 
     const rows = this.#database
       .prepare(
         `
+          WITH matched_roots AS (
+            SELECT
+              rm.root_version_id AS version_id,
+              rm.root_digest,
+              rm.root_manifest_kind,
+              pv.created_at,
+              COUNT(t.tag) AS total_tag_count,
+              ${deleteMatchSelect} AS matched_tag_count
+            FROM v_scan_root_manifests rm
+            JOIN package_versions pv
+              ON pv.scan_id = rm.scan_id
+             AND pv.version_id = rm.root_version_id
+            JOIN tags t
+              ON t.scan_id = rm.scan_id
+             AND t.version_id = rm.root_version_id
+            WHERE rm.scan_id = ?
+              AND rm.is_tagged = 1
+              AND rm.has_ancestor = 0
+              ${cutoffSql}
+            GROUP BY rm.root_version_id, rm.root_digest, rm.root_manifest_kind, pv.created_at
+            HAVING matched_tag_count > 0
+               AND ${excludedTagSelect} = 0
+          ),
+          ranked_roots AS (
+            SELECT
+              version_id,
+              root_digest,
+              root_manifest_kind,
+              total_tag_count,
+              matched_tag_count,
+              ROW_NUMBER() OVER (
+                ORDER BY created_at DESC, version_id DESC, root_digest DESC
+              ) AS recency_rank
+            FROM matched_roots
+          )
           SELECT
-            rm.root_version_id AS version_id,
-            rm.root_digest,
-            rm.root_manifest_kind,
+            version_id,
+            root_digest,
+            root_manifest_kind,
             CASE
-              WHEN COUNT(t.tag) = SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END)
+              WHEN total_tag_count = matched_tag_count AND ? = 1
+                THEN 'keep-n-tagged-overflow'
+              WHEN total_tag_count = matched_tag_count
                 THEN 'delete-tags-all-tags-selected'
               ELSE 'delete-tags-partial-tag-match'
             END AS direct_target_reason,
             CASE
-              WHEN COUNT(t.tag) = SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END)
+              WHEN total_tag_count = matched_tag_count
                 THEN 'delete-root'
               ELSE 'untag-only'
             END AS selection_mode
-          FROM v_scan_root_manifests rm
-          JOIN package_versions pv
-            ON pv.scan_id = rm.scan_id
-           AND pv.version_id = rm.root_version_id
-          JOIN tags t
-            ON t.scan_id = rm.scan_id
-           AND t.version_id = rm.root_version_id
-          WHERE rm.scan_id = ?
-            AND rm.has_ancestor = 0
-            ${olderThanSql}
-          GROUP BY rm.root_version_id, rm.root_digest, rm.root_manifest_kind
-          HAVING SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END) > 0
-             AND ${excludedTagSelect} = 0
-          ORDER BY rm.root_digest
+          FROM ranked_roots
+          ${keepSql}
+          ORDER BY root_digest
         `
       )
-      .all(...params) as _PlanRootRow[];
+      .all(...params, ...tailParams) as _PlanRootRow[];
 
     return rows.map((row) => ({
       versionId: row.version_id,

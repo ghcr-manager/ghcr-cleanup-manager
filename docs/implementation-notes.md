@@ -53,6 +53,7 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Add the first keep-rule planner slice via `--keep-n-untagged`.
 - ☑ Add the first tagged keep-rule planner slice via `--keep-n-tagged`.
 - ☑ Define combined `delete-tags` + `keep-n-tagged` semantics for shared-root cases before implementation.
+- ☑ Implement combined `delete-tags` + `keep-n-tagged` planning with root-level keep ranking.
 - ☐ Extend the planner beyond `--delete-untagged` to cover tag selectors, exclusions, age filters, and keep rules.
 - ☐ Prototype registry execution against the test registry only after the plan output is stable and test-covered.
 - ☐ Revisit action packaging after the live ingest path and cleanup execution path are both stable.
@@ -119,8 +120,8 @@ This section is the canonical place for session-to-session continuity.
     overflow tagged roots of one owner/package
   - `plan --keep-n-untagged <count>` keeps the newest eligible untagged roots and emits a dry-run delete plan for the
     older overflow roots of one owner/package
-  - `plan --delete-tag <tag> [--delete-tag <tag> ...] [--exclude-tag <tag> ...]` emits a dry-run exact-match tag
-    delete/untag plan for one owner/package
+  - `plan --delete-tag <tag> [--delete-tag <tag> ...] [--exclude-tag <tag> ...] [--keep-n-tagged <count>]` emits a
+    dry-run exact-match tag delete/untag plan for one owner/package, optionally keeping the newest matched tagged roots
   - all current plan selector families accept optional `--older-than <interval>` as a root-level eligibility filter
 - Current test-registry workflow shape:
   - `test-registry-fill-*.yml` performs one-time GHCR fixture seeding
@@ -291,7 +292,7 @@ src/
     - `--delete-untagged`
     - `--keep-n-tagged <count>`
     - `--keep-n-untagged <count>`
-    - exact-match repeated `--delete-tag` with optional repeated `--exclude-tag`
+    - exact-match repeated `--delete-tag` with optional repeated `--exclude-tag` and optional `--keep-n-tagged <count>`
   - optional `--older-than <interval>` filters candidate roots by `package_versions.created_at`
   - only one selector family is accepted per plan invocation
   - direct untagged targets are limited to top-level untagged roots (`has_ancestor = 0`)
@@ -383,6 +384,15 @@ src/
     root-level keep ranking fourth
   - locked the shared-root consequence that multi-tagged matched roots with remaining unmatched tags degrade to
     `selectionMode = "untag-only"` rather than `delete-root`
+- Implemented the first combined tagged-selector planner path:
+  - `--delete-tag ... --keep-n-tagged <count>` is now accepted as one tagged selector family instead of being rejected
+    as mixed selectors
+  - the keep count is applied once per matched root, not once per matched tag
+  - fully matched overflow roots now surface as `reason = "keep-n-tagged-overflow"` with `selectionMode = "delete-root"`
+  - partial matched overflow roots with remaining unmatched tags still surface as
+    `reason = "delete-tags-partial-tag-match"` with `selectionMode = "untag-only"`
+  - standalone `--keep-n-tagged` continues to operate on all eligible tagged roots, while combined mode narrows the keep
+    ranking scope to the matched delete-tag subset
 - Added scenario-driven validation coverage for the seeded complex registry:
   - `complex-tag-age-window` derives a whole-minute `older-than` cutoff from the scanned DB so `alpha` and `beta` remain
     eligible while `gamma` stays too new

@@ -21,11 +21,9 @@ export async function handlePlan(args: string[]): Promise<number> {
   }
   const keepNTagged = keepNTaggedRaw[0] ? resolveKeepCount("--keep-n-tagged", keepNTaggedRaw[0]) : undefined;
   const keepNUntagged = keepNUntaggedRaw[0] ? resolveKeepCount("--keep-n-untagged", keepNUntaggedRaw[0]) : undefined;
+  const taggedSelectorActive = deleteTags.length > 0 || keepNTagged !== undefined;
   const selectorCount =
-    (deleteUntagged ? 1 : 0) +
-    (deleteTags.length > 0 ? 1 : 0) +
-    (keepNTagged !== undefined ? 1 : 0) +
-    (keepNUntagged !== undefined ? 1 : 0);
+    (deleteUntagged ? 1 : 0) + (taggedSelectorActive ? 1 : 0) + (keepNUntagged !== undefined ? 1 : 0);
   if (selectorCount > 1) {
     throw new Error(
       "plan currently supports exactly one selector family: --delete-untagged, --delete-tag, --keep-n-tagged, or --keep-n-untagged"
@@ -38,13 +36,10 @@ export async function handlePlan(args: string[]): Promise<number> {
   }
 
   if (deleteUntagged && excludeTags.length > 0) {
-    throw new Error("--exclude-tag is only supported with --delete-tag");
-  }
-  if (keepNTagged !== undefined && excludeTags.length > 0) {
-    throw new Error("--exclude-tag is only supported with --delete-tag");
+    throw new Error("--exclude-tag is only supported with tagged selector families");
   }
   if (keepNUntagged !== undefined && excludeTags.length > 0) {
-    throw new Error("--exclude-tag is only supported with --delete-tag");
+    throw new Error("--exclude-tag is only supported with tagged selector families");
   }
   if (olderThanRaw.length > 1) {
     throw new Error("--older-than may only be provided once");
@@ -55,13 +50,14 @@ export async function handlePlan(args: string[]): Promise<number> {
   const database = openDatabase(databasePath);
   const repository = new PlannerRepository(database);
   const plan =
-    keepNTagged !== undefined
-      ? repository.getKeepNTaggedPlanWithCutoff(owner, packageName, keepNTagged, olderThan)
-      : keepNUntagged !== undefined
-        ? repository.getKeepNUntaggedPlanWithCutoff(owner, packageName, keepNUntagged, olderThan)
-        : deleteUntagged
-          ? repository.getDeleteUntaggedPlanWithCutoff(owner, packageName, olderThan)
-          : repository.getDeleteTagsPlanWithCutoff(owner, packageName, deleteTags, excludeTags, olderThan);
+    keepNUntagged !== undefined
+      ? repository.getKeepNUntaggedPlanWithCutoff(owner, packageName, keepNUntagged, olderThan)
+      : deleteUntagged
+        ? repository.getDeleteUntaggedPlanWithCutoff(owner, packageName, olderThan)
+        : repository.getDeleteTagsPlanWithCutoff(owner, packageName, deleteTags, excludeTags, {
+            keepNTagged,
+            ...olderThan
+          });
   console.log(JSON.stringify(plan, null, 2));
   database.close();
   return 0;
