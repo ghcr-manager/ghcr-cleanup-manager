@@ -448,62 +448,177 @@ export class PlannerRepository {
       cutoffTimestamp?: string;
     }
   ): DeletePlanRoot[] {
-    const selectedTagPlaceholders =
-      options.deleteTags.length > 0 ? buildInClausePlaceholders(options.deleteTags.length) : "";
-    const excludedTagPlaceholders =
-      options.excludeTags.length > 0 ? buildInClausePlaceholders(options.excludeTags.length) : "";
-    const deleteMatchSelect =
-      options.deleteTags.length > 0
-        ? `SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END)`
-        : "COUNT(t.tag)";
-    const excludedTagSelect =
-      options.excludeTags.length > 0 ? `SUM(CASE WHEN t.tag IN (${excludedTagPlaceholders}) THEN 1 ELSE 0 END)` : "0";
-    const cutoffSql = options.cutoffTimestamp ? "AND pv.created_at < ?" : "";
-    const keepSql = options.keepCount !== undefined ? "WHERE recency_rank > ?" : "";
-    const params: Array<number | string> = [];
-    if (options.deleteTags.length > 0) {
-      params.push(...options.deleteTags);
+    if (options.deleteTags.length === 0) {
+      return this.#listKeepNTaggedDirectTargetRoots(
+        scanId,
+        options.excludeTags,
+        options.keepCount,
+        options.cutoffTimestamp
+      );
     }
-    if (options.excludeTags.length > 0) {
-      params.push(...options.excludeTags);
+
+    return this.#listDeleteTagMatchedDirectTargetRoots(
+      scanId,
+      options.deleteTags,
+      options.excludeTags,
+      options.keepCount,
+      options.cutoffTimestamp
+    );
+  }
+
+  #listKeepNTaggedDirectTargetRoots(
+    scanId: number,
+    excludeTags: string[],
+    keepCount?: number,
+    cutoffTimestamp?: string
+  ): DeletePlanRoot[] {
+    const excludedTagPlaceholders = excludeTags.length > 0 ? buildInClausePlaceholders(excludeTags.length) : "";
+    const excludedRootSql =
+      excludeTags.length > 0
+        ? `
+              AND NOT EXISTS (
+                SELECT 1
+                FROM tags xt
+                WHERE xt.scan_id = pv.scan_id
+                  AND xt.version_id = pv.version_id
+                  AND xt.tag IN (${excludedTagPlaceholders})
+              )
+            `
+        : "";
+    const cutoffSql = cutoffTimestamp ? "AND pv.created_at < ?" : "";
+    const keepSql = keepCount !== undefined ? "WHERE recency_rank > ?" : "";
+    const params: Array<number | string> = [scanId, ...excludeTags];
+    if (cutoffTimestamp) {
+      params.push(cutoffTimestamp);
     }
-    params.push(scanId);
-    if (options.cutoffTimestamp) {
-      params.push(options.cutoffTimestamp);
-    }
-    const tailParams: Array<number> = [options.keepCount !== undefined ? 1 : 0];
-    if (options.keepCount !== undefined) {
-      tailParams.push(options.keepCount);
+    if (keepCount !== undefined) {
+      params.push(keepCount);
     }
 
     const sql = `
-          WITH matched_roots AS (
+          WITH eligible_tagged_roots AS (
             SELECT
-              m.version_id AS version_id,
+              pv.version_id AS version_id,
               m.digest AS root_digest,
               m.manifest_kind AS root_manifest_kind,
-              pv.created_at,
-              COUNT(t.tag) AS total_tag_count,
-              ${deleteMatchSelect} AS matched_tag_count
-            FROM manifests m
-            JOIN package_versions pv
-              ON pv.scan_id = m.scan_id
-             AND pv.version_id = m.version_id
-            JOIN tags t
-              ON t.scan_id = m.scan_id
-             AND t.version_id = m.version_id
-            WHERE m.scan_id = ?
+              ROW_NUMBER() OVER (
+                ORDER BY pv.created_at DESC, pv.version_id DESC, m.digest DESC
+              ) AS recency_rank
+            FROM package_versions pv
+            JOIN manifests m
+              ON m.scan_id = pv.scan_id
+             AND m.version_id = pv.version_id
+            WHERE pv.scan_id = ?
+              AND EXISTS (
+                SELECT 1
+                FROM tags t
+                WHERE t.scan_id = pv.scan_id
+                  AND t.version_id = pv.version_id
+              )
+              ${excludedRootSql}
               AND NOT EXISTS (
                 SELECT 1
                 FROM manifest_reachability mr
-                WHERE mr.scan_id = m.scan_id
+                WHERE mr.scan_id = pv.scan_id
                   AND mr.descendant_digest = m.digest
                   AND mr.min_distance > 0
               )
               ${cutoffSql}
-            GROUP BY m.version_id, m.digest, m.manifest_kind, pv.created_at
+          )
+          SELECT
+            version_id,
+            root_digest,
+            root_manifest_kind,
+            'keep-n-tagged-overflow' AS direct_target_reason,
+            'delete-root' AS selection_mode
+          FROM eligible_tagged_roots
+          ${keepSql}
+          ORDER BY root_digest
+        `;
+    const rows = this.#all<_PlanRootRow>(sql, params);
+
+    return rows.map((row) => ({
+      versionId: row.version_id,
+      digest: row.root_digest,
+      manifestKind: row.root_manifest_kind ?? undefined,
+      reason: row.direct_target_reason,
+      selectionMode: row.selection_mode
+    }));
+  }
+
+  #listDeleteTagMatchedDirectTargetRoots(
+    scanId: number,
+    deleteTags: string[],
+    excludeTags: string[],
+    keepCount?: number,
+    cutoffTimestamp?: string
+  ): DeletePlanRoot[] {
+    const selectedTagPlaceholders = deleteTags.length > 0 ? buildInClausePlaceholders(deleteTags.length) : "";
+    const excludedTagPlaceholders = excludeTags.length > 0 ? buildInClausePlaceholders(excludeTags.length) : "";
+    const excludedRootSql =
+      excludeTags.length > 0
+        ? `
+              AND NOT EXISTS (
+                SELECT 1
+                FROM tags xt
+                WHERE xt.scan_id = mt.scan_id
+                  AND xt.version_id = mt.version_id
+                  AND xt.tag IN (${excludedTagPlaceholders})
+              )
+            `
+        : "";
+    const cutoffSql = cutoffTimestamp ? "AND pv.created_at < ?" : "";
+    const keepSql = keepCount !== undefined ? "WHERE recency_rank > ?" : "";
+    const params: Array<number | string> = [scanId, ...deleteTags, ...excludeTags];
+    if (cutoffTimestamp) {
+      params.push(cutoffTimestamp);
+    }
+    params.push(...deleteTags, scanId);
+    const tailParams: Array<number> = [keepCount !== undefined ? 1 : 0];
+    if (keepCount !== undefined) {
+      tailParams.push(keepCount);
+    }
+
+    const sql = `
+          WITH matched_candidate_roots AS (
+            SELECT DISTINCT
+              mt.version_id AS version_id,
+              m.digest AS root_digest,
+              m.manifest_kind AS root_manifest_kind,
+              pv.created_at
+            FROM tags mt
+            JOIN manifests m
+              ON m.scan_id = mt.scan_id
+             AND m.version_id = mt.version_id
+            JOIN package_versions pv
+              ON pv.scan_id = mt.scan_id
+             AND pv.version_id = mt.version_id
+            WHERE mt.scan_id = ?
+              AND mt.tag IN (${selectedTagPlaceholders})
+              ${excludedRootSql}
+              ${cutoffSql}
+              AND NOT EXISTS (
+                SELECT 1
+                FROM manifest_reachability mr
+                WHERE mr.scan_id = mt.scan_id
+                  AND mr.descendant_digest = m.digest
+                  AND mr.min_distance > 0
+              )
+          ),
+          matched_roots AS (
+            SELECT
+              mcr.version_id,
+              mcr.root_digest,
+              mcr.root_manifest_kind,
+              mcr.created_at,
+              COUNT(t.tag) AS total_tag_count,
+              SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END) AS matched_tag_count
+            FROM matched_candidate_roots mcr
+            JOIN tags t
+              ON t.scan_id = ?
+             AND t.version_id = mcr.version_id
+            GROUP BY mcr.version_id, mcr.root_digest, mcr.root_manifest_kind, mcr.created_at
             HAVING matched_tag_count > 0
-               AND ${excludedTagSelect} = 0
           ),
           ranked_roots AS (
             SELECT
