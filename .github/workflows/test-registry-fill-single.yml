@@ -1,7 +1,7 @@
 # Builds:
-# - single: multi-arch manifest
-#   - single-amd64: image
-#   - single-arm64: image
+# - single: multi-arch manifest (tagged, with provenance and cosign signature)
+#   - single-amd64: image (tagged, with provenance and cosign signature)
+#   - single-arm64: image (tagged, with provenance and cosign signature)
 
 name: "Test Registry: Fill Single"
 
@@ -67,7 +67,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@0.1.11
+        uses: gh-workflow/multiarch-image-publish@18bae3b10aa88499153a3260014f74fa990c5182 # 0.2.0
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
@@ -78,6 +78,7 @@ jobs:
           annotations: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.version=single
+          publish_platform_tags: "true"
 
       - name: Print result
         run: |
