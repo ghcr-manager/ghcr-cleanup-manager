@@ -45,7 +45,8 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Define planner outputs around manifest closures and tag overlap, including direct targets, blocked manifests, and
   collateral tags.
 - ☑ Add read-only deletion-plan output that explains why versions or manifests are retained versus deletable.
-- ☐ Add tests for multi-arch images, sibling wrapper indexes, referrers, and explicit tag exclusion behavior.
+- ☑ Add tests for multi-arch images, sibling wrapper indexes, and referrers.
+- ☐ Add explicit tag exclusion planner behavior once exclusions exist in the planner inputs.
 - ☑ Separate test-registry seeding from test-registry validation runs so GHCR fixtures can be reused across sessions.
 - ☐ Extend the planner beyond `--delete-untagged` to cover tag selectors, exclusions, age filters, and keep rules.
 - ☐ Prototype registry execution against the test registry only after the plan output is stable and test-covered.
@@ -316,6 +317,13 @@ src/
   - `single` must stay fully empty
   - `complex` must keep non-empty direct target roots, zero fully deletable roots, non-empty blocked roots, and closure
     plus blocked-root coverage for every direct target root
+- Added planner repository coverage for current graph edge cases:
+  - an untagged multi-arch root expands to child image manifests plus attached in-package referrers in its deletion
+    closure
+  - sibling wrapper indexes that point at different children do not block each other just because they correspond to the
+    same human-facing image family
+- Deferred explicit tag exclusion tests until the planner accepts exclusion inputs; current `--delete-untagged` output
+  still has no exclusion path to assert.
 
 ### 2026-05-14
 
