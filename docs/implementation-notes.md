@@ -52,6 +52,7 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Add scenario-driven seeded-registry validation runs that exercise tag deletion, exclusions, and age filtering.
 - ☑ Add the first keep-rule planner slice via `--keep-n-untagged`.
 - ☑ Add the first tagged keep-rule planner slice via `--keep-n-tagged`.
+- ☑ Define combined `delete-tags` + `keep-n-tagged` semantics for shared-root cases before implementation.
 - ☐ Extend the planner beyond `--delete-untagged` to cover tag selectors, exclusions, age filters, and keep rules.
 - ☐ Prototype registry execution against the test registry only after the plan output is stable and test-covered.
 - ☐ Revisit action packaging after the live ingest path and cleanup execution path are both stable.
@@ -374,6 +375,14 @@ src/
     keep-rule-specific reason in the plan output
   - `older-than` is applied before the keep-count ranking
   - this first slice is standalone and does not yet combine keep-count scoping with `--delete-tag`
+- Added the next tagged-selector policy decision before implementation:
+  - reviewed `dataaxiom/ghcr-cleanup-action` as an input to the design, but not as a 1:1 execution model
+  - accepted the upstream-style policy that `delete-tags + keep-n-tagged` narrows the keep-count scope to matched delete
+    tags only
+  - restated that policy in set-based planner terms: exclusions first, age filter second, matched-tag subset third,
+    root-level keep ranking fourth
+  - locked the shared-root consequence that multi-tagged matched roots with remaining unmatched tags degrade to
+    `selectionMode = "untag-only"` rather than `delete-root`
 - Added scenario-driven validation coverage for the seeded complex registry:
   - `complex-tag-age-window` derives a whole-minute `older-than` cutoff from the scanned DB so `alpha` and `beta` remain
     eligible while `gamma` stays too new

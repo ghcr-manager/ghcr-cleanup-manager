@@ -99,6 +99,8 @@ Notes:
 - one row per selected tag
 - this layer should be explicit even when later planning deletes a whole root
 - digest-literal selectors may bypass tags and go directly to the next layer
+- when `delete-tags` is combined with `keep-n-tagged`, this layer still records the matched tag intent before keep-rule
+  retention removes some roots from actionable selection
 
 ### 3. Direct target roots
 
@@ -131,6 +133,8 @@ Notes:
 - this is the first canonical "candidate root" set
 - roots protected by exclusions or retained by keep rules must not appear here as `delete-root`
 - a multi-tagged root with only some tags selected should appear here as `untag-only`, not `delete-root`
+- in combined `delete-tags` + `keep-n-tagged` mode, the keep count is applied once per matched root, not once per
+  matched tag
 
 ### 4. Closure manifests
 

@@ -105,6 +105,57 @@ These are the behaviors this project should plan for first.
 - When combined with `delete-tags`, it only applies within the matched tagged subset.
 - The planner must make clear which roots were retained because of this keep rule.
 
+### Combined `delete-tags` + `keep-n-tagged`
+
+- This combination is accepted as one tagged-selector family, not as two unrelated cleanup requests.
+- The planning scope is:
+  - start from eligible tagged roots after applying `exclude-tags` and `older-than`
+  - derive `direct_target_tags` from `delete-tags`
+  - reduce the keep-count ranking scope to only roots touched by those matched tags
+- The keep count is applied at root granularity, not at individual-tag granularity.
+- If multiple matched tags resolve to the same root, that root is ranked once.
+- Roots retained by the keep rule must not appear in `direct_target_roots`.
+- Roots outside the matched `delete-tags` subset are unaffected by this combined mode.
+
+Shared-root consequences:
+
+- If a root carries both matched and unmatched tags and survives the keep rule, it remains untouched.
+- If a root carries both matched and unmatched tags and falls outside the keep window, it becomes
+  `selection_mode = "untag-only"`, not `delete-root`.
+- A root only becomes `delete-root` when:
+  - it is in the matched `delete-tags` subset
+  - it is not retained by `keep-n-tagged`
+  - every tag on that root is within the matched delete scope
+- `exclude-tags` still protects the whole root before any keep/delete ranking happens.
+
+Examples using the current `complex` fixture shape:
+
+- Example: `--delete-tag gamma --keep-n-tagged 0`
+  - the matched subset consists only of roots carrying `gamma`
+  - roots carrying `gamma` plus additional non-matched tags become `untag-only`
+  - a `gamma`-only root may become `delete-root`
+- Example: `--delete-tag gamma --keep-n-tagged 1`
+  - among roots touched by `gamma`, the newest root is retained
+  - older matched roots are selected
+  - a selected root with additional non-`gamma` tags remains `untag-only`
+- Example: `--delete-tag beta --delete-tag gamma --keep-n-tagged 1`
+  - the keep ranking is computed over the union of roots touched by `beta` or `gamma`
+  - a shared root tagged with both `beta-amd64` and `gamma-amd64` counts once in that ranking
+  - if retained, neither of those matched tags is acted on in that plan
+  - if not retained, the root is still only `untag-only` when unmatched tags remain on it
+- Example: `--delete-tag beta --delete-tag gamma --exclude-tag beta-arm64 --keep-n-tagged 1`
+  - any root carrying `beta-arm64` is removed before ranking
+  - the keep ranking and delete selection continue only on the remaining matched subset
+
+Planner output implications:
+
+- `direct_target_tags` should continue to represent matched delete intent, even when some of those matched tags later
+  disappear from actionable roots because a whole root was retained by `keep-n-tagged`.
+- `direct_target_roots` are the actionable result after combining delete-match, exclusion, age filtering, and keep
+  ranking.
+- This project keeps the combined policy explanation-first and set-based; it should not depend on iterative mutation
+  order to be understandable.
+
 ### `delete-untagged`
 
 - Selects untagged roots from the eligible planning set.
