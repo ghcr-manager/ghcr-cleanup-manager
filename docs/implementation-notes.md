@@ -10,6 +10,7 @@ This section is the canonical place for session-to-session continuity.
 
 ### Completed Checkpoints
 
+- ☑ `5c4b0c9` Add cleanup planning roadmap.
 - ☑ `6899876` Add GHCR manager analysis and roadmap.
 - ☑ `bc651cb` Add initial TypeScript project scaffold.
 - ☑ `2483a75` Replace Python linting with Node-native tooling.
