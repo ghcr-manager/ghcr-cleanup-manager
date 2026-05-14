@@ -89,6 +89,12 @@ jobs:
             | tee "$plan_path"
           echo "plan_path=$plan_path" >> "$GITHUB_OUTPUT"
 
+      - name: Assert validation expectations
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/assert-test-registry-plan.mjs "${{ inputs.fixture }}" "${{ steps.plan.outputs.plan_path }}"
+
       - name: Upload plan artifact
         if: ${{ inputs.upload_plan_artifact }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -72,6 +72,7 @@ This section is the canonical place for session-to-session continuity.
   concurrency constant for easy tuning.
 - ☑ Add bounded retry handling for GitHub/GHCR requests; after the retry budget is exhausted, the scan fails immediately
   with context-rich errors.
+- ☑ Add automated assertions for seeded test-registry validation runs so fixture drift fails the validation workflow.
 - ☐ Expand planner output so it explains why versions are protected or deletable.
 - ☑ Add manifest kind classification so image indexes, image manifests, signatures, and attestations are queryable
   without ad-hoc JSON inspection.
@@ -254,6 +255,7 @@ src/
   - selects one fixture by name (`single` or `complex`)
   - scans the seeded package through the local action
   - runs `ghcr-manager plan --delete-untagged` against the produced SQLite DB
+  - asserts fixture-specific expectations against the produced plan JSON before the run succeeds
   - can upload both the scan DB and the plan JSON as artifacts
 - Added the first read-only planner implementation for `plan --delete-untagged`.
 - Added scan-scoped planner base views:
@@ -308,6 +310,12 @@ src/
   transport failures and selected transient HTTP statuses before failing the scan.
 - Removed the public `--source` / `--snapshot` scan mode split; the app now exposes only the real GitHub/GHCR scan path
   while keeping fixture loading in test-only helpers.
+- Added a workflow-side validation script so the repeated validation workflow now fails automatically when the seeded
+  `single` or `complex` fixture plan shape changes unexpectedly.
+- Locked the current validation expectations to the manually verified `--delete-untagged` behavior:
+  - `single` must stay fully empty
+  - `complex` must keep non-empty direct target roots, zero fully deletable roots, non-empty blocked roots, and closure
+    plus blocked-root coverage for every direct target root
 
 ### 2026-05-14
 
