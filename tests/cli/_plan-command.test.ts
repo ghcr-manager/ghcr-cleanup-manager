@@ -10,7 +10,7 @@ import { importFileScan } from "../helpers/index.js";
 test("handlePlan requires the delete-untagged selector", async () => {
   await assert.rejects(
     () => handlePlan(["--db", "scan.sqlite", "--owner", "acme", "--package", "example"]),
-    /missing required cleanup selector: --delete-untagged, --delete-tag, or --keep-n-untagged/
+    /missing required cleanup selector: --delete-untagged, --delete-tag, --keep-n-tagged, or --keep-n-untagged/
   );
 });
 
@@ -28,7 +28,7 @@ test("handlePlan rejects mixed selector families", async () => {
         "--delete-tag",
         "latest"
       ]),
-    /exactly one selector family: --delete-untagged, --delete-tag, or --keep-n-untagged/
+    /exactly one selector family: --delete-untagged, --delete-tag, --keep-n-tagged, or --keep-n-untagged/
   );
 });
 
@@ -68,6 +68,32 @@ test("handlePlan rejects repeated keep-n-untagged options", async () => {
         "2"
       ]),
     /--keep-n-untagged may only be provided once/
+  );
+});
+
+test("handlePlan rejects repeated keep-n-tagged options", async () => {
+  await assert.rejects(
+    () =>
+      handlePlan([
+        "--db",
+        "scan.sqlite",
+        "--owner",
+        "acme",
+        "--package",
+        "example",
+        "--keep-n-tagged",
+        "1",
+        "--keep-n-tagged",
+        "2"
+      ]),
+    /--keep-n-tagged may only be provided once/
+  );
+});
+
+test("handlePlan rejects invalid keep-n-tagged values", async () => {
+  await assert.rejects(
+    () => handlePlan(["--db", "scan.sqlite", "--owner", "acme", "--package", "example", "--keep-n-tagged", "-1"]),
+    /--keep-n-tagged must be a non-negative integer/
   );
 });
 
@@ -206,6 +232,57 @@ test("handlePlan prints a keep-n-untagged plan for the selected package", async 
       {
         digest: "sha256:untagged-old",
         reason: "keep-n-untagged-overflow"
+      }
+    ]
+  );
+});
+
+test("handlePlan prints a keep-n-tagged plan for the selected package", async () => {
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const databasePath = join(tempDirectory, "scan.sqlite");
+  const database = openDatabase(databasePath);
+  const writer = new ScanWriter(database);
+  await importFileScan("tests/fixtures/sample-package.json", writer);
+  database.close();
+
+  const originalLog = console.log;
+  const writes: string[] = [];
+  console.log = (message?: unknown) => {
+    writes.push(String(message));
+  };
+
+  try {
+    assert.equal(
+      await handlePlan(["--db", databasePath, "--owner", "acme", "--package", "example", "--keep-n-tagged", "1"]),
+      0
+    );
+  } finally {
+    console.log = originalLog;
+    rmSync(tempDirectory, { recursive: true, force: true });
+  }
+
+  assert.equal(writes.length, 1);
+  const plan = JSON.parse(writes[0] as string) as {
+    plannerInputs: {
+      deleteUntagged: boolean;
+      deleteTags: string[];
+      excludeTags: string[];
+      keepNTagged?: number;
+    };
+    directTargetTags: string[];
+    fullyDeletableRoots: Array<{ digest: string; reason: string }>;
+  };
+  assert.equal(plan.plannerInputs.deleteUntagged, false);
+  assert.deepEqual(plan.plannerInputs.deleteTags, []);
+  assert.deepEqual(plan.plannerInputs.excludeTags, []);
+  assert.equal(plan.plannerInputs.keepNTagged, 1);
+  assert.deepEqual(plan.directTargetTags, []);
+  assert.deepEqual(
+    plan.fullyDeletableRoots.map((root) => ({ digest: root.digest, reason: root.reason })),
+    [
+      {
+        digest: "sha256:index-old",
+        reason: "keep-n-tagged-overflow"
       }
     ]
   );

@@ -51,6 +51,7 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Separate test-registry seeding from test-registry validation runs so GHCR fixtures can be reused across sessions.
 - ☑ Add scenario-driven seeded-registry validation runs that exercise tag deletion, exclusions, and age filtering.
 - ☑ Add the first keep-rule planner slice via `--keep-n-untagged`.
+- ☑ Add the first tagged keep-rule planner slice via `--keep-n-tagged`.
 - ☐ Extend the planner beyond `--delete-untagged` to cover tag selectors, exclusions, age filters, and keep rules.
 - ☐ Prototype registry execution against the test registry only after the plan output is stable and test-covered.
 - ☐ Revisit action packaging after the live ingest path and cleanup execution path are both stable.
@@ -113,6 +114,8 @@ This section is the canonical place for session-to-session continuity.
 - Current CLI shape:
   - `scan` imports live GitHub Packages + GHCR state into SQLite
   - `plan --delete-untagged` emits a dry-run delete plan for the latest completed scan of one owner/package
+  - `plan --keep-n-tagged <count>` keeps the newest eligible tagged roots and emits a dry-run delete plan for the older
+    overflow tagged roots of one owner/package
   - `plan --keep-n-untagged <count>` keeps the newest eligible untagged roots and emits a dry-run delete plan for the
     older overflow roots of one owner/package
   - `plan --delete-tag <tag> [--delete-tag <tag> ...] [--exclude-tag <tag> ...]` emits a dry-run exact-match tag
@@ -285,6 +288,7 @@ src/
 - Current planner behavior is intentionally narrow:
   - supported selector families are currently:
     - `--delete-untagged`
+    - `--keep-n-tagged <count>`
     - `--keep-n-untagged <count>`
     - exact-match repeated `--delete-tag` with optional repeated `--exclude-tag`
   - optional `--older-than <interval>` filters candidate roots by `package_versions.created_at`
@@ -362,6 +366,14 @@ src/
     keep-rule-specific reason in the plan output
   - `older-than` is applied before the keep-count ranking
   - the CLI still accepts exactly one selector family per invocation
+- Added the first tagged keep-rule planner slice:
+  - `--keep-n-tagged <count>` keeps the newest eligible tagged roots by package-version `created_at`
+  - older eligible tagged overflow roots become `directTargetRoots` with `reason = "keep-n-tagged-overflow"` and
+    `selectionMode = "delete-root"`
+  - `--keep-n-tagged 0` is supported and behaves like "select all eligible tagged roots" while still reporting the
+    keep-rule-specific reason in the plan output
+  - `older-than` is applied before the keep-count ranking
+  - this first slice is standalone and does not yet combine keep-count scoping with `--delete-tag`
 - Added scenario-driven validation coverage for the seeded complex registry:
   - `complex-tag-age-window` derives a whole-minute `older-than` cutoff from the scanned DB so `alpha` and `beta` remain
     eligible while `gamma` stays too new

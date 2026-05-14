@@ -76,6 +76,7 @@ export interface DeletePlan {
     deleteUntagged: boolean;
     deleteTags: string[];
     excludeTags: string[];
+    keepNTagged?: number;
     keepNUntagged?: number;
     olderThan?: string;
     cutoffTimestamp?: string;
@@ -103,6 +104,10 @@ export class PlannerRepository {
     return this.getKeepNUntaggedPlanWithCutoff(owner, packageName, keepCount);
   }
 
+  getKeepNTaggedPlan(owner: string, packageName: string, keepCount: number): DeletePlan {
+    return this.getKeepNTaggedPlanWithCutoff(owner, packageName, keepCount);
+  }
+
   getDeleteUntaggedPlanWithCutoff(
     owner: string,
     packageName: string,
@@ -126,6 +131,7 @@ export class PlannerRepository {
         deleteUntagged: true,
         deleteTags: [],
         excludeTags: [],
+        keepNTagged: undefined,
         keepNUntagged: undefined,
         olderThan: options?.olderThan,
         cutoffTimestamp: options?.cutoffTimestamp
@@ -167,7 +173,46 @@ export class PlannerRepository {
         deleteUntagged: false,
         deleteTags: [],
         excludeTags: [],
+        keepNTagged: undefined,
         keepNUntagged: keepCount,
+        olderThan: options?.olderThan,
+        cutoffTimestamp: options?.cutoffTimestamp
+      },
+      directTargetTags: [],
+      directTargetRoots,
+      closureManifests: this.#listClosureManifests(scan.scan_id, deleteRootCandidates),
+      blockedRoots,
+      fullyDeletableRoots,
+      collateralTags: []
+    };
+  }
+
+  getKeepNTaggedPlanWithCutoff(
+    owner: string,
+    packageName: string,
+    keepCount: number,
+    options?: {
+      olderThan?: string;
+      cutoffTimestamp?: string;
+    }
+  ): DeletePlan {
+    const scan = this.#getLatestCompletedScan(owner, packageName);
+    const directTargetRoots = this.#listKeepNTaggedDirectTargetRoots(scan.scan_id, keepCount, options?.cutoffTimestamp);
+    const deleteRootCandidates = this.#listDeleteRootCandidates(directTargetRoots);
+    const blockedRoots = this.#listBlockedRoots(scan.scan_id, deleteRootCandidates);
+    const blockedVersionIds = new Set(blockedRoots.map((root) => root.blockedVersionId));
+    const fullyDeletableRoots = deleteRootCandidates.filter((root) => !blockedVersionIds.has(root.versionId));
+
+    return {
+      owner: scan.owner,
+      packageName: scan.package_name,
+      scanCompletedAt: scan.scan_completed_at,
+      plannerInputs: {
+        deleteUntagged: false,
+        deleteTags: [],
+        excludeTags: [],
+        keepNTagged: keepCount,
+        keepNUntagged: undefined,
         olderThan: options?.olderThan,
         cutoffTimestamp: options?.cutoffTimestamp
       },
@@ -220,6 +265,7 @@ export class PlannerRepository {
         deleteUntagged: false,
         deleteTags,
         excludeTags,
+        keepNTagged: undefined,
         keepNUntagged: undefined,
         olderThan: options?.olderThan,
         cutoffTimestamp: options?.cutoffTimestamp
@@ -314,6 +360,50 @@ export class PlannerRepository {
             'keep-n-untagged-overflow' AS direct_target_reason,
             'delete-root' AS selection_mode
           FROM eligible_untagged_roots
+          WHERE recency_rank > ?
+          ORDER BY root_digest
+        `
+      )
+      .all(...[scanId, ...(cutoffTimestamp ? [cutoffTimestamp] : []), keepCount]) as _PlanRootRow[];
+
+    return rows.map((row) => ({
+      versionId: row.version_id,
+      digest: row.root_digest,
+      manifestKind: row.root_manifest_kind ?? undefined,
+      reason: row.direct_target_reason,
+      selectionMode: row.selection_mode
+    }));
+  }
+
+  #listKeepNTaggedDirectTargetRoots(scanId: number, keepCount: number, cutoffTimestamp?: string): DeletePlanRoot[] {
+    const cutoffSql = cutoffTimestamp ? "AND pv.created_at < ?" : "";
+    const rows = this.#database
+      .prepare(
+        `
+          WITH eligible_tagged_roots AS (
+            SELECT
+              rm.root_version_id AS version_id,
+              rm.root_digest,
+              rm.root_manifest_kind,
+              ROW_NUMBER() OVER (
+                ORDER BY pv.created_at DESC, rm.root_version_id DESC, rm.root_digest DESC
+              ) AS recency_rank
+            FROM v_scan_root_manifests rm
+            JOIN package_versions pv
+              ON pv.scan_id = rm.scan_id
+             AND pv.version_id = rm.root_version_id
+            WHERE rm.scan_id = ?
+              AND rm.is_tagged = 1
+              AND rm.has_ancestor = 0
+              ${cutoffSql}
+          )
+          SELECT
+            version_id,
+            root_digest,
+            root_manifest_kind,
+            'keep-n-tagged-overflow' AS direct_target_reason,
+            'delete-root' AS selection_mode
+          FROM eligible_tagged_roots
           WHERE recency_rank > ?
           ORDER BY root_digest
         `
