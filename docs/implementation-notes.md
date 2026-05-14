@@ -59,6 +59,12 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Add manifest kind classification so image indexes, image manifests, signatures, and attestations are queryable
   without ad-hoc JSON inspection.
 - ☐ Add tests for multi-arch images, referrers, and explicit tag exclusion behavior.
+- ☐ Document and codify the cleanup semantics for tags that point at sibling wrapper indexes rather than descendant
+  image manifests.
+- ☐ Define deletion planning around manifest closures and tag overlap, not around tag-name expectations.
+- ☐ Add queryable deletion-plan outputs that separate direct target tags, closure manifests, blocked manifests, and
+  collateral tags.
+- ☐ Prototype registry execution against the test registry only after the plan output is stable and test-covered.
 - ☐ Revisit action packaging after the live ingest path exists.
 
 ### Current State Summary
@@ -218,6 +224,17 @@ src/
 - GHCR manifest fetches and GitHub package-version page fetches both use bounded parallelism; the tuning constants now
   live together near the code root in `src/tuning/index.ts`.
 - GitHub package pages, GHCR manifest fetches, and GHCR token fetches now retry a small bounded number of times for
+
+### 2026-05-14
+
+- Investigated the `single` / `single-amd64` / `single-arm64` test-registry shape using
+  `artifacts/gh-workflow__ghcr-manager-test--single.sqlite`.
+- Confirmed that `single-amd64` and `single-arm64` are tagged on separate per-arch `image_index` wrapper manifests, not
+  on the child `image_manifest` digests referenced by `single`.
+- Confirmed that `v_manifests_related_manifests` is behaving consistently with current graph semantics: it follows
+  manifest reachability, so sibling wrapper indexes do not appear when starting from `single`.
+- Noted the cleanup-design implication: tag deletion planning must operate on manifest closures plus overlapping tag
+  roots, because human expectations about "delete downward" do not align with the registry's wrapper-manifest layout.
   transport failures and selected transient HTTP statuses before failing the scan.
 - Removed the public `--source` / `--snapshot` scan mode split; the app now exposes only the real GitHub/GHCR scan path
   while keeping fixture loading in test-only helpers.
@@ -231,6 +248,8 @@ src/
 - Kept platform lookup out of the manifest kind classification scope; platform remains descriptor-context data.
 - Updated the related-manifest SQL views to expose `manifest_kind` instead of `media_type` where the column was mainly
   being used as a human-facing manifest classification hint.
+- Added `v_tags_delete_manifests` for the primary manifest deletion set and `v_tags_delete_affected_tags` for secondary
+  tags whose tagged manifests contain that deletion set.
 
 ## Next Increment
 
