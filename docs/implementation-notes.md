@@ -10,6 +10,7 @@ This section is the canonical place for session-to-session continuity.
 
 ### Completed Checkpoints
 
+- ☑ `ed36f7c` Add delete-untagged planner command.
 - ☑ `fe6fd7b` Add planner data model note.
 - ☑ `adde55e` Add cleanup semantics note.
 - ☑ `5c4b0c9` Add cleanup planning roadmap.
