@@ -360,8 +360,8 @@ src/
   - `.github/actions/test-scenario-seed` pushes minimal `FROM scratch` single-arch images with `provenance=false` for
     the first scenario packages, avoiding the signature/provenance-heavy `single` / `complex` fixtures
   - `.github/workflows/test-scenario-executor.yml` clears the scenario package, seeds it, runs either `ghcr-manager` or
-    `dataaxiom/ghcr-cleanup-action`, rescans into a separate `after.sqlite`, and uploads both DBs plus the scenario
-    metadata/summary files
+    `dataaxiom/ghcr-cleanup-action`, appends the post-execution scan into the same `scan-history.sqlite`, and uploads
+    that DB plus the scenario metadata/summary files
   - initial scenarios are `delete-untagged-noop` and `tagged-fully-deletable`
   - current scope is observational: compare before/after DBs locally rather than asserting parity between the two
     executors

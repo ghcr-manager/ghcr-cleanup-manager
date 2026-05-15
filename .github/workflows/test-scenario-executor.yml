@@ -54,17 +54,18 @@ jobs:
           mkdir -p "$work_dir"
           resolution_path="$work_dir/scenario.json"
           node tools/resolve-test-scenario.mjs "$SCENARIO" "$EXECUTOR" "$REPOSITORY_NAME" > "$resolution_path"
-          before_db_path="$work_dir/before.sqlite"
-          after_db_path="$work_dir/after.sqlite"
           summary_path="$work_dir/executor-summary.txt"
+          package_name="$(jq -r '.packageName' "$resolution_path")"
+          db_file="${{ github.repository_owner }}__${package_name}__${EXECUTOR}__scan-history.sqlite"
+          db_path="$work_dir/$db_file"
           echo "work_dir=$work_dir" >> "$GITHUB_OUTPUT"
           echo "resolution_path=$resolution_path" >> "$GITHUB_OUTPUT"
-          echo "before_db_path=$before_db_path" >> "$GITHUB_OUTPUT"
-          echo "after_db_path=$after_db_path" >> "$GITHUB_OUTPUT"
+          echo "db_path=$db_path" >> "$GITHUB_OUTPUT"
+          echo "db_file=$db_file" >> "$GITHUB_OUTPUT"
           echo "summary_path=$summary_path" >> "$GITHUB_OUTPUT"
-          echo "package_name=$(jq -r '.packageName' "$resolution_path")" >> "$GITHUB_OUTPUT"
+          echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
           echo "seed_strategy=$(jq -r '.seedStrategy' "$resolution_path")" >> "$GITHUB_OUTPUT"
-          echo "image_ref=ghcr.io/${{ github.repository_owner }}/$(jq -r '.packageName' "$resolution_path")" >> "$GITHUB_OUTPUT"
+          echo "image_ref=ghcr.io/${{ github.repository_owner }}/${package_name}" >> "$GITHUB_OUTPUT"
 
       - name: Clear scenario package
         shell: bash
@@ -88,14 +89,14 @@ jobs:
           github-token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
           package: ${{ steps.scenario.outputs.package_name }}
-          db-path: ${{ steps.scenario.outputs.before_db_path }}
+          db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: "false"
 
       - name: Execute with ghcr-manager
         if: ${{ inputs.executor == 'ghcr-manager' }}
         shell: bash
         env:
-          DB_PATH: ${{ steps.scenario.outputs.before_db_path }}
+          DB_PATH: ${{ steps.scenario.outputs.db_path }}
           OWNER: ${{ github.repository_owner }}
           PACKAGE: ${{ steps.scenario.outputs.package_name }}
           RESOLUTION_PATH: ${{ steps.scenario.outputs.resolution_path }}
@@ -150,7 +151,7 @@ jobs:
           github-token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
           package: ${{ steps.scenario.outputs.package_name }}
-          db-path: ${{ steps.scenario.outputs.after_db_path }}
+          db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: "false"
 
       - name: Upload scenario artifacts
@@ -158,8 +159,7 @@ jobs:
         with:
           name: ${{ inputs.scenario }}__${{ inputs.executor }}
           path: |
-            ${{ steps.scenario.outputs.before_db_path }}
-            ${{ steps.scenario.outputs.after_db_path }}
+            ${{ steps.scenario.outputs.db_path }}
             ${{ steps.scenario.outputs.summary_path }}
             ${{ steps.scenario.outputs.resolution_path }}
           retention-days:
