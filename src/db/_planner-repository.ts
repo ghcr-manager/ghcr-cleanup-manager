@@ -268,6 +268,7 @@ export class PlannerRepository {
     deleteTags: string[],
     excludeTags: string[],
     options?: {
+      deleteTagsRequested?: boolean;
       keepNTagged?: number;
       olderThan?: string;
       cutoffTimestamp?: string;
@@ -282,6 +283,7 @@ export class PlannerRepository {
     );
     const directTargetRoots = this.#listTaggedDirectTargetRoots(scan.scan_id, {
       deleteTags,
+      deleteTagsRequested: options?.deleteTagsRequested ?? true,
       excludeTags,
       keepCount: options?.keepNTagged,
       cutoffTimestamp: options?.cutoffTimestamp
@@ -636,11 +638,16 @@ export class PlannerRepository {
     scanId: number,
     options: {
       deleteTags: string[];
+      deleteTagsRequested?: boolean;
       excludeTags: string[];
       keepCount?: number;
       cutoffTimestamp?: string;
     }
   ): DeletePlanRoot[] {
+    if (options.deleteTagsRequested && options.deleteTags.length === 0) {
+      return [];
+    }
+
     if (options.deleteTags.length === 0) {
       return this.#listKeepNTaggedDirectTargetRoots(
         scanId,

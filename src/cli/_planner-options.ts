@@ -7,6 +7,7 @@ export interface PlanCommandInputs {
   owner: string;
   packageName: string;
   deleteTags: string[];
+  deleteTagsRequested: boolean;
   excludeTags: string[];
   deleteUntagged: boolean;
   useRegex: boolean;
@@ -65,6 +66,7 @@ export function resolvePlanCommandInputs(args: string[]): PlanCommandInputs {
     owner,
     packageName,
     deleteTags,
+    deleteTagsRequested: deleteTags.length > 0,
     excludeTags,
     deleteUntagged,
     useRegex,
@@ -90,12 +92,20 @@ export function loadDeletePlan(repository: PlannerRepository, inputs: PlanComman
     });
   }
 
+  if (!inputs.deleteTagsRequested && inputs.keepNTagged !== undefined) {
+    return repository.getKeepNTaggedPlanWithCutoff(inputs.owner, inputs.packageName, inputs.keepNTagged, [], {
+      olderThan: inputs.olderThan,
+      cutoffTimestamp: inputs.cutoffTimestamp
+    });
+  }
+
   return repository.getDeleteTagsPlanWithCutoff(
     inputs.owner,
     inputs.packageName,
     inputs.deleteTags,
     inputs.excludeTags,
     {
+      deleteTagsRequested: inputs.deleteTagsRequested,
       keepNTagged: inputs.keepNTagged,
       olderThan: inputs.olderThan,
       cutoffTimestamp: inputs.cutoffTimestamp

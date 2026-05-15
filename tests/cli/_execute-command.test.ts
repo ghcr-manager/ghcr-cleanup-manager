@@ -232,3 +232,57 @@ test("handleExecute applies untag-only roots via a temporary manifest clone", as
     }
   ]);
 });
+
+test("handleExecute treats unmatched regex delete-tag selectors as a no-op", async () => {
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const databasePath = join(tempDirectory, "scan.sqlite");
+  const database = openDatabase(databasePath);
+  const writer = new ScanWriter(database);
+  await importFileScan("tests/fixtures/sample-package.json", writer);
+  database.close();
+
+  const fetchCalls: Array<{ url: string; method?: string }> = [];
+  const originalFetch = globalThis.fetch;
+  const originalLog = console.log;
+  const writes: string[] = [];
+  globalThis.fetch = async (input, init) => {
+    fetchCalls.push({ url: String(input), method: init?.method });
+    throw new Error(`unexpected fetch: ${String(input)}`);
+  };
+  console.log = (message?: unknown) => {
+    writes.push(String(message));
+  };
+
+  try {
+    assert.equal(
+      await handleExecute([
+        "--db",
+        databasePath,
+        "--owner",
+        "acme",
+        "--package",
+        "example",
+        "--token",
+        "token",
+        "--delete-tag",
+        "^does-not-match$",
+        "--use-regex"
+      ]),
+      0
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    console.log = originalLog;
+    rmSync(tempDirectory, { recursive: true, force: true });
+  }
+
+  assert.deepEqual(fetchCalls, []);
+  const summary = JSON.parse(writes[0] as string) as {
+    deletedPackageVersions: Array<unknown>;
+    untaggedTags: Array<unknown>;
+    blockedRoots: Array<unknown>;
+  };
+  assert.deepEqual(summary.deletedPackageVersions, []);
+  assert.deepEqual(summary.untaggedTags, []);
+  assert.deepEqual(summary.blockedRoots, []);
+});

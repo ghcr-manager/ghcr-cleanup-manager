@@ -346,6 +346,46 @@ test("handlePlan expands regex selectors before planning when use-regex is set",
   assert.deepEqual(plan.plannerInputs.excludeTags, ["keep-me"]);
 });
 
+test("handlePlan treats unmatched regex delete-tag selectors as a no-op", async () => {
+  const originalLog = console.log;
+  const writes: string[] = [];
+  console.log = (message?: unknown) => {
+    writes.push(String(message));
+  };
+
+  try {
+    await _withSampleDatabase(async (databasePath) => {
+      assert.equal(
+        await handlePlan([
+          "--db",
+          databasePath,
+          "--owner",
+          "acme",
+          "--package",
+          "example",
+          "--delete-tag",
+          "^does-not-match$",
+          "--use-regex"
+        ]),
+        0
+      );
+    });
+  } finally {
+    console.log = originalLog;
+  }
+
+  const plan = JSON.parse(writes[0] as string) as {
+    plannerInputs: { deleteTags: string[] };
+    directTargetTags: string[];
+    directTargetRoots: Array<unknown>;
+    fullyDeletableRoots: Array<unknown>;
+  };
+  assert.deepEqual(plan.plannerInputs.deleteTags, []);
+  assert.deepEqual(plan.directTargetTags, []);
+  assert.deepEqual(plan.directTargetRoots, []);
+  assert.deepEqual(plan.fullyDeletableRoots, []);
+});
+
 test("handlePlan prints a keep-n-untagged plan for the selected package", async () => {
   const originalLog = console.log;
   const writes: string[] = [];

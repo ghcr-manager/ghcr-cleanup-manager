@@ -17,6 +17,7 @@ test("resolvePlanCommandInputs parses delete-untagged inputs", () => {
   assert.equal(inputs.owner, "acme");
   assert.equal(inputs.packageName, "example");
   assert.equal(inputs.deleteUntagged, true);
+  assert.equal(inputs.deleteTagsRequested, false);
 });
 
 test("resolvePlanCommandInputs rejects exclude-tag for keep-n-untagged", () => {
@@ -52,5 +53,6 @@ test("resolvePlanCommandInputs parses use-regex for tagged selectors", () => {
   ]);
 
   assert.equal(inputs.useRegex, true);
+  assert.equal(inputs.deleteTagsRequested, true);
   assert.deepEqual(inputs.deleteTags, ["^latest$"]);
 });
