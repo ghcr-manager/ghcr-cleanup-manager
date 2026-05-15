@@ -20,6 +20,10 @@ inputs:
     description: Whether to upload the scan database as a workflow run artifact
     required: false
     default: "false"
+  db-artifact-encryption-passphrase:
+    description: Optional passphrase used to encrypt uploaded DB artifacts; required for non-public package scans
+    required: false
+    default: ""
   db-artifact-retention-days:
     description: Optional retention days override for uploaded database artifacts
     required: false
@@ -79,20 +83,45 @@ runs:
           --token "${{ inputs.github-token }}" \
           --github-output "$GITHUB_OUTPUT"
 
-    - name: Refuse unprotected private DB artifact upload
-      if: ${{ inputs.upload-db-artifact == 'true' && steps.run-scan.outputs.is_public != 'true' }}
+    - name: Prepare DB artifact upload
+      if: ${{ inputs.upload-db-artifact == 'true' }}
+      id: prepare-upload
       shell: bash
+      env:
+        DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db-artifact-encryption-passphrase }}
       run: |
         set -euo pipefail
-        echo "Refusing to upload unencrypted DB artifact for a non-public package scan." >&2
-        echo "Encryption support is not implemented yet; disable upload-db-artifact for non-public packages." >&2
-        exit 1
+        artifact_path="${{ steps.prepare-db.outputs.db_path }}"
+        artifact_file="${{ steps.prepare-db.outputs.db_file }}"
+
+        if [[ "${{ steps.run-scan.outputs.is_public }}" != "true" && -z "$DB_ARTIFACT_ENCRYPTION_PASSPHRASE" ]]; then
+          echo "Refusing to upload DB artifact for a non-public package scan without encryption." >&2
+          echo "Provide db-artifact-encryption-passphrase to encrypt the uploaded artifact." >&2
+          exit 1
+        fi
+
+        if [[ -n "$DB_ARTIFACT_ENCRYPTION_PASSPHRASE" ]]; then
+          if ! command -v openssl >/dev/null 2>&1; then
+            echo "openssl is required to encrypt DB artifacts but was not found on PATH." >&2
+            exit 1
+          fi
+
+          artifact_path="${{ steps.prepare-db.outputs.db_path }}.enc"
+          artifact_file="${{ steps.prepare-db.outputs.db_file }}.enc"
+          openssl enc -aes-256-cbc -pbkdf2 -salt \
+            -in "${{ steps.prepare-db.outputs.db_path }}" \
+            -out "$artifact_path" \
+            -pass env:DB_ARTIFACT_ENCRYPTION_PASSPHRASE
+        fi
+
+        echo "artifact_path=$artifact_path" >> "$GITHUB_OUTPUT"
+        echo "artifact_file=$artifact_file" >> "$GITHUB_OUTPUT"
 
     - name: Upload DB artifact
       if: ${{ inputs.upload-db-artifact == 'true' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: ${{ steps.prepare-db.outputs.db_file }}
-        path: ${{ steps.prepare-db.outputs.db_path }}
+        name: ${{ steps.prepare-upload.outputs.artifact_file }}
+        path: ${{ steps.prepare-upload.outputs.artifact_path }}
         retention-days:
           ${{ inputs.db-artifact-retention-days != '' && inputs.db-artifact-retention-days || github.retention_days }}
