@@ -1,0 +1,45 @@
+name: Test Scenario Executor Matrix
+run-name: Test Scenario Executor Matrix
+
+"on":
+  workflow_dispatch:
+    inputs:
+      artifact_retention_days:
+        description: Optional artifact retention-days override.
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
+jobs:
+  execute:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scenario: delete-untagged-noop
+            executor: ghcr-manager
+          - scenario: delete-untagged-noop
+            executor: ghcr-cleanup-action
+          - scenario: tagged-fully-deletable
+            executor: ghcr-manager
+          - scenario: tagged-fully-deletable
+            executor: ghcr-cleanup-action
+          - scenario: untag-only-single-shared-root
+            executor: ghcr-manager
+          - scenario: untag-only-single-shared-root
+            executor: ghcr-cleanup-action
+          - scenario: untag-only-multiarch-shared-root
+            executor: ghcr-manager
+          - scenario: untag-only-multiarch-shared-root
+            executor: ghcr-cleanup-action
+    uses: ./.github/workflows/test-scenario-executor.yml
+    with:
+      scenario: ${{ matrix.scenario }}
+      executor: ${{ matrix.executor }}
+      artifact_retention_days: ${{ inputs.artifact_retention_days }}
+      package_name_suffix: ${{ matrix.executor }}

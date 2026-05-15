@@ -164,6 +164,9 @@ This section is the canonical place for session-to-session continuity.
     uploads the final rescan DB artifact
   - `test-scenario-executor.yml` clears and reseeds a dedicated package per scenario, runs either `ghcr-manager` or
     `dataaxiom/ghcr-cleanup-action`, and uploads one owner/package/executor scan-history DB with both scans
+  - `test-scenario-executor-matrix.yml` fans out all scenario/executor combinations in parallel by calling the reusable
+    scenario workflow with executor-isolated package-name suffixes, so same-scenario runs do not race on one GHCR
+    package
   - current scenario coverage includes:
     - `delete-untagged-noop`
     - `tagged-fully-deletable`

@@ -27,6 +27,27 @@ run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }
         required: false
         default: ""
         type: string
+      package_name_suffix:
+        description: Optional package-name suffix for isolated parallel runs.
+        required: false
+        default: ""
+        type: string
+  workflow_call:
+    inputs:
+      scenario:
+        required: true
+        type: string
+      executor:
+        required: true
+        type: string
+      artifact_retention_days:
+        required: false
+        default: ""
+        type: string
+      package_name_suffix:
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -47,6 +68,7 @@ jobs:
         shell: bash
         env:
           EXECUTOR: ${{ inputs.executor }}
+          PACKAGE_NAME_SUFFIX: ${{ inputs.package_name_suffix }}
           REPOSITORY_NAME: ${{ github.event.repository.name }}
           RUNNER_TEMP: ${{ runner.temp }}
           SCENARIO: ${{ inputs.scenario }}
@@ -58,6 +80,9 @@ jobs:
           node tools/resolve-test-scenario.mjs "$SCENARIO" "$EXECUTOR" "$REPOSITORY_NAME" > "$resolution_path"
           summary_path="$work_dir/executor-summary.txt"
           package_name="$(jq -r '.packageName' "$resolution_path")"
+          if [[ -n "$PACKAGE_NAME_SUFFIX" ]]; then
+            package_name="${package_name}--${PACKAGE_NAME_SUFFIX}"
+          fi
           db_file="${{ github.repository_owner }}__${package_name}__${EXECUTOR}__scan-history.sqlite"
           db_path="$work_dir/$db_file"
           echo "work_dir=$work_dir" >> "$GITHUB_OUTPUT"
