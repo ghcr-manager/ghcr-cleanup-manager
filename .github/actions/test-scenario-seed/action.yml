@@ -8,6 +8,12 @@ inputs:
   seed_strategy:
     description: Seed strategy identifier.
     required: true
+  registry_username:
+    description: GHCR username used for docker login.
+    required: true
+  registry_password:
+    description: GHCR token or password used for docker login.
+    required: true
 
 runs:
   using: composite
@@ -19,8 +25,8 @@ runs:
       uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_password }}
 
     - name: Seed delete-untagged-noop
       if: ${{ inputs.seed_strategy == 'delete-untagged-noop' }}

@@ -15,7 +15,8 @@ permissions:
   id-token: write
 
 env:
-  IMAGE_REF: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-test--single
+  TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
+  IMAGE_REF: ghcr.io/${{ vars.GHCR_TEST_OWNER }}/${{ github.event.repository.name }}-test--single
 
 jobs:
   build_amd64:
@@ -27,6 +28,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Require test org configuration
+        shell: bash
+        env:
+          GHCR_TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
+          GHCR_TEST_PAT_USERNAME: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          GHCR_TEST_PAT: ${{ secrets.GHCR_TEST_PAT }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GHCR_TEST_OWNER" ]] || { echo "Missing repo variable GHCR_TEST_OWNER" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT_USERNAME" ]] || { echo "Missing repo variable GHCR_TEST_PAT_USERNAME" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT" ]] || { echo "Missing repo secret GHCR_TEST_PAT" >&2; exit 1; }
+
       - name: Build and test image
         id: build
         uses: ./.github/actions/test-registry-build-image
@@ -34,6 +47,8 @@ jobs:
           image_ref: ${{ env.IMAGE_REF }}
           arch: amd64
           platform: linux/amd64
+          registry_username: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          registry_password: ${{ secrets.GHCR_TEST_PAT }}
 
   build_arm64:
     name: Build image (arm64)
@@ -44,6 +59,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Require test org configuration
+        shell: bash
+        env:
+          GHCR_TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
+          GHCR_TEST_PAT_USERNAME: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          GHCR_TEST_PAT: ${{ secrets.GHCR_TEST_PAT }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GHCR_TEST_OWNER" ]] || { echo "Missing repo variable GHCR_TEST_OWNER" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT_USERNAME" ]] || { echo "Missing repo variable GHCR_TEST_PAT_USERNAME" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT" ]] || { echo "Missing repo secret GHCR_TEST_PAT" >&2; exit 1; }
+
       - name: Build and test image
         id: build
         uses: ./.github/actions/test-registry-build-image
@@ -51,6 +78,8 @@ jobs:
           image_ref: ${{ env.IMAGE_REF }}
           arch: arm64
           platform: linux/arm64
+          registry_username: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          registry_password: ${{ secrets.GHCR_TEST_PAT }}
 
   publish:
     name: Publish multi-arch image
@@ -63,8 +92,8 @@ jobs:
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+          username: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          password: ${{ secrets.GHCR_TEST_PAT }}
 
       - name: Publish multi-arch image
         uses: gh-workflow/multiarch-image-publish@c5eac5dd8f7ed6b39fffc6e2c2242966b4917260 # 0.2.1

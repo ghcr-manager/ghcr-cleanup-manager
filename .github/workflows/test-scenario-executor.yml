@@ -63,6 +63,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Require test org configuration
+        shell: bash
+        env:
+          GHCR_TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
+          GHCR_TEST_PAT_USERNAME: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          GHCR_TEST_PAT: ${{ secrets.GHCR_TEST_PAT }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GHCR_TEST_OWNER" ]] || { echo "Missing repo variable GHCR_TEST_OWNER" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT_USERNAME" ]] || { echo "Missing repo variable GHCR_TEST_PAT_USERNAME" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT" ]] || { echo "Missing repo secret GHCR_TEST_PAT" >&2; exit 1; }
+
       - name: Resolve scenario
         id: scenario
         shell: bash
@@ -72,6 +84,7 @@ jobs:
           REPOSITORY_NAME: ${{ github.event.repository.name }}
           RUNNER_TEMP: ${{ runner.temp }}
           SCENARIO: ${{ inputs.scenario }}
+          TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
         run: |
           set -euo pipefail
           work_dir="$RUNNER_TEMP/ghcr-manager/scenario-${SCENARIO}-${EXECUTOR}"
@@ -83,7 +96,7 @@ jobs:
           if [[ -n "$PACKAGE_NAME_SUFFIX" ]]; then
             package_name="${package_name}--${PACKAGE_NAME_SUFFIX}"
           fi
-          db_file="${{ github.repository_owner }}__${package_name}__${EXECUTOR}__scan-history.sqlite"
+          db_file="${TEST_OWNER}__${package_name}__${EXECUTOR}__scan-history.sqlite"
           db_path="$work_dir/$db_file"
           echo "work_dir=$work_dir" >> "$GITHUB_OUTPUT"
           echo "resolution_path=$resolution_path" >> "$GITHUB_OUTPUT"
@@ -92,13 +105,13 @@ jobs:
           echo "summary_path=$summary_path" >> "$GITHUB_OUTPUT"
           echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
           echo "seed_strategy=$(jq -r '.seedStrategy' "$resolution_path")" >> "$GITHUB_OUTPUT"
-          echo "image_ref=ghcr.io/${{ github.repository_owner }}/${package_name}" >> "$GITHUB_OUTPUT"
+          echo "image_ref=ghcr.io/${TEST_OWNER}/${package_name}" >> "$GITHUB_OUTPUT"
 
       - name: Clear scenario package
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
-          OWNER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GHCR_TEST_PAT }}
+          OWNER: ${{ vars.GHCR_TEST_OWNER }}
           PACKAGE: ${{ steps.scenario.outputs.package_name }}
         run: |
           set -euo pipefail
@@ -109,12 +122,14 @@ jobs:
         with:
           image_ref: ${{ steps.scenario.outputs.image_ref }}
           seed_strategy: ${{ steps.scenario.outputs.seed_strategy }}
+          registry_username: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          registry_password: ${{ secrets.GHCR_TEST_PAT }}
 
       - name: Scan before execution
         uses: ./
         with:
-          github-token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
+          github-token: ${{ secrets.GHCR_TEST_PAT }}
+          owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ steps.scenario.outputs.package_name }}
           db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: "false"
@@ -124,11 +139,11 @@ jobs:
         shell: bash
         env:
           DB_PATH: ${{ steps.scenario.outputs.db_path }}
-          OWNER: ${{ github.repository_owner }}
+          OWNER: ${{ vars.GHCR_TEST_OWNER }}
           PACKAGE: ${{ steps.scenario.outputs.package_name }}
           RESOLUTION_PATH: ${{ steps.scenario.outputs.resolution_path }}
           SUMMARY_PATH: ${{ steps.scenario.outputs.summary_path }}
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GHCR_TEST_PAT }}
         run: |
           set -euo pipefail
           mapfile -t plan_args < <(jq -r '.ghcrManagerArgs[]' "$RESOLUTION_PATH")
@@ -157,8 +172,8 @@ jobs:
         if: ${{ inputs.executor == 'ghcr-cleanup-action' }}
         uses: dataaxiom/ghcr-cleanup-action@aa3ef78ce6e21c2820a185de1c6c59aafc41b2e7
         with:
-          token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
+          token: ${{ secrets.GHCR_TEST_PAT }}
+          owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ steps.scenario.outputs.package_name }}
           delete-untagged: ${{ steps.upstream-inputs.outputs.delete_untagged }}
           delete-tags: ${{ steps.upstream-inputs.outputs.delete_tags }}
@@ -175,8 +190,8 @@ jobs:
       - name: Scan after execution
         uses: ./
         with:
-          github-token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
+          github-token: ${{ secrets.GHCR_TEST_PAT }}
+          owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ steps.scenario.outputs.package_name }}
           db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: "false"

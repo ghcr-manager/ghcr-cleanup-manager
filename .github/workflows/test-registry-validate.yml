@@ -87,12 +87,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Require test org configuration
+        shell: bash
+        env:
+          GHCR_TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
+          GHCR_TEST_PAT: ${{ secrets.GHCR_TEST_PAT }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GHCR_TEST_OWNER" ]] || { echo "Missing repo variable GHCR_TEST_OWNER" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT" ]] || { echo "Missing repo secret GHCR_TEST_PAT" >&2; exit 1; }
+
       - name: Run ghcr-manager action scan
         id: ghcr-manager
         uses: ./
         with:
-          github-token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
+          github-token: ${{ secrets.GHCR_TEST_PAT }}
+          owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ env.TEST_PACKAGE }}
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
           db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
@@ -132,7 +142,7 @@ jobs:
             mapfile -t plan_args < "$plan_args_path"
             ghcr-manager plan \
               --db "${{ steps.ghcr-manager.outputs.db-path }}" \
-              --owner "${{ github.repository_owner }}" \
+              --owner "${{ vars.GHCR_TEST_OWNER }}" \
               --package "${{ env.TEST_PACKAGE }}" \
               "${plan_args[@]}" \
               | tee "$plan_path"
@@ -156,7 +166,7 @@ jobs:
       - name: Print validation targets
         shell: bash
         run: |
-          echo "Owner: ${{ github.repository_owner }}"
+          echo "Owner: ${{ vars.GHCR_TEST_OWNER }}"
           echo "Package: ${{ env.TEST_PACKAGE }}"
           echo "Validation scenario: ${{ inputs.validation_scenario }}"
           echo "DB path: ${{ steps.ghcr-manager.outputs.db-path }}"

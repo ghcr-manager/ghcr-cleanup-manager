@@ -83,12 +83,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Require test org configuration
+        shell: bash
+        env:
+          GHCR_TEST_OWNER: ${{ vars.GHCR_TEST_OWNER }}
+          GHCR_TEST_PAT: ${{ secrets.GHCR_TEST_PAT }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GHCR_TEST_OWNER" ]] || { echo "Missing repo variable GHCR_TEST_OWNER" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT" ]] || { echo "Missing repo secret GHCR_TEST_PAT" >&2; exit 1; }
+
       - name: Run ghcr-manager action scan
         id: initial-scan
         uses: ./
         with:
-          github-token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
+          github-token: ${{ secrets.GHCR_TEST_PAT }}
+          owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ env.TEST_PACKAGE }}
           upload-db-artifact: "false"
           db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
@@ -99,7 +109,7 @@ jobs:
         shell: bash
         env:
           DB_PATH: ${{ steps.initial-scan.outputs.db-path }}
-          OWNER: ${{ github.repository_owner }}
+          OWNER: ${{ vars.GHCR_TEST_OWNER }}
           PACKAGE: ${{ env.TEST_PACKAGE }}
           SCENARIO: ${{ inputs.execution_scenario }}
           RUNNER_TEMP: ${{ runner.temp }}
@@ -129,7 +139,7 @@ jobs:
         shell: bash
         env:
           DB_PATH: ${{ steps.initial-scan.outputs.db-path }}
-          OWNER: ${{ github.repository_owner }}
+          OWNER: ${{ vars.GHCR_TEST_OWNER }}
           PACKAGE: ${{ env.TEST_PACKAGE }}
           WORK_DIR: ${{ steps.args.outputs.work_dir }}
         run: |
@@ -175,10 +185,10 @@ jobs:
         shell: bash
         env:
           DB_PATH: ${{ steps.initial-scan.outputs.db-path }}
-          OWNER: ${{ github.repository_owner }}
+          OWNER: ${{ vars.GHCR_TEST_OWNER }}
           PACKAGE: ${{ env.TEST_PACKAGE }}
           WORK_DIR: ${{ steps.args.outputs.work_dir }}
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GHCR_TEST_PAT }}
         run: |
           set -euo pipefail
           execute_summary_path="$WORK_DIR/execute-summary.json"
@@ -196,8 +206,8 @@ jobs:
         id: rescan
         uses: ./
         with:
-          github-token: ${{ github.token }}
-          owner: ${{ github.repository_owner }}
+          github-token: ${{ secrets.GHCR_TEST_PAT }}
+          owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ env.TEST_PACKAGE }}
           db-path: ${{ steps.initial-scan.outputs.db-path }}
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
@@ -209,7 +219,7 @@ jobs:
         shell: bash
         env:
           POST_DB_PATH: ${{ steps.rescan.outputs.db-path }}
-          OWNER: ${{ github.repository_owner }}
+          OWNER: ${{ vars.GHCR_TEST_OWNER }}
           PACKAGE: ${{ env.TEST_PACKAGE }}
           WORK_DIR: ${{ steps.args.outputs.work_dir }}
         run: |
