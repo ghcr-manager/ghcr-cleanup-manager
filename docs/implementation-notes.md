@@ -194,9 +194,8 @@ This section is the canonical place for session-to-session continuity.
     or more matrix legs fail
   - `manual-run-test.yml` now switches to `GHCR_TEST_PAT` automatically when the requested owner matches
     `GHCR_TEST_OWNER`, so private test-org packages remain scannable without a separate ad hoc workflow edit
-  - the latest completed matrix baseline passed for all 14 scenarios × 2 executors (28 jobs)
-  - that confirmed green baseline predates the locally added `delete-ghost-images` scenarios; those are committed in
-    workflow/scenario definitions but still need a fresh live matrix run
+  - the latest completed matrix baseline passed for all 16 scenarios × 2 executors (32 jobs), including the
+    `delete-ghost-images` scenarios
   - the committed scenario workflow definitions now cover:
     - `delete-untagged-noop`
     - `delete-untagged-real`
