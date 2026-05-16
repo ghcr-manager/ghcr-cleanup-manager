@@ -382,6 +382,17 @@ runs:
         SCENARIO_ID: delete-orphaned-images-real
       run: |
         set -euo pipefail
+
+        keep_dir="$(mktemp -d)"
+        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        printf '%s\n' "${SCENARIO_ID} keep" > "$keep_dir/payload.txt"
+        docker buildx build \
+          --platform linux/amd64 \
+          --provenance=false \
+          --push \
+          --tag "$IMAGE_REF:${SCENARIO_ID}--keep" \
+          "$keep_dir"
+
         orphan_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$orphan_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$orphan_dir/payload.txt"
