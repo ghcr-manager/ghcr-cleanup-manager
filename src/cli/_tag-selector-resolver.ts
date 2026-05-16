@@ -87,7 +87,10 @@ function _listLatestGhostTags(
           LEFT JOIN manifests child
             ON child.scan_id = md.scan_id
            AND child.digest = md.child_digest
-          WHERE m.manifest_kind = 'image_index'
+          WHERE m.media_type IN (
+            'application/vnd.oci.image.index.v1+json',
+            'application/vnd.docker.distribution.manifest.list.v2+json'
+          )
             AND NOT EXISTS (
               SELECT 1
               FROM manifest_reachability mr
