@@ -115,6 +115,14 @@ jobs:
             org.opencontainers.image.version=alpha
           publish_platform_tags: "true"
 
+      - name: Make fixture package public
+        uses: ./.github/actions/test-org-set-package-visibility
+        with:
+          owner: ${{ vars.GHCR_TEST_OWNER }}
+          package_name: ${{ github.event.repository.name }}-test--complex
+          github_token: ${{ secrets.GHCR_TEST_PAT }}
+          visibility: public
+
       - name: Print result
         run: |
           echo "Published ${{ env.IMAGE_REF }}:alpha"
