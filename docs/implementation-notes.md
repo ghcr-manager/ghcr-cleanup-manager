@@ -94,7 +94,7 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Record the first green GitHub Actions matrix that includes the `delete-ghost-images` live scenarios.
 - ☑ Design and implement the next upstream-alignment slice: `delete-partial-images`, keeping the current DB-first
   planner shape and treating it as the strict some-but-not-all-missing sibling to `delete-ghost-images`.
-- ☐ Run the newly added `delete-partial-images` live scenarios in GitHub Actions and record the first green matrix that
+- ☑ Run the newly added `delete-partial-images` live scenarios in GitHub Actions and record the first green matrix that
   includes them.
 - ☐ Revisit action packaging after the live ingest path and cleanup execution path are both stable.
 - ☑ Add package scopes to the DB schema so one SQLite database can store multiple owner/package scans.
