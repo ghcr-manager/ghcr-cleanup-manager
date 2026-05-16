@@ -200,10 +200,8 @@ This section is the canonical place for session-to-session continuity.
     or more matrix legs fail
   - `manual-run-test.yml` now switches to `GHCR_TEST_PAT` automatically when the requested owner matches
     `GHCR_TEST_OWNER`, so private test-org packages remain scannable without a separate ad hoc workflow edit
-  - the latest completed matrix baseline passed for all 16 scenarios × 2 executors (32 jobs), including the
-    `delete-ghost-images` scenarios
-  - the locally added `delete-partial-images` scenarios are committed in workflow/scenario definitions but still need a
-    fresh live matrix run
+  - the latest completed matrix baseline passed for all 18 scenarios × 2 executors (36 jobs), including the
+    `delete-ghost-images`, `delete-partial-images`, and regex selector scenarios
   - the committed scenario workflow definitions now cover:
     - `delete-untagged-noop`
     - `delete-untagged-real`
@@ -223,7 +221,7 @@ This section is the canonical place for session-to-session continuity.
     - `delete-orphaned-images-noop`
     - `wildcard-tagged-fully-deletable`
     - `regex-untag-only-single-shared-root`
-    - the selector-pattern and orphan scenarios now pass in GitHub Actions for both executors
+  - the selector-pattern, orphan, ghost, partial, and regex scenarios now pass in GitHub Actions for both executors
   - scenario-managed tags are namespaced as `${scenarioId}--<tag>` so later mixed-scenario packages can avoid tag
     collisions
   - `blocked-shared-closure` now builds its platform children through the shared `test-registry-build-image` action so
