@@ -110,8 +110,7 @@ export const scenarios = {
       rootDecisions: [
         {
           tagNameKey: "deleteTag",
-          validationStatus: "blocked",
-          blockingTagNameKey: "keepTag"
+          validationStatus: "blocked"
         }
       ],
       protectedTagNameKeys: ["keepTag"],
