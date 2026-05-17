@@ -18,6 +18,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Initialize seed marker
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=false" >> "$GITHUB_ENV"
+
     - name: Set up Buildx
       uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
@@ -36,6 +42,7 @@ runs:
         SCENARIO_ID: delete-untagged-noop
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "keep-tagged" > "$context_dir/payload.txt"
@@ -54,6 +61,7 @@ runs:
         SCENARIO_ID: delete-untagged-real
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         old_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$old_dir/Dockerfile"
@@ -83,6 +91,7 @@ runs:
         SCENARIO_ID: untag-only-single-shared-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$context_dir/payload.txt"
@@ -102,6 +111,7 @@ runs:
         SCENARIO_ID: blocked-shared-closure
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         base_dir="$(mktemp -d)"
 
         delete_dir="$base_dir/delete-amd64"
@@ -198,6 +208,7 @@ runs:
         SCENARIO_ID: untag-only-multiarch-shared-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$context_dir/payload.txt"
@@ -217,6 +228,7 @@ runs:
         SCENARIO_ID: docker-manifest-list-untag-only-shared-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         base_dir="$(mktemp -d)"
 
         amd64_dir="$base_dir/amd64"
@@ -242,6 +254,7 @@ runs:
         SCENARIO_ID: docker-manifest-list-untag-only-shared-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         docker buildx build \
           --platform linux/amd64 \
           --provenance=false \
@@ -259,6 +272,7 @@ runs:
         SCENARIO_ID: docker-manifest-list-untag-only-shared-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         docker buildx build \
           --platform linux/arm64 \
           --provenance=false \
@@ -275,6 +289,7 @@ runs:
         SCENARIO_ID: docker-manifest-list-untag-only-shared-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         source_amd64_ref="$IMAGE_REF:${GITHUB_RUN_ID}-${SCENARIO_ID}-amd64-test"
         source_arm64_ref="$IMAGE_REF:${GITHUB_RUN_ID}-${SCENARIO_ID}-arm64-test"
@@ -293,6 +308,7 @@ runs:
         SCENARIO_ID: tagged-fully-deletable
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         keep_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
@@ -322,6 +338,7 @@ runs:
         SCENARIO_ID: exclude-tag-protected-root
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$context_dir/payload.txt"
@@ -341,6 +358,7 @@ runs:
         SCENARIO_ID: keep-n-tagged-overflow
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         oldest_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$oldest_dir/Dockerfile"
@@ -380,6 +398,7 @@ runs:
         SCENARIO_ID: keep-n-untagged-overflow
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         oldest_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$oldest_dir/Dockerfile"
@@ -419,6 +438,7 @@ runs:
         SCENARIO_ID: delete-tags-keep-n-tagged-overflow
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         keep_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
@@ -464,6 +484,7 @@ runs:
         SCENARIO_ID: ${{ inputs.seed_strategy }}
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         base_dir="$(mktemp -d)"
 
         keep_dir="$base_dir/keep"
@@ -500,6 +521,7 @@ runs:
         KEEP_DIR: ${{ steps.broken-index-contexts.outputs.keep_dir }}
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         docker buildx build \
           --platform linux/amd64 \
           --provenance=false \
@@ -553,6 +575,7 @@ runs:
         SECONDARY_CHILD_DIGEST: ${{ steps.broken-index-secondary-child.outputs.digest }}
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         ref_path="${IMAGE_REF#ghcr.io/}"
         owner="${ref_path%%/*}"
@@ -643,6 +666,7 @@ runs:
         SCENARIO_ID: delete-orphaned-images-real
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         keep_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
@@ -672,6 +696,7 @@ runs:
         SCENARIO_ID: delete-orphaned-images-noop
       run: |
         set -euo pipefail
+        echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         parent_dir="$(mktemp -d)"
         cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$parent_dir/Dockerfile"
@@ -702,18 +727,10 @@ runs:
           --tag "$IMAGE_REF:sha256-${parent_digest#sha256:}.sig" \
           "$referrer_dir"
 
-    - name: Reject unknown seed strategy
-      if:
-        ${{ inputs.seed_strategy != 'delete-untagged-noop' && inputs.seed_strategy != 'delete-untagged-real' &&
-        inputs.seed_strategy != 'tagged-fully-deletable' && inputs.seed_strategy != 'untag-only-single-shared-root' &&
-        inputs.seed_strategy != 'untag-only-multiarch-shared-root' && inputs.seed_strategy != 'blocked-shared-closure'
-        && inputs.seed_strategy != 'exclude-tag-protected-root' && inputs.seed_strategy != 'keep-n-tagged-overflow' &&
-        inputs.seed_strategy != 'keep-n-untagged-overflow' && inputs.seed_strategy !=
-        'delete-tags-keep-n-tagged-overflow' && inputs.seed_strategy != 'delete-ghost-images-real' &&
-        inputs.seed_strategy != 'delete-ghost-images-noop' && inputs.seed_strategy != 'delete-partial-images-real' &&
-        inputs.seed_strategy != 'delete-partial-images-noop' && inputs.seed_strategy != 'delete-orphaned-images-real' &&
-        inputs.seed_strategy != 'delete-orphaned-images-noop' }}
+    - name: Reject unhandled seed strategy
+      if: ${{ env.GHCR_MANAGER_SCENARIO_SEED_HANDLED != 'true' }}
       shell: bash
       run: |
+        set -euo pipefail
         echo "Unknown seed strategy: ${{ inputs.seed_strategy }}" >&2
         exit 1
