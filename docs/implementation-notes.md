@@ -97,8 +97,10 @@ This section is the canonical place for session-to-session continuity.
 - ☑ Run the newly added `delete-partial-images` live scenarios in GitHub Actions and record the first green matrix that
   includes them.
 - ☑ Revisit action packaging after the live ingest path and cleanup execution path are both stable.
-- ☐ Add explicit live scenario coverage for Docker manifest-list multi-arch roots now that manifest-kind classification
+- ☑ Add explicit live scenario coverage for Docker manifest-list multi-arch roots now that manifest-kind classification
   treats them as `image_index`.
+- ☐ Run the expanded scenario matrix in GitHub Actions and record the first green baseline that includes the Docker
+  manifest-list shared-root scenario.
 - ☑ Add package scopes to the DB schema so one SQLite database can store multiple owner/package scans.
 - ☑ Add a real GitHub Packages and GHCR ingest adapter beside the fixture loader.
 - ☑ Normalize live package, version, tag, manifest, and edge data into the existing SQLite schema.
@@ -216,6 +218,7 @@ This section is the canonical place for session-to-session continuity.
     - `blocked-shared-closure`
     - `untag-only-single-shared-root`
     - `untag-only-multiarch-shared-root`
+    - `docker-manifest-list-untag-only-shared-root`
     - `exclude-tag-protected-root`
     - `keep-n-tagged-overflow`
     - `keep-n-untagged-overflow`
@@ -236,6 +239,8 @@ This section is the canonical place for session-to-session continuity.
   - the shared `test-registry-build-image` action is build-and-push only; it no longer tries to run the image because
     the live scenario fixtures care about manifest/package topology, not runtime behavior
   - validation scenarios can now derive plan args from the scanned DB before running the planner
+  - the scan and executor workflows now also run repo-local DB assertions for scenarios that declare them, so media-type
+    and root-kind expectations can be checked after a live scan instead of relying on workflow success alone
   - live GHCR test workflows now require dedicated test-org configuration:
     - `GHCR_TEST_OWNER`
     - `GHCR_TEST_PAT_USERNAME`
@@ -257,8 +262,9 @@ This section is the canonical place for session-to-session continuity.
   - the follow-up optimization rewrites the ghost-tag selector query against base tables for the hot path, keeping the
     same behavior while avoiding stacked `v_missing_digests` + `v_scan_root_manifests` view expansion during planning
   - manifest-kind classification now treats Docker manifest lists
-    (`application/vnd.docker.distribution.manifest.list.v2+json`) as `image_index`, but the current live scenario set
-    still does not explicitly seed or assert Docker-media-type multi-arch cases
+    (`application/vnd.docker.distribution.manifest.list.v2+json`) as `image_index`, and the live scenario set now
+    includes a Docker-manifest-list shared-root case with a DB assertion that checks the scanned root remains tagged,
+    root-level, and classified as `image_index`
 - Current `untag-only` execution strategy:
   - informed by the linked shared ChatGPT discussion on the upstream hack
   - fetch the source manifest by digest from GHCR

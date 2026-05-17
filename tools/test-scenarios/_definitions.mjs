@@ -50,6 +50,28 @@ export const scenarios = {
       keepTag: "keep-me"
     }
   },
+  "docker-manifest-list-untag-only-shared-root": {
+    id: "docker-manifest-list-untag-only-shared-root",
+    packageSuffix: "scenario--docker-manifest-list-untag-only-shared-root",
+    seedStrategy: "docker-manifest-list-untag-only-shared-root",
+    supportedExecutors: ["ghcr-manager", "ghcr-cleanup-action"],
+    ghcrManagerArgs: ["--delete-tag", "{deleteTag}"],
+    dataaxiomInputs: {
+      "delete-tags": "{deleteTag}"
+    },
+    tagNames: {
+      deleteTag: "delete-me",
+      keepTag: "keep-me"
+    },
+    scanAssertions: [
+      {
+        tagNameKey: "keepTag",
+        expectedManifestKind: "image_index",
+        expectedManifestMediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
+        requireRoot: true
+      }
+    ]
+  },
   "blocked-shared-closure": {
     id: "blocked-shared-closure",
     packageSuffix: "scenario--blocked-shared-closure",

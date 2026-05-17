@@ -14,6 +14,7 @@ run-name: Test Scenario Scan (${{ inputs.scenario }})
           - tagged-fully-deletable
           - untag-only-single-shared-root
           - untag-only-multiarch-shared-root
+          - docker-manifest-list-untag-only-shared-root
           - blocked-shared-closure
           - delete-untagged-real
           - exclude-tag-protected-root
@@ -122,3 +123,9 @@ jobs:
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
           db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
+
+      - name: Assert scenario scan
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
