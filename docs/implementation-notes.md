@@ -241,6 +241,9 @@ This section is the canonical place for session-to-session continuity.
   - validation scenarios can now derive plan args from the scanned DB before running the planner
   - the scan and executor workflows now also run repo-local DB assertions for scenarios that declare them, so media-type
     and root-kind expectations can be checked after a live scan instead of relying on workflow success alone
+  - the reusable executor workflow now passes the caller's DB-artifact upload settings through to the `ghcr-manager`
+    cleanup action as well as the upstream post-cleanup scan path, so both executor legs emit one action-owned final DB
+    artifact when upload is enabled
   - `test-scenario-seed` no longer keeps a duplicated hardcoded allowlist of seed strategies; it now sets a generic
     handled marker from whichever scenario branch ran and only fails at the end if no branch claimed the requested
     strategy

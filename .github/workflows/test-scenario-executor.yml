@@ -219,7 +219,9 @@ jobs:
           owner: ${{ vars.GHCR_TEST_OWNER }}
           package: ${{ steps.scenario.outputs.package_name }}
           db-path: ${{ steps.scenario.outputs.db_path }}
-          upload-db-artifact: "false"
+          upload-db-artifact: ${{ inputs.upload_db_artifact }}
+          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
+          db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
           delete-untagged: ${{ steps.cleanup-inputs.outputs.delete_untagged }}
           delete-tags: ${{ steps.cleanup-inputs.outputs.delete_tags }}
           exclude-tags: ${{ steps.cleanup-inputs.outputs.exclude_tags }}
