@@ -30,3 +30,37 @@ test("snapshot repository exposes counts and metadata after import", async () =>
     rmSync(tempDirectory, { recursive: true, force: true });
   }
 });
+
+test("snapshot repository detects whether any package scan was non-public", async () => {
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const databasePath = join(tempDirectory, "scan.sqlite");
+
+  try {
+    const database = openDatabase(databasePath);
+    const writer = new ScanWriter(database);
+    const repository = new SnapshotRepository(database);
+    await importFileScan("tests/fixtures/sample-package.json", writer);
+
+    writer.resetScan("acme", "example", "2026-05-17T00:00:00.000Z");
+    writer.setPackageIsPublic(true);
+    writer.markScanCompleted("2026-05-17T00:00:00.000Z");
+
+    assert.equal(repository.hasAnyNonPublicPackageScan("acme", "example"), true);
+    assert.equal(repository.hasAnyNonPublicPackageScan("acme", "missing"), false);
+
+    writer.resetScan("acme", "public-only", "2026-05-17T00:00:01.000Z");
+    writer.setPackageIsPublic(true);
+    writer.markScanCompleted("2026-05-17T00:00:01.000Z");
+
+    assert.equal(repository.hasAnyNonPublicPackageScan("acme", "public-only"), false);
+
+    writer.resetScan("acme", "running-private", "2026-05-17T00:00:02.000Z");
+    writer.setPackageIsPublic(false);
+
+    assert.equal(repository.hasAnyNonPublicPackageScan("acme", "running-private"), true);
+
+    database.close();
+  } finally {
+    rmSync(tempDirectory, { recursive: true, force: true });
+  }
+});

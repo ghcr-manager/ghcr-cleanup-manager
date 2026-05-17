@@ -1,16 +1,19 @@
 import { ScanWriter, SnapshotRepository } from "../../db/index.js";
 import { ingestManifests } from "./_manifest-ingest.js";
-import { loadPackageMetadata } from "./_package-metadata-load.js";
+import { loadPackageMetadata, type GitHubPackageMetadata } from "./_package-metadata-load.js";
 import { ingestPackageVersions } from "./_packages-client.js";
 import { defaultFetch, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 export { type GitHubScanOptions } from "./_shared.js";
+export { loadPackageMetadata, type GitHubPackageMetadata } from "./_package-metadata-load.js";
+export { defaultFetch, type FetchLike, type GitHubScanLogger } from "./_shared.js";
 
 const _GITHUB_API_BASE_URL = "https://api.github.com";
 const _REGISTRY_BASE_URL = "https://ghcr.io";
 
 interface _GitHubScanRuntime {
   fetchImpl?: FetchLike;
+  packageMetadata?: GitHubPackageMetadata;
 }
 
 export async function importGitHubScan(
@@ -28,7 +31,8 @@ export async function importGitHubScan(
   options.logger.info(`Starting GitHub package scan for ${fullPackageName}`);
   try {
     options.logger.info(`Starting remote data pull for ${fullPackageName}`);
-    const packageMetadata = await loadPackageMetadata(fetchImpl, _GITHUB_API_BASE_URL, options);
+    const packageMetadata =
+      runtime?.packageMetadata ?? (await loadPackageMetadata(fetchImpl, _GITHUB_API_BASE_URL, options));
     writer.setPackageIsPublic(packageMetadata.isPublic);
     options.logger.info(
       `Detected GitHub package visibility ${packageMetadata.isPublic ? "public" : "non-public"} for ${fullPackageName}`

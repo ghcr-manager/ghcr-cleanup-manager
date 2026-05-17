@@ -62,6 +62,23 @@ export class SnapshotRepository {
     };
   }
 
+  hasAnyNonPublicPackageScan(owner: string, packageName: string): boolean {
+    const row = this.#database
+      .prepare(
+        `
+          SELECT 1 AS has_non_public
+          FROM package_scans
+          WHERE owner = ?
+            AND package_name = ?
+            AND is_public = 0
+          LIMIT 1
+        `
+      )
+      .get(owner, packageName) as { has_non_public: 1 } | undefined;
+
+    return row !== undefined;
+  }
+
   getTaggedDigests(scanId: number): Set<string> {
     return _getDigestSet(
       this.#database

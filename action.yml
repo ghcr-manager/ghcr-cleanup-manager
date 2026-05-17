@@ -149,15 +149,23 @@ runs:
       id: scan-before
       if: ${{ inputs.command == 'scan' || inputs.command == 'cleanup' }}
       shell: bash
+      env:
+        GHCR_MANAGER_DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db-artifact-encryption-passphrase }}
       run: |
         set -euo pipefail
-        npm run ghcr-manager:dist -- scan \
-          --db "${{ steps.prepare-db.outputs.db_path }}" \
-          --log-level "${{ inputs.log-level }}" \
-          --owner "${{ inputs.owner }}" \
-          --package "${{ inputs.package }}" \
-          --token "${{ inputs.github-token }}" \
+        scan_args=(
+          --db "${{ steps.prepare-db.outputs.db_path }}"
+          --log-level "${{ inputs.log-level }}"
+          --owner "${{ inputs.owner }}"
+          --package "${{ inputs.package }}"
+          --token "${{ inputs.github-token }}"
           --github-output "$GITHUB_OUTPUT"
+        )
+        if [[ "${{ inputs.command }}" == "scan" || "${{ inputs.upload-db-artifact }}" == "true" ]]; then
+          scan_args+=(--db-artifact-upload-intended)
+        fi
+        npm run ghcr-manager:dist -- scan \
+          "${scan_args[@]}"
 
     - name: Run cleanup
       if: ${{ inputs.command == 'cleanup' }}
