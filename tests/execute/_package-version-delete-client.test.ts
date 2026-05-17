@@ -75,3 +75,124 @@ test("deletePackageVersionForOrg surfaces GitHub error details", async () => {
     /GitHub package delete request failed for version 42 - status 404 - Not Found - https:\/\/docs\.github\.com\/rest\/packages\/packages/
   );
 });
+
+test("deletePackageVersionForOrg sends the expected headers and surfaces transport failures", async () => {
+  const headersSeen: Headers[] = [];
+
+  await deletePackageVersionForOrg(
+    "acme",
+    "example",
+    42,
+    "token",
+    {
+      debug() {},
+      info() {},
+      warn() {},
+      error() {}
+    },
+    {
+      githubApiBaseUrl: "https://api.github.test",
+      fetchImpl: async (_input, init) => {
+        headersSeen.push(new Headers(init?.headers));
+        return {
+          ok: true,
+          status: 204,
+          headers: new Headers(),
+          async json() {
+            return {};
+          }
+        };
+      }
+    }
+  );
+
+  assert.equal(headersSeen.length, 1);
+  assert.equal(headersSeen[0]?.get("accept"), "application/vnd.github+json");
+  assert.equal(headersSeen[0]?.get("authorization"), "Bearer token");
+  assert.equal(headersSeen[0]?.get("user-agent"), "ghcr-manager");
+  assert.equal(headersSeen[0]?.get("x-github-api-version"), "2022-11-28");
+
+  await assert.rejects(
+    () =>
+      deletePackageVersionForOrg(
+        "acme",
+        "example",
+        42,
+        "token",
+        {
+          debug() {},
+          info() {},
+          warn() {},
+          error() {}
+        },
+        {
+          githubApiBaseUrl: "https://api.github.test",
+          fetchImpl: async () => {
+            throw new TypeError("fetch failed", {
+              cause: Object.assign(new Error("socket hang up"), { code: "ECONNRESET" })
+            });
+          }
+        }
+      ),
+    /GitHub package delete request failed for version 42 - fetch failed/
+  );
+});
+
+test("deletePackageVersionForOrg retries retryable HTTP failures", async () => {
+  const originalSetTimeout = globalThis.setTimeout;
+  const warnings: string[] = [];
+  let attempts = 0;
+  globalThis.setTimeout = ((callback: (...args: unknown[]) => void) => {
+    callback();
+    return 0;
+  }) as unknown as typeof setTimeout;
+
+  try {
+    await deletePackageVersionForOrg(
+      "acme",
+      "example",
+      42,
+      "token",
+      {
+        debug() {},
+        info() {},
+        warn(message) {
+          warnings.push(message);
+        },
+        error() {}
+      },
+      {
+        githubApiBaseUrl: "https://api.github.test",
+        fetchImpl: async () => {
+          attempts += 1;
+          if (attempts === 1) {
+            return {
+              ok: false,
+              status: 503,
+              headers: new Headers({ "content-type": "application/json" }),
+              async json() {
+                return { message: "Service Unavailable" };
+              }
+            };
+          }
+          return {
+            ok: true,
+            status: 204,
+            headers: new Headers(),
+            async json() {
+              return {};
+            }
+          };
+        }
+      }
+    );
+
+    assert.equal(attempts, 2);
+    assert.match(
+      warnings[0] ?? "",
+      /GitHub package delete request for version 42 failed on attempt 1\/4; retrying in 1000ms - GitHub package delete request failed for version 42 - status 503 - Service Unavailable/
+    );
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
