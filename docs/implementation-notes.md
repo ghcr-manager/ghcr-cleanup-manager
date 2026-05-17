@@ -265,6 +265,10 @@ This section is the canonical place for session-to-session continuity.
     (`application/vnd.docker.distribution.manifest.list.v2+json`) as `image_index`, and the live scenario set now
     includes a Docker-manifest-list shared-root case with a DB assertion that checks the scanned root remains tagged,
     root-level, and classified as `image_index`
+  - that Docker-manifest-list scenario must seed its amd64/arm64 child refs with direct
+    `docker buildx build --provenance=false` pushes instead of the shared `test-registry-build-image` helper, because
+    the helper's provenance-enabled temporary refs are manifest-list shaped and `docker manifest create` rejects them as
+    inputs
 - Current `untag-only` execution strategy:
   - informed by the linked shared ChatGPT discussion on the upstream hack
   - fetch the source manifest by digest from GHCR

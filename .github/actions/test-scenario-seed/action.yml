@@ -234,27 +234,37 @@ runs:
 
     - name: Build docker-manifest-list amd64 child
       if: ${{ inputs.seed_strategy == 'docker-manifest-list-untag-only-shared-root' }}
-      uses: ./.github/actions/test-registry-build-image
-      with:
-        context: ${{ steps.docker-manifest-list-contexts.outputs.amd64_dir }}
-        dockerfile: ${{ steps.docker-manifest-list-contexts.outputs.amd64_dir }}/Dockerfile
-        image_ref: ${{ inputs.image_ref }}
-        arch: docker-manifest-list-untag-only-shared-root-amd64
-        platform: linux/amd64
-        registry_username: ${{ inputs.registry_username }}
-        registry_password: ${{ inputs.registry_password }}
+      shell: bash
+      env:
+        AMD64_DIR: ${{ steps.docker-manifest-list-contexts.outputs.amd64_dir }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        IMAGE_REF: ${{ inputs.image_ref }}
+        SCENARIO_ID: docker-manifest-list-untag-only-shared-root
+      run: |
+        set -euo pipefail
+        docker buildx build \
+          --platform linux/amd64 \
+          --provenance=false \
+          --push \
+          --tag "$IMAGE_REF:${GITHUB_RUN_ID}-${SCENARIO_ID}-amd64-test" \
+          "$AMD64_DIR"
 
     - name: Build docker-manifest-list arm64 child
       if: ${{ inputs.seed_strategy == 'docker-manifest-list-untag-only-shared-root' }}
-      uses: ./.github/actions/test-registry-build-image
-      with:
-        context: ${{ steps.docker-manifest-list-contexts.outputs.arm64_dir }}
-        dockerfile: ${{ steps.docker-manifest-list-contexts.outputs.arm64_dir }}/Dockerfile
-        image_ref: ${{ inputs.image_ref }}
-        arch: docker-manifest-list-untag-only-shared-root-arm64
-        platform: linux/arm64
-        registry_username: ${{ inputs.registry_username }}
-        registry_password: ${{ inputs.registry_password }}
+      shell: bash
+      env:
+        ARM64_DIR: ${{ steps.docker-manifest-list-contexts.outputs.arm64_dir }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        IMAGE_REF: ${{ inputs.image_ref }}
+        SCENARIO_ID: docker-manifest-list-untag-only-shared-root
+      run: |
+        set -euo pipefail
+        docker buildx build \
+          --platform linux/arm64 \
+          --provenance=false \
+          --push \
+          --tag "$IMAGE_REF:${GITHUB_RUN_ID}-${SCENARIO_ID}-arm64-test" \
+          "$ARM64_DIR"
 
     - name: Publish docker manifest-list shared root
       if: ${{ inputs.seed_strategy == 'docker-manifest-list-untag-only-shared-root' }}
