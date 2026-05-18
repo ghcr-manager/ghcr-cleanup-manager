@@ -17,7 +17,6 @@ test("execute http helper identifies retryable statuses", () => {
 test("execute http helper formats json error details", async () => {
   const message = await buildHttpErrorMessage(
     {
-      ok: false,
       status: 404,
       headers: new Headers({ "content-type": "application/json" }),
       async json() {
@@ -36,7 +35,6 @@ test("execute http helper formats json error details", async () => {
 test("execute http helper includes auth challenge and ignores non-json bodies", async () => {
   const message = await buildHttpErrorMessage(
     {
-      ok: false,
       status: 401,
       headers: new Headers({
         "content-type": "text/plain; charset=utf-8",
