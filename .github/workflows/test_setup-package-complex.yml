@@ -9,7 +9,7 @@
 #   - beta-amd64: image (from beta)
 #   - alpha-arm64: image (from alpha)
 
-name: "Test Registry: Fill Complex"
+name: "Test: Setup Package Complex"
 
 "on":
   workflow_dispatch:

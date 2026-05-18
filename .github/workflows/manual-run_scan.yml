@@ -1,4 +1,4 @@
-name: Manual Run Release
+name: "Manual Run: Scan package"
 run-name: Manual Run for ${{ inputs.owner }}/${{ inputs.package }}
 
 "on":

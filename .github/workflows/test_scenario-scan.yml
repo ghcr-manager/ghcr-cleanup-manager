@@ -1,4 +1,4 @@
-name: Test Scenario Scan
+name: "Test: Scenario Scan"
 run-name: Test Scenario Scan (${{ inputs.scenario }})
 
 "on":

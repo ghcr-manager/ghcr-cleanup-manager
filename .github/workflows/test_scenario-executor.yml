@@ -1,4 +1,4 @@
-name: Test Scenario Executor
+name: "Test: Scenario Executor"
 run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }})
 
 "on":

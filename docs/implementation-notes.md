@@ -288,15 +288,15 @@ This section is the canonical place for session-to-session continuity.
     `ancestor_digest <> root_digest` probe shape on large scans
 - Current test-registry workflow shape:
   - `test-registry-fill-*.yml` performs one-time GHCR fixture seeding
-  - `test-scenario-executor.yml` clears and reseeds a dedicated package per scenario, runs either `ghcr-manager` or
+  - `test_scenario-executor.yml` clears and reseeds a dedicated package per scenario, runs either `ghcr-manager` or
     `dataaxiom/ghcr-cleanup-action`, then reruns the local action against the shared `db-path` so the action itself can
     upload the final rescan DB artifact
-  - `test-scenario-scan.yml` now clears, reseeds, and scans one dedicated scenario package so a fresh DB can be captured
+  - `test_scenario-scan.yml` now clears, reseeds, and scans one dedicated scenario package so a fresh DB can be captured
     without running a cleanup executor
   - test workflows no longer upload DBs directly or upload plan, execution-summary, or scenario helper artifacts; DB
     artifact upload remains solely the composite action's responsibility so the non-public encryption safeguard stays
     centralized
-  - `test-scenario-executor-matrix.yml` fans out the reusable scenario workflow in parallel with executor-isolated
+  - `test_scenario-executor-matrix.yml` fans out the reusable scenario workflow in parallel with executor-isolated
     package-name suffixes, so same-scenario runs do not race on one GHCR package
   - after the matrix fan-out completes, the matrix workflow now delegates the bundle step to
     `merge-run-artifacts/action.yml`, which downloads matching current-run DB artifacts, decrypts them when needed,
@@ -361,7 +361,7 @@ This section is the canonical place for session-to-session continuity.
     - `GHCR_TEST_OWNER`
     - `GHCR_TEST_PAT_USERNAME`
     - `GHCR_TEST_PAT`
-  - `test-scenario-executor.yml` also requires `id-token: write` because `blocked-shared-closure` seeds multi-arch
+  - `test_scenario-executor.yml` also requires `id-token: write` because `blocked-shared-closure` seeds multi-arch
     indexes through `gh-workflow/multiarch-image-publish`, which uses keyless Cosign signing
   - the scenario matrix workflow now inherits caller secrets into the reusable scenario workflow and must also grant
     `id-token: write` because the called workflow requests it
@@ -586,7 +586,7 @@ src/
     executor-specific inputs
   - `.github/actions/test-scenario-seed` pushes minimal `FROM scratch` single-arch images with `provenance=false` for
     the first scenario packages, avoiding the signature/provenance-heavy `single` / `complex` fixtures
-  - `.github/workflows/test-scenario-executor.yml` clears the scenario package, seeds it, runs either `ghcr-manager` or
+  - `.github/workflows/test_scenario-executor.yml` clears the scenario package, seeds it, runs either `ghcr-manager` or
     `dataaxiom/ghcr-cleanup-action`, appends the post-execution scan into the same `scan-history.sqlite`, and uploads
     that DB plus the scenario metadata/summary files
   - initial scenarios are `delete-untagged-noop` and `tagged-fully-deletable`

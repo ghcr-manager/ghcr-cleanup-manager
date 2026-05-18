@@ -1,4 +1,4 @@
-name: Test Scenario Executor Matrix
+name: "Test: Scenario Executor Matrix"
 run-name: Test Scenario Executor Matrix
 
 "on":
@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
-    uses: ./.github/workflows/test-scenario-executor.yml
+    uses: ./.github/workflows/test_scenario-executor.yml
     secrets: inherit
     with:
       scenario: ${{ matrix.scenario }}

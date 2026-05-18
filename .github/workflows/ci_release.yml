@@ -1,4 +1,4 @@
-name: Release
+name: "CI: Release"
 
 "on":
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   change-validation:
-    uses: ./.github/workflows/change-validation.yml
+    uses: ./.github/workflows/ci_change-validation.yml
 
   verify-release-refs:
     name: Verify release references

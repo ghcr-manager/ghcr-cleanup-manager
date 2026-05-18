@@ -75,7 +75,7 @@ jobs:
           db-artifact-encryption-passphrase: ${{ secrets.DB_ARTIFACT_ENCRYPTION_PASSPHRASE }}
 ```
 
-> Copy the [Manual Run Workflow](.github/workflows/manual-run.yml) as a ready-to-run workflow and switch `command`
+> Copy the [Manual Run Workflow](.github/workflows/manual-run_scan.yml) as a ready-to-run workflow and switch `command`
 > between `scan` and `cleanup` as needed.
 
 ## Inputs

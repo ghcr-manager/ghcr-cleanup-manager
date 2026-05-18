@@ -1,4 +1,4 @@
-name: Change Validation
+name: "CI: Change Validation"
 
 "on":
   workflow_call:
@@ -17,4 +17,4 @@ permissions:
 
 jobs:
   test-suite:
-    uses: ./.github/workflows/test-suite.yml
+    uses: ./.github/workflows/ci_unit-test-lint.yml

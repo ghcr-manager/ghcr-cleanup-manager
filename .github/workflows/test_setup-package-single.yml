@@ -3,7 +3,7 @@
 #   - single-amd64: image (tagged, with provenance and cosign signature)
 #   - single-arm64: image (tagged, with provenance and cosign signature)
 
-name: "Test Registry: Fill Single"
+name: "Test: Setup Package Single"
 
 "on":
   workflow_dispatch:
