@@ -30,6 +30,7 @@ This section is the canonical place for session-to-session continuity.
 - ☑ `5160246` Enforce foreign keys in the scan schema.
 - ☑ `1166d0c` Improve GitHub and GHCR error reporting.
 - ☑ `c61c531` Refine tag foreign keys and trim schema tests.
+- ☑ `fc15543` Extract matrix DB artifact download script.
 
 ### Completed Plan
 
@@ -275,8 +276,12 @@ This section is the canonical place for session-to-session continuity.
   - `test-scenario-executor-matrix.yml` fans out the reusable scenario workflow in parallel with executor-isolated
     package-name suffixes, so same-scenario runs do not race on one GHCR package
   - after the matrix fan-out completes, the matrix workflow now downloads the per-scenario action-owned DB artifacts,
-    decrypts them when needed, repacks them into one tarball, re-encrypts that bundle with the same optional passphrase,
-    uploads the single bundle artifact, and deletes the intermediate per-scenario DB artifacts from the run
+    decrypts them when needed, merges them into one SQLite file via the dedicated `db-merge` sub-action, optionally
+    encrypts that merged DB, uploads the single merged-DB artifact, and deletes the intermediate per-scenario DB
+    artifacts from the run
+  - the matrix workflow's artifact download/decrypt logic now lives in `tools/download-run-db-artifacts.sh`, driven by
+    the same GitHub Actions environment variables as the previous inline bash step so other workflows can reuse it
+    without copying shell bodies
   - the matrix DB bundle job now runs under `always()` so successful scenario DB artifacts are still collected when one
     or more matrix legs fail
   - `manual-run-test.yml` now switches to `GHCR_TEST_PAT` automatically when the requested owner matches

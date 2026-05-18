@@ -72,75 +72,25 @@ jobs:
         id: download
         shell: bash
         env:
+          ARTIFACT_LIST_PATH: ${{ runner.temp }}/ghcr-manager/scenario-matrix-db-merge/artifacts.tsv
           DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db_artifact_encryption_passphrase }}
+          DOWNLOAD_DIR: ${{ runner.temp }}/ghcr-manager/scenario-matrix-db-merge/downloaded
           GH_TOKEN: ${{ github.token }}
           GITHUB_API_VERSION: "2022-11-28"
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
-          RUNNER_TEMP: ${{ runner.temp }}
+          MERGED_DB_PATH: ${{ runner.temp }}/ghcr-manager/scenario-matrix-db-merge/scenario-matrix.sqlite
+          SOURCE_DB_DIR: ${{ runner.temp }}/ghcr-manager/scenario-matrix-db-merge/source-dbs
         run: |
           set -euo pipefail
 
-          work_dir="$RUNNER_TEMP/ghcr-manager/scenario-matrix-db-merge"
-          download_dir="$work_dir/downloaded"
-          source_db_dir="$work_dir/source-dbs"
-          merged_db_path="$work_dir/scenario-matrix.sqlite"
-          mkdir -p "$download_dir" "$source_db_dir"
+          tools/download-run-db-artifacts.sh
 
-          artifact_list_path="$work_dir/artifacts.tsv"
-          gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: $GITHUB_API_VERSION" \
-            "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
-            --jq '.artifacts[]
-              | select((.name | endswith(".sqlite")) or (.name | endswith(".sqlite.enc")))
-              | [.id, .name, .archive_download_url]
-              | @tsv' \
-            > "$artifact_list_path"
-
-          if [[ ! -s "$artifact_list_path" ]]; then
-            echo "No scenario DB artifacts found to bundle." >&2
-            exit 1
-          fi
-
-          while IFS=$'\t' read -r artifact_id artifact_name artifact_url; do
-            artifact_zip_path="$download_dir/${artifact_name}.zip"
-            artifact_extract_dir="$download_dir/$artifact_name"
-            mkdir -p "$artifact_extract_dir"
-
-            gh api \
-              -H "Accept: application/vnd.github+json" \
-              -H "X-GitHub-Api-Version: $GITHUB_API_VERSION" \
-              "$artifact_url" \
-              > "$artifact_zip_path"
-
-            unzip -q "$artifact_zip_path" -d "$artifact_extract_dir"
-            downloaded_file="$artifact_extract_dir/$artifact_name"
-            if [[ ! -f "$downloaded_file" ]]; then
-              echo "Downloaded artifact '$artifact_name' did not contain expected file '$artifact_name'." >&2
-              exit 1
-            fi
-
-            if [[ "$artifact_name" == *.enc ]]; then
-              [[ -n "$DB_ARTIFACT_ENCRYPTION_PASSPHRASE" ]] || {
-                echo "Encrypted DB artifacts require db_artifact_encryption_passphrase for bundling." >&2
-                exit 1
-              }
-              output_name="${artifact_name%.enc}"
-              openssl enc -d -aes-256-cbc -pbkdf2 \
-                -in "$downloaded_file" \
-                -out "$source_db_dir/$output_name" \
-                -pass env:DB_ARTIFACT_ENCRYPTION_PASSPHRASE
-            else
-              cp "$downloaded_file" "$source_db_dir/$artifact_name"
-            fi
-          done < "$artifact_list_path"
-
-          echo "artifact_list_path=$artifact_list_path" >> "$GITHUB_OUTPUT"
-          echo "merged_db_path=$merged_db_path" >> "$GITHUB_OUTPUT"
+          echo "artifact_list_path=$ARTIFACT_LIST_PATH" >> "$GITHUB_OUTPUT"
+          echo "merged_db_path=$MERGED_DB_PATH" >> "$GITHUB_OUTPUT"
           {
             echo "source_db_paths<<'EOF'"
-            find "$source_db_dir" -maxdepth 1 -type f -name '*.sqlite' | sort
+            find "$SOURCE_DB_DIR" -maxdepth 1 -type f -name '*.sqlite' | sort
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
