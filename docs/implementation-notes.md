@@ -216,8 +216,9 @@ This section is the canonical place for session-to-session continuity.
   - row-shape mapping, selector handling, direct-target selection, and closure/blocking analysis each live in their own
     internal planner modules under `src/db/planner/`
   - tagged planner internals are now split again: `src/db/planner/_planner-direct-target-tags.ts` handles direct tag
-    enumeration, and `src/db/planner/_planner-tagged-root-targets.ts` handles tagged root selection / keep-overflow
-    logic
+    enumeration, `src/db/planner/_planner-keep-tagged-root-targets.ts` handles standalone tagged keep-overflow
+    selection, and `src/db/planner/_planner-delete-tag-root-targets.ts` handles delete-tag root matching / partial-tag
+    classification
   - the public `src/db/index.ts` surface is still the entrypoint; it now re-exports planner API from
     `src/db/planner/index.ts`, and mirror tests live under `tests/db/planner/`
 - Current CLI shape:
