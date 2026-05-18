@@ -35,7 +35,10 @@ if (!response.ok) {
   } catch {
     body = undefined;
   }
-  const message = typeof body?.message === "string" ? body.message : "unknown error";
+  const message =
+    body !== null && typeof body === "object" && "message" in body && typeof body.message === "string"
+      ? body.message
+      : "unknown error";
   throw new Error(`failed to delete package ${owner}/${packageName}: status ${response.status} - ${message}`);
 }
 
