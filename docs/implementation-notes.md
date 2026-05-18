@@ -820,3 +820,18 @@ src/
   - `command: scan` always uploads the resulting DB artifact; cleanup DB upload remains optional.
 - [x] Updated the GHCR scenario workflow so the `ghcr-manager` executor leg now exercises the action cleanup surface
       instead of calling the CLI directly.
+
+### 2026-05-18 (planner-side tag selector matching)
+
+- [x] Stopped expanding user-provided `--delete-tag` and `--exclude-tag` wildcard/regex selectors into JS arrays before
+      planning.
+- [x] Kept DB-derived selector families (`delete-ghost-images`, `delete-partial-images`, `delete-orphaned-images`) as
+      exact tag expansion while keeping the user-facing selector contract simple:
+  - wildcard syntax is the default for `--delete-tag` and `--exclude-tag`
+  - `--use-regex` is the only alternate selector mode
+- [x] Moved wildcard/regex tag matching into planner SQL so large matched tag sets no longer rebound as giant
+      `IN (?, ?, ...)` parameter lists.
+- [x] Added focused tests that cover planner-side wildcard and regex matching plus the resolver contract shift from
+      “expand user selectors” to “preserve user selectors.”
+- [x] Reduced repeated regex work in tagged-root planning by materializing selected tags and excluded versions once per
+      query and caching compiled regex objects inside the SQLite `regexp()` function.

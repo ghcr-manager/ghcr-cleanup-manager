@@ -130,6 +130,7 @@ export function loadDeletePlan(repository: PlannerRepository, inputs: PlanComman
       deleteOrphanedImages: inputs.deleteOrphanedImages,
       deleteTagsRequested: inputs.deleteTagsRequested,
       keepNTagged: inputs.keepNTagged,
+      useRegex: inputs.useRegex,
       olderThan: inputs.olderThan,
       cutoffTimestamp: inputs.cutoffTimestamp
     }

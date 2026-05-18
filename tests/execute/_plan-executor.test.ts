@@ -39,6 +39,7 @@ test("executeDeletePlan deletes fully deletable roots and returns a summary", as
         selectionMode: "delete-root",
         selectionReason: "delete-untagged",
         validationStatus: "fully-deletable",
+        validationReasonCode: "fully-deletable-no-retained-overlap",
         validationReason: "root closure does not overlap any retained root"
       }
     ],
@@ -118,6 +119,7 @@ test("executeDeletePlan applies untag-only roots before deleting fully deletable
         selectionMode: "untag-only",
         selectionReason: "delete-tags-partial-tag-match",
         validationStatus: "untag-only",
+        validationReasonCode: "untag-only-partial-tag-match",
         validationReason: "selected tags do not cover every tag on the root"
       }
     ],
@@ -265,6 +267,7 @@ test("executeDeletePlan rejects untag-only roots without listRootTags support", 
         selectionMode: "untag-only",
         selectionReason: "delete-tags-partial-tag-match",
         validationStatus: "untag-only",
+        validationReasonCode: "untag-only-partial-tag-match",
         validationReason: "selected tags do not cover every tag on the root"
       }
     ],
@@ -325,6 +328,7 @@ test("executeDeletePlan rejects untag-only roots when no selected tags resolve",
         selectionMode: "untag-only",
         selectionReason: "delete-tags-partial-tag-match",
         validationStatus: "untag-only",
+        validationReasonCode: "untag-only-partial-tag-match",
         validationReason: "selected tags do not cover every tag on the root"
       }
     ],

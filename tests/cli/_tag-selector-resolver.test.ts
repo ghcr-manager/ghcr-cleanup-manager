@@ -24,7 +24,7 @@ async function _withSampleDatabase(
   }
 }
 
-test("resolveTagSelectors expands wildcard delete-tag selectors against latest scan tags", async () => {
+test("resolveTagSelectors keeps wildcard delete-tag selectors for planner-side SQL matching", async () => {
   await _withSampleDatabase(async (database) => {
     const inputs = {
       databasePath: "scan.sqlite",
@@ -41,7 +41,7 @@ test("resolveTagSelectors expands wildcard delete-tag selectors against latest s
     };
 
     const resolved = resolveTagSelectors(database, inputs);
-    assert.deepEqual(resolved.deleteTags, ["keep-me"]);
+    assert.deepEqual(resolved.deleteTags, ["*me"]);
     assert.deepEqual(resolved.excludeTags, []);
   });
 });
@@ -106,7 +106,7 @@ test("resolveTagSelectors treats sql wildcard characters literally in wildcard m
   }
 });
 
-test("resolveTagSelectors expands wildcard delete-tag and exclude-tag selectors", async () => {
+test("resolveTagSelectors keeps wildcard delete-tag and exclude-tag selectors for planner-side SQL matching", async () => {
   await _withSampleDatabase(async (database) => {
     const inputs = {
       databasePath: "scan.sqlite",
@@ -123,12 +123,12 @@ test("resolveTagSelectors expands wildcard delete-tag and exclude-tag selectors"
     };
 
     const resolved = resolveTagSelectors(database, inputs);
-    assert.deepEqual(resolved.deleteTags, ["latest"]);
-    assert.deepEqual(resolved.excludeTags, ["keep-me"]);
+    assert.deepEqual(resolved.deleteTags, ["l*"]);
+    assert.deepEqual(resolved.excludeTags, ["*me"]);
   });
 });
 
-test("resolveTagSelectors expands regex delete-tag and exclude-tag selectors in sqlite", async () => {
+test("resolveTagSelectors keeps regex delete-tag and exclude-tag selectors for planner-side SQL matching", async () => {
   await _withSampleDatabase(async (database) => {
     const inputs = {
       databasePath: "scan.sqlite",
@@ -145,8 +145,8 @@ test("resolveTagSelectors expands regex delete-tag and exclude-tag selectors in 
     };
 
     const resolved = resolveTagSelectors(database, inputs);
-    assert.deepEqual(resolved.deleteTags, ["latest"]);
-    assert.deepEqual(resolved.excludeTags, ["keep-me"]);
+    assert.deepEqual(resolved.deleteTags, ["^l.*"]);
+    assert.deepEqual(resolved.excludeTags, [".*me$"]);
   });
 });
 

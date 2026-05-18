@@ -119,10 +119,10 @@ test("package metadata loader retries retryable statuses", async () => {
   const originalSetTimeout = globalThis.setTimeout;
   const warnings: string[] = [];
   let attempts = 0;
-  globalThis.setTimeout = ((callback: (...args: never[]) => void) => {
+  globalThis.setTimeout = ((callback: (...args: unknown[]) => void) => {
     callback();
-    return 0 as ReturnType<typeof setTimeout>;
-  }) as typeof setTimeout;
+    return 0;
+  }) as unknown as typeof setTimeout;
 
   try {
     const metadata = await loadPackageMetadata(

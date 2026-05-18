@@ -2,13 +2,7 @@ import type Database from "better-sqlite3";
 import type { PlanCommandInputs } from "./_planner-options.js";
 
 export function resolveTagSelectors(database: Database.Database, inputs: PlanCommandInputs): PlanCommandInputs {
-  if (
-    inputs.deleteTags.length === 0 &&
-    inputs.excludeTags.length === 0 &&
-    !inputs.deleteGhostImages &&
-    !inputs.deletePartialImages &&
-    !inputs.deleteOrphanedImages
-  ) {
+  if (!inputs.deleteGhostImages && !inputs.deletePartialImages && !inputs.deleteOrphanedImages) {
     return inputs;
   }
 
@@ -20,85 +14,8 @@ export function resolveTagSelectors(database: Database.Database, inputs: PlanCom
         ? _listLatestPartialTags(database, inputs.owner, inputs.packageName, inputs.cutoffTimestamp)
         : inputs.deleteOrphanedImages
           ? _listLatestOrphanedTags(database, inputs.owner, inputs.packageName, inputs.cutoffTimestamp)
-          : _resolveSelectors(database, inputs.owner, inputs.packageName, inputs.deleteTags, inputs.useRegex),
-    excludeTags: _resolveSelectors(database, inputs.owner, inputs.packageName, inputs.excludeTags, inputs.useRegex)
+          : inputs.deleteTags
   };
-}
-
-function _resolveSelectors(
-  database: Database.Database,
-  owner: string,
-  packageName: string,
-  selectors: string[],
-  useRegex: boolean
-): string[] {
-  if (selectors.length === 0) {
-    return [];
-  }
-
-  return useRegex
-    ? _resolveRegexSelectorsInDatabase(database, owner, packageName, selectors)
-    : _resolveWildcardSelectorsInDatabase(database, owner, packageName, selectors);
-}
-
-function _resolveWildcardSelectorsInDatabase(
-  database: Database.Database,
-  owner: string,
-  packageName: string,
-  selectors: string[]
-): string[] {
-  const resolved = new Set<string>();
-  const statement = database.prepare(
-    `
-      SELECT t.tag
-      FROM tags t
-      INNER JOIN v_latest_scan_per_package latest_scan ON latest_scan.scan_id = t.scan_id
-      WHERE latest_scan.owner = ?
-        AND latest_scan.package_name = ?
-        AND t.tag LIKE ? ESCAPE '\\'
-      ORDER BY t.tag
-    `
-  );
-
-  for (const selector of selectors) {
-    const rows = statement.all(owner, packageName, _wildcardSelectorToSqlLike(selector)) as Array<{ tag: string }>;
-    for (const row of rows) {
-      resolved.add(row.tag);
-    }
-  }
-
-  return [...resolved];
-}
-
-function _resolveRegexSelectorsInDatabase(
-  database: Database.Database,
-  owner: string,
-  packageName: string,
-  selectors: string[]
-): string[] {
-  _registerRegexFunction(database);
-
-  const resolved = new Set<string>();
-  const statement = database.prepare(
-    `
-      SELECT t.tag
-      FROM tags t
-      INNER JOIN v_latest_scan_per_package latest_scan ON latest_scan.scan_id = t.scan_id
-      WHERE latest_scan.owner = ?
-        AND latest_scan.package_name = ?
-        AND regexp(?, t.tag)
-      ORDER BY t.tag
-    `
-  );
-
-  for (const selector of selectors) {
-    const rows = statement.all(owner, packageName, selector) as Array<{ tag: string }>;
-    for (const row of rows) {
-      resolved.add(row.tag);
-    }
-  }
-
-  return [...resolved];
 }
 
 function _listLatestGhostTags(
@@ -223,31 +140,4 @@ function _listLatestOrphanedTags(
     )
     .all(owner, packageName, cutoffTimestamp ?? null, cutoffTimestamp ?? null) as Array<{ tag: string }>;
   return rows.map((row) => row.tag);
-}
-
-function _wildcardSelectorToSqlLike(selector: string): string {
-  return selector.replaceAll(/[%_\\*?]/g, (character) => {
-    switch (character) {
-      case "%":
-      case "_":
-      case "\\":
-        return `\\${character}`;
-      case "*":
-        return "%";
-      case "?":
-        return "_";
-      default:
-        return character;
-    }
-  });
-}
-
-function _registerRegexFunction(database: Database.Database): void {
-  const markedDatabase = database as Database.Database & { __ghcrManagerRegexRegistered?: boolean };
-  if (markedDatabase.__ghcrManagerRegexRegistered) {
-    return;
-  }
-
-  database.function("regexp", (pattern: string, value: string) => (new RegExp(pattern).test(value) ? 1 : 0));
-  markedDatabase.__ghcrManagerRegexRegistered = true;
 }

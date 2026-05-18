@@ -1,6 +1,4 @@
 import type Database from "better-sqlite3";
-import { buildInClausePlaceholders } from "./_sql-placeholders.js";
-
 interface _PlannerLogger {
   trace(message: string): void;
   debug(message: string): void;
@@ -293,6 +291,7 @@ export class PlannerRepository {
       deletePartialImages?: boolean;
       deleteOrphanedImages?: boolean;
       keepNTagged?: number;
+      useRegex?: boolean;
       olderThan?: string;
       cutoffTimestamp?: string;
     }
@@ -302,6 +301,7 @@ export class PlannerRepository {
       scan.scan_id,
       deleteTags,
       excludeTags,
+      options?.useRegex ?? false,
       options?.cutoffTimestamp
     );
     const directTargetRoots = this.#listTaggedDirectTargetRoots(scan.scan_id, {
@@ -309,6 +309,7 @@ export class PlannerRepository {
       deleteTagsRequested: options?.deleteTagsRequested ?? true,
       excludeTags,
       keepCount: options?.keepNTagged,
+      useRegex: options?.useRegex ?? false,
       cutoffTimestamp: options?.cutoffTimestamp
     });
     const planArtifacts = this.#buildPlanArtifacts(scan.scan_id, directTargetRoots);
@@ -621,27 +622,29 @@ export class PlannerRepository {
     scanId: number,
     deleteTags: string[],
     excludeTags: string[],
+    useRegex: boolean,
     cutoffTimestamp?: string
   ): string[] {
     if (deleteTags.length === 0) {
       return [];
     }
 
-    const selectedTagPlaceholders = buildInClausePlaceholders(deleteTags.length);
-    const params: Array<number | string> = [scanId, ...deleteTags];
+    const selectedTagPredicate = this.#buildTagSelectorPredicate("t.tag", deleteTags, useRegex);
+    const params: Array<number | string> = [scanId, ...selectedTagPredicate.params];
     let excludedRootSql = "";
     let olderThanSql = "";
     if (excludeTags.length > 0) {
-      const excludedTagPlaceholders = buildInClausePlaceholders(excludeTags.length);
+      const excludedTagPredicate = this.#buildTagSelectorPredicate("xt.tag", excludeTags, useRegex);
       excludedRootSql = `
-        AND t.version_id NOT IN (
-          SELECT version_id
-          FROM tags
-          WHERE scan_id = ?
-            AND tag IN (${excludedTagPlaceholders})
+        AND NOT EXISTS (
+          SELECT 1
+          FROM tags xt
+          WHERE xt.scan_id = t.scan_id
+            AND xt.version_id = t.version_id
+            AND (${excludedTagPredicate.sql})
         )
       `;
-      params.push(scanId, ...excludeTags);
+      params.push(...excludedTagPredicate.params);
     }
     if (cutoffTimestamp) {
       olderThanSql = "AND pv.created_at < ?";
@@ -649,13 +652,13 @@ export class PlannerRepository {
     }
 
     const sql = `
-          SELECT tag AS target_tag
+          SELECT DISTINCT tag AS target_tag
           FROM tags t
           JOIN package_versions pv
             ON pv.scan_id = t.scan_id
            AND pv.version_id = t.version_id
           WHERE t.scan_id = ?
-            AND t.tag IN (${selectedTagPlaceholders})
+            AND (${selectedTagPredicate.sql})
             ${excludedRootSql}
             ${olderThanSql}
           ORDER BY tag
@@ -672,6 +675,7 @@ export class PlannerRepository {
       deleteTagsRequested?: boolean;
       excludeTags: string[];
       keepCount?: number;
+      useRegex?: boolean;
       cutoffTimestamp?: string;
     }
   ): DeletePlanRoot[] {
@@ -683,6 +687,7 @@ export class PlannerRepository {
       return this.#listKeepNTaggedDirectTargetRoots(
         scanId,
         options.excludeTags,
+        options.useRegex ?? false,
         options.keepCount,
         options.cutoffTimestamp
       );
@@ -692,6 +697,7 @@ export class PlannerRepository {
       scanId,
       options.deleteTags,
       options.excludeTags,
+      options.useRegex ?? false,
       options.keepCount,
       options.cutoffTimestamp
     );
@@ -700,25 +706,26 @@ export class PlannerRepository {
   #listKeepNTaggedDirectTargetRoots(
     scanId: number,
     excludeTags: string[],
+    useRegex: boolean,
     keepCount?: number,
     cutoffTimestamp?: string
   ): DeletePlanRoot[] {
-    const excludedTagPlaceholders = excludeTags.length > 0 ? buildInClausePlaceholders(excludeTags.length) : "";
-    const excludedRootSql =
-      excludeTags.length > 0
-        ? `
+    const excludedTagPredicate =
+      excludeTags.length > 0 ? this.#buildTagSelectorPredicate("xt.tag", excludeTags, useRegex) : undefined;
+    const excludedRootSql = excludedTagPredicate
+      ? `
               AND NOT EXISTS (
                 SELECT 1
                 FROM tags xt
                 WHERE xt.scan_id = pv.scan_id
                   AND xt.version_id = pv.version_id
-                  AND xt.tag IN (${excludedTagPlaceholders})
+                  AND (${excludedTagPredicate.sql})
               )
             `
-        : "";
+      : "";
     const cutoffSql = cutoffTimestamp ? "AND pv.created_at < ?" : "";
     const keepSql = keepCount !== undefined ? "WHERE recency_rank > ?" : "";
-    const params: Array<number | string> = [scanId, ...excludeTags];
+    const params: Array<number | string> = [scanId, ...(excludedTagPredicate?.params ?? [])];
     if (cutoffTimestamp) {
       params.push(cutoffTimestamp);
     }
@@ -781,57 +788,74 @@ export class PlannerRepository {
     scanId: number,
     deleteTags: string[],
     excludeTags: string[],
+    useRegex: boolean,
     keepCount?: number,
     cutoffTimestamp?: string
   ): DeletePlanRoot[] {
-    const selectedTagPlaceholders = deleteTags.length > 0 ? buildInClausePlaceholders(deleteTags.length) : "";
-    const excludedTagPlaceholders = excludeTags.length > 0 ? buildInClausePlaceholders(excludeTags.length) : "";
-    const excludedRootSql =
-      excludeTags.length > 0
-        ? `
-              AND NOT EXISTS (
-                SELECT 1
-                FROM tags xt
-                WHERE xt.scan_id = mt.scan_id
-                  AND xt.version_id = mt.version_id
-                  AND xt.tag IN (${excludedTagPlaceholders})
-              )
-            `
-        : "";
+    const selectedTagPredicate = this.#buildTagSelectorPredicate("st.tag", deleteTags, useRegex);
+    const excludedTagPredicate =
+      excludeTags.length > 0 ? this.#buildTagSelectorPredicate("xt.tag", excludeTags, useRegex) : undefined;
+    const excludedVersionsCte = excludedTagPredicate
+      ? `
+          excluded_versions AS (
+            SELECT DISTINCT xt.version_id
+            FROM tags xt
+            WHERE xt.scan_id = ?
+              AND (${excludedTagPredicate.sql})
+          ),
+        `
+      : "";
+    const excludedJoinSql = excludedTagPredicate
+      ? `
+            LEFT JOIN excluded_versions ev
+              ON ev.version_id = st.version_id
+      `
+      : "";
+    const excludedWhereSql = excludedTagPredicate ? "AND ev.version_id IS NULL" : "";
     const cutoffSql = cutoffTimestamp ? "AND pv.created_at < ?" : "";
     const keepSql = keepCount !== undefined ? "WHERE recency_rank > ?" : "";
-    const params: Array<number | string> = [scanId, ...deleteTags, ...excludeTags];
+    const params: Array<number | string> = [scanId, ...selectedTagPredicate.params];
+    if (excludedTagPredicate) {
+      params.push(scanId, ...excludedTagPredicate.params);
+    }
     if (cutoffTimestamp) {
       params.push(cutoffTimestamp);
     }
-    params.push(...deleteTags, scanId);
+    params.push(scanId);
     const tailParams: Array<number> = [keepCount !== undefined ? 1 : 0];
     if (keepCount !== undefined) {
       tailParams.push(keepCount);
     }
 
     const sql = `
-          WITH matched_candidate_roots AS (
+          WITH selected_tags AS (
+            SELECT st.scan_id, st.version_id, st.tag
+            FROM tags st
+            WHERE st.scan_id = ?
+              AND (${selectedTagPredicate.sql})
+          ),
+          ${excludedVersionsCte}
+          matched_candidate_roots AS (
             SELECT DISTINCT
-              mt.version_id AS version_id,
+              st.version_id AS version_id,
               m.digest AS root_digest,
               m.manifest_kind AS root_manifest_kind,
               pv.created_at
-            FROM tags mt
+            FROM selected_tags st
             JOIN manifests m
-              ON m.scan_id = mt.scan_id
-             AND m.version_id = mt.version_id
+              ON m.scan_id = st.scan_id
+             AND m.version_id = st.version_id
             JOIN package_versions pv
-              ON pv.scan_id = mt.scan_id
-             AND pv.version_id = mt.version_id
-            WHERE mt.scan_id = ?
-              AND mt.tag IN (${selectedTagPlaceholders})
-              ${excludedRootSql}
+              ON pv.scan_id = st.scan_id
+             AND pv.version_id = st.version_id
+            ${excludedJoinSql}
+            WHERE 1 = 1
+              ${excludedWhereSql}
               ${cutoffSql}
               AND NOT EXISTS (
                 SELECT 1
                 FROM manifest_reachability mr
-                WHERE mr.scan_id = mt.scan_id
+                WHERE mr.scan_id = st.scan_id
                   AND mr.descendant_digest = m.digest
                   AND mr.min_distance > 0
               )
@@ -843,11 +867,15 @@ export class PlannerRepository {
               mcr.root_manifest_kind,
               mcr.created_at,
               COUNT(t.tag) AS total_tag_count,
-              SUM(CASE WHEN t.tag IN (${selectedTagPlaceholders}) THEN 1 ELSE 0 END) AS matched_tag_count
+              COUNT(st.tag) AS matched_tag_count
             FROM matched_candidate_roots mcr
             JOIN tags t
               ON t.scan_id = ?
              AND t.version_id = mcr.version_id
+            LEFT JOIN selected_tags st
+              ON st.scan_id = t.scan_id
+             AND st.version_id = t.version_id
+             AND st.tag = t.tag
             GROUP BY mcr.version_id, mcr.root_digest, mcr.root_manifest_kind, mcr.created_at
             HAVING matched_tag_count > 0
           ),
@@ -892,6 +920,74 @@ export class PlannerRepository {
       reason: row.direct_target_reason,
       selectionMode: row.selection_mode
     }));
+  }
+
+  #buildTagSelectorPredicate(
+    columnSql: string,
+    selectors: string[],
+    useRegex: boolean
+  ): { sql: string; params: string[] } {
+    if (selectors.length === 0) {
+      throw new Error("selectors must not be empty");
+    }
+
+    if (useRegex) {
+      this.#registerRegexFunction();
+    }
+
+    return {
+      sql: selectors
+        .map((selector) => {
+          if (useRegex) {
+            return `regexp(?, ${columnSql})`;
+          }
+
+          return _hasWildcard(selector) ? `${columnSql} LIKE ? ESCAPE '\\'` : `${columnSql} = ?`;
+        })
+        .join(" OR "),
+      params: useRegex
+        ? selectors
+        : selectors.map((selector) => (_hasWildcard(selector) ? this.#wildcardSelectorToSqlLike(selector) : selector))
+    };
+  }
+
+  #wildcardSelectorToSqlLike(selector: string): string {
+    return selector.replaceAll(/[%_\\*?]/g, (character) => {
+      switch (character) {
+        case "%":
+        case "_":
+        case "\\":
+          return `\\${character}`;
+        case "*":
+          return "%";
+        case "?":
+          return "_";
+        default:
+          return character;
+      }
+    });
+  }
+
+  #registerRegexFunction(): void {
+    const markedDatabase = this.#database as Database.Database & {
+      __ghcrManagerRegexCache?: Map<string, RegExp>;
+      __ghcrManagerRegexRegistered?: boolean;
+    };
+    if (markedDatabase.__ghcrManagerRegexRegistered) {
+      return;
+    }
+
+    markedDatabase.__ghcrManagerRegexCache = new Map();
+    this.#database.function("regexp", (pattern: string, value: string) => {
+      let compiled = markedDatabase.__ghcrManagerRegexCache?.get(pattern);
+      if (!compiled) {
+        compiled = new RegExp(pattern);
+        markedDatabase.__ghcrManagerRegexCache?.set(pattern, compiled);
+      }
+
+      return compiled.test(value) ? 1 : 0;
+    });
+    markedDatabase.__ghcrManagerRegexRegistered = true;
   }
 
   #buildPlanArtifacts(scanId: number, directTargetRoots: DeletePlanRoot[]): _PlanArtifacts {
@@ -1161,4 +1257,8 @@ function _buildBlockedValidationReason(blockedRoot?: DeletePlanBlockedRoot): str
   }
 
   return `blocked because retained root ${blockedRoot.blockingDigest} still requires shared manifest ${blockedRoot.overlapDigest}`;
+}
+
+function _hasWildcard(selector: string): boolean {
+  return selector.includes("*") || selector.includes("?");
 }
