@@ -116,18 +116,6 @@ test("initializeSchema creates SQL views from sql/views", () => {
   const database = new Database(":memory:");
   initializeSchema(database);
 
-  const missingDigestsRelatedManifestsRow = database
-    .prepare(
-      `
-        SELECT sql
-        FROM sqlite_master
-        WHERE type = 'view' AND name = 'v_missing_digests_related_manifests'
-      `
-    )
-    .get() as { sql?: string } | undefined;
-
-  assert.match(missingDigestsRelatedManifestsRow?.sql ?? "", /CREATE VIEW v_missing_digests_related_manifests AS/);
-
   const digestDerivedTagRelationsRow = database
     .prepare(
       `

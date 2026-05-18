@@ -837,3 +837,14 @@ src/
       “expand user selectors” to “preserve user selectors.”
 - [x] Reduced repeated regex work in tagged-root planning by materializing selected tags and excluded versions once per
       query and caching compiled regex objects inside the SQLite `regexp()` function.
+
+### 2026-05-18 (remove legacy exploratory views)
+
+- [x] Removed the unused legacy SQL views:
+  - `v_missing_digests_related_manifests`
+  - `v_manifests_related_manifests`
+  - `v_tags_delete_manifests`
+  - `v_tags_delete_affected_tags`
+- [x] Kept `v_missing_digests`, `v_scan_root_manifests`, and `v_digest_derived_tag_relations` because they still back
+      active runtime or diagnostic surfaces.
+- [x] Trimmed the schema test and current docs that still described the removed views as active surfaces.

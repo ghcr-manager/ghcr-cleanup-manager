@@ -80,21 +80,3 @@ LEFT JOIN tags t
 WHERE md.scan_id = (SELECT scan_id FROM target_scan)
 ORDER BY md.missing_digest, pv.version_id, t.tag;
 ```
-
-## Related Known Manifests
-
-Use the built-in view when you want the nearest known manifests around each missing digest:
-
-```sql
-SELECT
-  owner,
-  package_name,
-  missing_digest,
-  related_manifest_digest,
-  manifest_kind,
-  hops_missing_to_related_manifest,
-  tag,
-  version_id
-FROM v_missing_digests_related_manifests
-ORDER BY owner, package_name, missing_digest, hops_missing_to_related_manifest, related_manifest_digest;
-```

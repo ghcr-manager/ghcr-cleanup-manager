@@ -23,19 +23,6 @@ The planner data model is about the dry-run output only. Execution can add opera
 
 ## Why A New Model Is Needed
 
-The existing exploratory views are useful for ad hoc inspection:
-
-- `v_manifests_related_manifests`
-- `v_tags_delete_manifests`
-- `v_tags_delete_affected_tags`
-
-They are not yet the canonical planner interface because they:
-
-- are anchored to all tags in the latest scan instead of one explicit cleanup request
-- do not distinguish direct user intent from derived collateral impact
-- do not model blocked roots explicitly
-- do not separate untag actions from package-version deletion candidates
-
 The planner output must be request-scoped and explanation-first.
 
 ## Planner Layers
@@ -167,7 +154,6 @@ Notes:
 
 - include the root itself with `hops_from_source = 0`
 - include only in-package manifests already present in `manifests`
-- this is the canonical replacement for the "what would this root delete?" idea behind `v_tags_delete_manifests`
 
 ### 5. Blocked roots
 
@@ -220,7 +206,6 @@ Notes:
 
 - the first expected case is additional tags on the same root as a direct delete candidate
 - this set must exclude direct target tags because those are already user intent, not collateral
-- this is the canonical replacement for the "affected tags" idea behind `v_tags_delete_affected_tags`
 
 ## Final Planner Outputs
 
@@ -280,21 +265,8 @@ This split matters because the current `v_tags_delete_*` views hard-code one pol
 
 ## Mapping To Current Prototypes
 
-### Keep as exploratory only
-
-- `v_manifests_related_manifests`
-  - useful for graph inspection
-  - not a planner output
-- `v_tags_delete_manifests`
-  - close to closure expansion, but tag-centric and missing root/self rows
-- `v_tags_delete_affected_tags`
-  - useful overlap prototype, but it does not distinguish blocked roots from collateral same-root tags
-
-### Preferred future direction
-
-- keep current views for debugging until canonical planner queries exist
-- do not make new planner code depend directly on `v_tags_delete_manifests` or `v_tags_delete_affected_tags`
-- replace them later with root-scoped base views plus request-scoped planner queries
+The current runtime and debugging surfaces should stay request-scoped where possible. Avoid reintroducing globally named
+latest-scan views that bake one cleanup-policy shape into the schema layer.
 
 ## Minimal Implementation Order
 
