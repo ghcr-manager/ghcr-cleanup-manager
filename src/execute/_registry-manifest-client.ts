@@ -7,7 +7,7 @@ import {
   resolveJsonHeaders,
   runWithRetry
 } from "./_http.js";
-import type { DeleteExecutionFetchLike, DeleteExecutionLogger } from "./_types.js";
+import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
 
 const _ACCEPTED_MANIFEST_MEDIA_TYPES = [
   "application/vnd.oci.image.index.v1+json",
@@ -32,7 +32,7 @@ export async function loadRegistryManifestByDigest(
   logger: DeleteExecutionLogger,
   runtime?: {
     registryBaseUrl?: string;
-    fetchImpl?: DeleteExecutionFetchLike;
+    fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<LoadedRegistryManifest> {
   const registryBaseUrl = runtime?.registryBaseUrl ?? _DEFAULT_REGISTRY_BASE_URL;
@@ -87,7 +87,7 @@ export async function putRegistryManifestForTag(
   logger: DeleteExecutionLogger,
   runtime?: {
     registryBaseUrl?: string;
-    fetchImpl?: DeleteExecutionFetchLike;
+    fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<string> {
   const registryBaseUrl = runtime?.registryBaseUrl ?? _DEFAULT_REGISTRY_BASE_URL;

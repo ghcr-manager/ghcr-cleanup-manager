@@ -35,7 +35,7 @@ export interface DeleteExecutionOptions {
   logger: DeleteExecutionLogger;
   githubApiBaseUrl?: string;
   registryBaseUrl?: string;
-  fetchImpl?: DeleteExecutionFetchLike;
+  fetchImpl?: GitHubPackageFetch;
   listRootTags?: (root: { owner: string; packageName: string; versionId: number; digest: string }) => string[];
 }
 
@@ -46,11 +46,11 @@ export interface DeleteExecutionLogger {
   error(message: string): void;
 }
 
-export interface DeleteExecutionFetchLikeResponse {
+export interface GitHubPackageFetchResponse {
   ok: boolean;
   status: number;
   headers: Headers;
   json(): Promise<unknown>;
 }
 
-export type DeleteExecutionFetchLike = (input: string, init?: RequestInit) => Promise<DeleteExecutionFetchLikeResponse>;
+export type GitHubPackageFetch = (input: string, init?: RequestInit) => Promise<GitHubPackageFetchResponse>;

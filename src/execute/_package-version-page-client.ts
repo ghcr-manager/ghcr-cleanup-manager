@@ -6,7 +6,7 @@ import {
   resolveFetch,
   runWithRetry
 } from "./_http.js";
-import type { DeleteExecutionFetchLike, DeleteExecutionLogger } from "./_types.js";
+import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
 
 const _DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
 const _GITHUB_API_VERSION = "2022-11-28";
@@ -30,7 +30,7 @@ export async function findPackageVersionByDigestAndTag(
   logger: DeleteExecutionLogger,
   runtime?: {
     githubApiBaseUrl?: string;
-    fetchImpl?: DeleteExecutionFetchLike;
+    fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<number> {
   const githubApiBaseUrl = runtime?.githubApiBaseUrl ?? _DEFAULT_GITHUB_API_BASE_URL;
@@ -70,7 +70,7 @@ async function _findPackageVersionByDigestAndTagOnce(
   token: string,
   logger: DeleteExecutionLogger,
   githubApiBaseUrl: string,
-  fetchImpl: DeleteExecutionFetchLike
+  fetchImpl: GitHubPackageFetch
 ): Promise<number | undefined> {
   for (let page = 1; ; page += 1) {
     const items = await loadPackageVersionPage(owner, packageName, page, token, logger, fetchImpl, {
@@ -98,10 +98,10 @@ async function loadPackageVersionPage(
   page: number,
   token: string,
   logger: DeleteExecutionLogger,
-  fetchImpl: DeleteExecutionFetchLike,
+  fetchImpl: GitHubPackageFetch,
   runtime: {
     githubApiBaseUrl: string;
-    fetchImpl: DeleteExecutionFetchLike;
+    fetchImpl: GitHubPackageFetch;
   }
 ): Promise<_GitHubPackageVersionPageItem[]> {
   const ownerURIComponent = await getOwnerURIComponent(fetchImpl, runtime.githubApiBaseUrl, owner, token, logger);

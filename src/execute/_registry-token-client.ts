@@ -5,7 +5,7 @@ import {
   resolveFetch,
   runWithRetry
 } from "./_http.js";
-import type { DeleteExecutionFetchLike, DeleteExecutionLogger } from "./_types.js";
+import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
 
 const _DEFAULT_REGISTRY_BASE_URL = "https://ghcr.io";
 
@@ -16,7 +16,7 @@ export async function loadRegistryPushToken(
   logger: DeleteExecutionLogger,
   runtime?: {
     registryBaseUrl?: string;
-    fetchImpl?: DeleteExecutionFetchLike;
+    fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<string> {
   const registryBaseUrl = runtime?.registryBaseUrl ?? _DEFAULT_REGISTRY_BASE_URL;

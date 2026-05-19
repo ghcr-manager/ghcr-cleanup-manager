@@ -6,7 +6,7 @@ import {
   resolveFetch,
   runWithRetry
 } from "./_http.js";
-import type { DeleteExecutionFetchLike, DeleteExecutionLogger } from "./_types.js";
+import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
 
 const _DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
 const _GITHUB_API_VERSION = "2022-11-28";
@@ -19,7 +19,7 @@ export async function deletePackageVersion(
   logger: DeleteExecutionLogger,
   runtime?: {
     githubApiBaseUrl?: string;
-    fetchImpl?: DeleteExecutionFetchLike;
+    fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<void> {
   const githubApiBaseUrl = runtime?.githubApiBaseUrl ?? _DEFAULT_GITHUB_API_BASE_URL;

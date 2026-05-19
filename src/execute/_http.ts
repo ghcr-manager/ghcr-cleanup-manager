@@ -1,4 +1,4 @@
-import type { DeleteExecutionFetchLike, DeleteExecutionFetchLikeResponse, DeleteExecutionLogger } from "./_types.js";
+import type { DeleteExecutionLogger, GitHubPackageFetch, GitHubPackageFetchResponse } from "./_types.js";
 export { buildHttpErrorMessage } from "../core/index.js";
 
 const _RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
@@ -39,11 +39,11 @@ export function buildTransportErrorMessage(error: unknown, fallback: string): st
   return details.join(" - ");
 }
 
-export function resolveFetch(fetchImpl?: DeleteExecutionFetchLike): DeleteExecutionFetchLike {
+export function resolveFetch(fetchImpl?: GitHubPackageFetch): GitHubPackageFetch {
   return fetchImpl ?? fetch;
 }
 
-export function resolveJsonHeaders(response: DeleteExecutionFetchLikeResponse): string | undefined {
+export function resolveJsonHeaders(response: GitHubPackageFetchResponse): string | undefined {
   return response.headers.get("content-type")?.split(";")[0];
 }
 
