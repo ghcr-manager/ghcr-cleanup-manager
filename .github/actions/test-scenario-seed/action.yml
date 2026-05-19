@@ -44,7 +44,7 @@ runs:
         set -euo pipefail
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "keep-tagged" > "$context_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -64,7 +64,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         old_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$old_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$old_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} old" > "$old_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -74,7 +74,7 @@ runs:
           "$old_dir"
 
         new_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$new_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$new_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} new" > "$new_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -93,7 +93,7 @@ runs:
         set -euo pipefail
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$context_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -116,17 +116,17 @@ runs:
 
         delete_dir="$base_dir/delete-amd64"
         mkdir -p "$delete_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$delete_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$delete_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} delete amd64" > "$delete_dir/payload.txt"
 
         shared_dir="$base_dir/shared-arm64"
         mkdir -p "$shared_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$shared_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$shared_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} shared arm64" > "$shared_dir/payload.txt"
 
         keep_dir="$base_dir/keep-amd64"
         mkdir -p "$keep_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} keep amd64" > "$keep_dir/payload.txt"
 
         echo "delete_dir=$delete_dir" >> "$GITHUB_OUTPUT"
@@ -210,7 +210,7 @@ runs:
         set -euo pipefail
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$context_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64,linux/arm64 \
@@ -233,12 +233,12 @@ runs:
 
         amd64_dir="$base_dir/amd64"
         mkdir -p "$amd64_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} amd64" > "$amd64_dir/payload.txt"
 
         arm64_dir="$base_dir/arm64"
         mkdir -p "$arm64_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} arm64" > "$arm64_dir/payload.txt"
 
         echo "amd64_dir=$amd64_dir" >> "$GITHUB_OUTPUT"
@@ -317,12 +317,12 @@ runs:
 
         amd64_dir="$base_dir/amd64"
         mkdir -p "$amd64_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} amd64" > "$amd64_dir/payload.txt"
 
         arm64_dir="$base_dir/arm64"
         mkdir -p "$arm64_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} arm64" > "$arm64_dir/payload.txt"
 
         echo "amd64_dir=$amd64_dir" >> "$GITHUB_OUTPUT"
@@ -391,7 +391,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         keep_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
         printf '%s\n' "keep-tagged" > "$keep_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -401,7 +401,7 @@ runs:
           "$keep_dir"
 
         delete_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$delete_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$delete_dir/Dockerfile"
         printf '%s\n' "delete-me-tagged" > "$delete_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -420,7 +420,7 @@ runs:
         set -euo pipefail
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
         context_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$context_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$context_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$context_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -441,7 +441,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         oldest_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$oldest_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$oldest_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} oldest" > "$oldest_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -451,7 +451,7 @@ runs:
           "$oldest_dir"
 
         middle_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$middle_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$middle_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} middle" > "$middle_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -461,7 +461,7 @@ runs:
           "$middle_dir"
 
         newest_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$newest_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$newest_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} newest" > "$newest_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -481,7 +481,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         oldest_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$oldest_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$oldest_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} oldest" > "$oldest_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -491,7 +491,7 @@ runs:
           "$oldest_dir"
 
         middle_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$middle_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$middle_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} middle" > "$middle_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -501,7 +501,7 @@ runs:
           "$middle_dir"
 
         newest_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$newest_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$newest_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} newest" > "$newest_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -521,7 +521,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         keep_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} keep" > "$keep_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -531,7 +531,7 @@ runs:
           "$keep_dir"
 
         delete_old_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$delete_old_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$delete_old_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} delete old" > "$delete_old_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -541,7 +541,7 @@ runs:
           "$delete_old_dir"
 
         delete_new_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$delete_new_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$delete_new_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} delete new" > "$delete_new_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -569,17 +569,17 @@ runs:
 
         keep_dir="$base_dir/keep"
         mkdir -p "$keep_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} keep" > "$keep_dir/payload.txt"
 
         noop_child_dir="$base_dir/noop-child"
         mkdir -p "$noop_child_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$noop_child_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$noop_child_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} noop child" > "$noop_child_dir/payload.txt"
 
         second_child_dir="$base_dir/second-child"
         mkdir -p "$second_child_dir"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$second_child_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$second_child_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} second child" > "$second_child_dir/payload.txt"
 
         echo "keep_dir=$keep_dir" >> "$GITHUB_OUTPUT"
@@ -749,7 +749,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         keep_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} keep" > "$keep_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -759,7 +759,7 @@ runs:
           "$keep_dir"
 
         orphan_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$orphan_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$orphan_dir/Dockerfile"
         printf '%s\n' "$SCENARIO_ID" > "$orphan_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -779,7 +779,7 @@ runs:
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
         parent_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$parent_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$parent_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} parent" > "$parent_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
@@ -798,7 +798,7 @@ runs:
         }
 
         referrer_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../test-scenarios/minimal-image/Dockerfile" "$referrer_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$referrer_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} referrer" > "$referrer_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \
