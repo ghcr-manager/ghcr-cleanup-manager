@@ -53,6 +53,8 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
   - partial-image vs ghost-image split already matches upstream bugfix behavior
   - OCI 1.1 `subject` / referrer preservation is already represented in scan ingest, reachability, and cleanup planning
   - remaining hardening gap: `--use-regex` selectors are not pre-validated for pathological / ReDoS-prone patterns
+- Scenario executor workflow note:
+  - digest-selector scenarios require repo dependencies before pre-scan and digest resolution helper scripts run
 
 ## Current Action / DB Notes
 
