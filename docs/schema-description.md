@@ -286,6 +286,9 @@ It infers a likely parent digest from the tag name and compares that with:
 
 This is exploratory/helper data, not authoritative graph structure.
 
+In practice, use it to inspect suspicious digest-shaped tags or orphan-style companion artifacts, not to replace
+`manifest_edges` or `manifest_reachability`.
+
 Related query recipes:
 
 - [queries/digest-derived-tag-relations-queries.md](queries/digest-derived-tag-relations-queries.md)
