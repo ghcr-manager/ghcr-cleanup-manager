@@ -33,7 +33,7 @@ Example call of `ghcr-cleanup-action` from a workflow in `ownerC/repoC`:
 1. org: Create a test-org on GH
 2. PAT: In your user account, create a classic PAT with permissions: `write:packages`
 3. Copy
-   [test workflow](https://github.com/gh-workflow/ghcr-manager/blob/6267ab6a1398af6d28da94145dd82f8ef9d11907/.github/workflows/test_ghcr-cleanup-action-cross-owner.yml)
+   [test workflow](https://github.com/gh-workflow/ghcr-manager/blob/df33332efc30d05a6433581da58e1c48e5958605/.github/workflows/test_ghcr-cleanup-action-cross-owner.yml)
    to a caller-repository outside the test-org (might not matter)
 4. In caller-repos settings, add:
    - actions secret `GHCR_TEST_PAT` with the PAT value
@@ -76,7 +76,7 @@ What matters is only:
   - Type "Organization": `ownerURIPart = "orgs/$owner"`
   - Then the URL becomes `githubApiBaseUrl = "https://api.github.com/${ownerURIPart}/packages/container/"`.
   - you could copy and adapt
-    [getOwnerURIComponent()](https://github.com/gh-workflow/ghcr-manager/blob/6267ab6a1398af6d28da94145dd82f8ef9d11907/src/core/_github-package-owner.ts#L22)
+    [getOwnerURIComponent()](https://github.com/gh-workflow/ghcr-manager/blob/df33332efc30d05a6433581da58e1c48e5958605/src/core/_github-package-owner.ts#L22)
     to get the `ownerURIPart`, the method uses caching per owner
 - token: Can token read/write the package? REST calls will fail and tell
 
@@ -86,7 +86,7 @@ What matters is only:
 > other visibility scope.
 >
 > can be read directly from the package metadata (see
-> [loadPackageMetadata()](https://github.com/gh-workflow/ghcr-manager/blob/6267ab6a1398af6d28da94145dd82f8ef9d11907/src/ingest/github/_package-metadata-load.ts#L16))
+> [loadPackageMetadata()](https://github.com/gh-workflow/ghcr-manager/blob/df33332efc30d05a6433581da58e1c48e5958605/src/ingest/github/_package-metadata-load.ts#L16))
 >
 > - org owned: `GET https://api.github.com/orgs/$owner/packages/container/$pacakge`
 > - user owned: `GET https://api.github.com/users/$owner/packages/container/$pacakge`
