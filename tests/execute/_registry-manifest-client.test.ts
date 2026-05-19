@@ -18,7 +18,6 @@ test("loadRegistryManifestByDigest loads a manifest document", async () => {
       error() {}
     },
     {
-      registryBaseUrl: "https://ghcr.example.test",
       fetchImpl: async () => ({
         ok: true,
         status: 200,
@@ -54,7 +53,6 @@ test("putRegistryManifestForTag returns the local content digest", async () => {
       error() {}
     },
     {
-      registryBaseUrl: "https://ghcr.example.test",
       fetchImpl: async () => ({
         ok: true,
         status: 201,
@@ -82,7 +80,6 @@ test("loadRegistryManifestByDigest falls back to response content type for media
       error() {}
     },
     {
-      registryBaseUrl: "https://ghcr.example.test",
       fetchImpl: async () => ({
         ok: true,
         status: 200,
@@ -112,7 +109,6 @@ test("loadRegistryManifestByDigest rejects responses without any media type", as
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async () => ({
             ok: true,
             status: 200,
@@ -142,7 +138,6 @@ test("loadRegistryManifestByDigest surfaces non-retryable HTTP failures", async 
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async () => ({
             ok: false,
             status: 404,
@@ -174,7 +169,6 @@ test("putRegistryManifestForTag surfaces transport failures", async () => {
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async () => {
             throw new TypeError("fetch failed", {
               cause: Object.assign(new Error("socket hang up"), { code: "ECONNRESET" })
@@ -211,7 +205,6 @@ test("loadRegistryManifestByDigest sends the accepted media types and retries re
         error() {}
       },
       {
-        registryBaseUrl: "https://ghcr.example.test",
         fetchImpl: async (input, init) => {
           attempts += 1;
           const headers = new Headers(init?.headers);
@@ -244,7 +237,7 @@ test("loadRegistryManifestByDigest sends the accepted media types and retries re
 
     assert.equal(manifest.mediaType, "application/vnd.oci.image.index.v1+json");
     assert.equal(attempts, 2);
-    assert.equal(requests[0]?.url, "https://ghcr.example.test/v2/acme/example/manifests/sha256:source");
+    assert.equal(requests[0]?.url, "https://ghcr.io/v2/acme/example/manifests/sha256:source");
     assert.match(requests[0]?.accept ?? "", /application\/vnd\.docker\.distribution\.manifest\.list\.v2\+json/);
     assert.match(
       warnings[0] ?? "",
@@ -275,7 +268,6 @@ test("putRegistryManifestForTag sends the expected headers and surfaces non-retr
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async (input, init) => {
             const headers = new Headers(init?.headers);
             requests.push({
@@ -300,7 +292,7 @@ test("putRegistryManifestForTag sends the expected headers and surfaces non-retr
 
   assert.deepEqual(requests, [
     {
-      url: "https://ghcr.example.test/v2/acme/example/manifests/latest",
+      url: "https://ghcr.io/v2/acme/example/manifests/latest",
       method: "PUT",
       contentType: "application/vnd.oci.image.manifest.v1+json",
       authorization: "Bearer registry-token"

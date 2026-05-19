@@ -9,7 +9,7 @@ function _createLogger() {
 test("package metadata loader returns whether the package is public", async () => {
   const metadata = await loadPackageMetadata(
     async (input, init) => {
-      if (input === "https://api.github.test/users/acme") {
+      if (input === "https://api.github.com/users/acme") {
         return {
           ok: true,
           status: 200,
@@ -19,7 +19,7 @@ test("package metadata loader returns whether the package is public", async () =
           }
         };
       }
-      assert.equal(input, "https://api.github.test/orgs/acme/packages/container/example");
+      assert.equal(input, "https://api.github.com/orgs/acme/packages/container/example");
       assert.deepEqual(init?.headers, {
         Accept: "application/vnd.github+json",
         Authorization: "Bearer token",
@@ -37,7 +37,6 @@ test("package metadata loader returns whether the package is public", async () =
         }
       };
     },
-    "https://api.github.test",
     {
       owner: "acme",
       packageName: "example",
@@ -57,7 +56,7 @@ test("package metadata loader rejects unsupported visibility values", async () =
     () =>
       loadPackageMetadata(
         async (input) =>
-          input === "https://api.github.test/users/acme"
+          input === "https://api.github.com/users/acme"
             ? {
                 ok: true,
                 status: 200,
@@ -76,7 +75,6 @@ test("package metadata loader rejects unsupported visibility values", async () =
                   };
                 }
               },
-        "https://api.github.test",
         {
           owner: "acme",
           packageName: "example",
@@ -91,7 +89,7 @@ test("package metadata loader rejects unsupported visibility values", async () =
 test("package metadata loader returns true for public packages", async () => {
   const metadata = await loadPackageMetadata(
     async (input) =>
-      input === "https://api.github.test/users/acme"
+      input === "https://api.github.com/users/acme"
         ? {
             ok: true,
             status: 200,
@@ -110,7 +108,6 @@ test("package metadata loader returns true for public packages", async () => {
               };
             }
           },
-    "https://api.github.test",
     {
       owner: "acme",
       packageName: "example",
@@ -130,7 +127,7 @@ test("package metadata loader surfaces non-retryable HTTP failures", async () =>
     () =>
       loadPackageMetadata(
         async (input) =>
-          input === "https://api.github.test/users/acme"
+          input === "https://api.github.com/users/acme"
             ? {
                 ok: true,
                 status: 200,
@@ -149,7 +146,6 @@ test("package metadata loader surfaces non-retryable HTTP failures", async () =>
                   };
                 }
               },
-        "https://api.github.test",
         {
           owner: "acme",
           packageName: "example",
@@ -173,7 +169,7 @@ test("package metadata loader retries retryable statuses", async () => {
   try {
     const metadata = await loadPackageMetadata(
       async (input) => {
-        if (input === "https://api.github.test/users/acme") {
+        if (input === "https://api.github.com/users/acme") {
           return {
             ok: true,
             status: 200,
@@ -208,7 +204,6 @@ test("package metadata loader retries retryable statuses", async () => {
           }
         };
       },
-      "https://api.github.test",
       {
         owner: "acme",
         packageName: "example",
@@ -240,7 +235,7 @@ test("package metadata loader surfaces transport failures", async () => {
     () =>
       loadPackageMetadata(
         async (input) => {
-          if (input === "https://api.github.test/users/acme") {
+          if (input === "https://api.github.com/users/acme") {
             return {
               ok: true,
               status: 200,
@@ -254,7 +249,6 @@ test("package metadata loader surfaces transport failures", async () => {
             cause: Object.assign(new Error("socket hang up"), { code: "ECONNRESET" })
           });
         },
-        "https://api.github.test",
         {
           owner: "acme",
           packageName: "example",
@@ -271,7 +265,7 @@ test("package metadata loader supports user-owned packages", async () => {
 
   const metadata = await loadPackageMetadata(
     async (input) => {
-      if (input === "https://api.github.test/users/wuodan") {
+      if (input === "https://api.github.com/users/wuodan") {
         return {
           ok: true,
           status: 200,
@@ -293,7 +287,6 @@ test("package metadata loader supports user-owned packages", async () => {
         }
       };
     },
-    "https://api.github.test",
     {
       owner: "wuodan",
       packageName: "example",
@@ -302,6 +295,6 @@ test("package metadata loader supports user-owned packages", async () => {
     }
   );
 
-  assert.equal(seenUrl, "https://api.github.test/users/wuodan/packages/container/example");
+  assert.equal(seenUrl, "https://api.github.com/users/wuodan/packages/container/example");
   assert.equal(metadata.isPublic, true);
 });

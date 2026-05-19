@@ -5,7 +5,7 @@ import { getOwnerURIComponent } from "../../src/core/index.js";
 test("GitHub owner lookup resolves organization and user URI components", async () => {
   const organizationOwnerURIComponent = await getOwnerURIComponent(
     async (input) => {
-      assert.equal(input, "https://api.github.test/users/acme");
+      assert.equal(input, "https://api.github.com/users/acme");
       return {
         ok: true,
         status: 200,
@@ -15,7 +15,6 @@ test("GitHub owner lookup resolves organization and user URI components", async 
         }
       };
     },
-    "https://api.github.test",
     "acme",
     "token",
     { warn() {} }
@@ -29,7 +28,6 @@ test("GitHub owner lookup resolves organization and user URI components", async 
         return { type: "User" };
       }
     }),
-    "https://api.github.test",
     "wuodan",
     "token",
     { warn() {} }
@@ -54,7 +52,6 @@ test("GitHub owner lookup caches resolved owner URI components", async () => {
         }
       };
     },
-    "https://api.github.test",
     "cached-owner",
     "token",
     { warn() {} }
@@ -71,7 +68,6 @@ test("GitHub owner lookup caches resolved owner URI components", async () => {
         }
       };
     },
-    "https://api.github.test",
     "cached-owner",
     "token",
     { warn() {} }

@@ -15,7 +15,6 @@ test("loadRegistryPushToken requests a push-capable token", async () => {
       error() {}
     },
     {
-      registryBaseUrl: "https://ghcr.example.test",
       fetchImpl: async (input) => {
         calls.push(String(input));
         return {
@@ -31,9 +30,7 @@ test("loadRegistryPushToken requests a push-capable token", async () => {
   );
 
   assert.equal(token, "registry-token");
-  assert.deepEqual(calls, [
-    "https://ghcr.example.test/token?service=ghcr.example.test&scope=repository%3Aacme%2Fexample%3Apull%2Cpush"
-  ]);
+  assert.deepEqual(calls, ["https://ghcr.io/token?service=ghcr.io&scope=repository%3Aacme%2Fexample%3Apull%2Cpush"]);
 });
 
 test("loadRegistryPushToken surfaces non-retryable HTTP failures", async () => {
@@ -50,7 +47,6 @@ test("loadRegistryPushToken surfaces non-retryable HTTP failures", async () => {
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async () => ({
             ok: false,
             status: 401,
@@ -82,7 +78,6 @@ test("loadRegistryPushToken rejects responses without a token", async () => {
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async () => ({
             ok: true,
             status: 200,
@@ -111,7 +106,6 @@ test("loadRegistryPushToken surfaces transport failures", async () => {
           error() {}
         },
         {
-          registryBaseUrl: "https://ghcr.example.test",
           fetchImpl: async () => {
             throw new TypeError("fetch failed", {
               cause: Object.assign(new Error("socket hang up"), { code: "ECONNRESET" })

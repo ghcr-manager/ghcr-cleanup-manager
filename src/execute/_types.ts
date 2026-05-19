@@ -33,8 +33,6 @@ export interface DeleteExecutionSummary {
 export interface DeleteExecutionOptions {
   token: string;
   logger: DeleteExecutionLogger;
-  githubApiBaseUrl?: string;
-  registryBaseUrl?: string;
   fetchImpl?: GitHubPackageFetch;
   listRootTags?: (root: { owner: string; packageName: string; versionId: number; digest: string }) => string[];
 }

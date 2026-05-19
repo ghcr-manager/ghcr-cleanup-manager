@@ -65,8 +65,17 @@ test("executeDeletePlan deletes fully deletable roots and returns a summary", as
       warn() {},
       error() {}
     },
-    githubApiBaseUrl: "https://api.github.test",
     fetchImpl: async (input) => {
+      if (String(input) === "https://api.github.com/users/acme") {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          async json() {
+            return { type: "Organization" };
+          }
+        };
+      }
       deletedVersionIds.push(Number(String(input).split("/").pop()));
       return {
         ok: true,
@@ -140,16 +149,24 @@ test("executeDeletePlan applies untag-only roots before deleting fully deletable
       warn() {},
       error() {}
     },
-    githubApiBaseUrl: "https://api.github.test",
-    registryBaseUrl: "https://ghcr.example.test",
     listRootTags() {
       return ["keep-me", "latest"];
     },
     fetchImpl: async (input, init) => {
       const url = String(input);
+      if (url === "https://api.github.com/users/acme") {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          async json() {
+            return { type: "Organization" };
+          }
+        };
+      }
       fetchCalls.push({ url, method: init?.method });
 
-      if (url.startsWith("https://ghcr.example.test/token")) {
+      if (url.startsWith("https://ghcr.io/token")) {
         return {
           ok: true,
           status: 200,
@@ -159,7 +176,7 @@ test("executeDeletePlan applies untag-only roots before deleting fully deletable
           }
         };
       }
-      if (url === "https://ghcr.example.test/v2/acme/example/manifests/sha256:index-current") {
+      if (url === "https://ghcr.io/v2/acme/example/manifests/sha256:index-current") {
         return {
           ok: true,
           status: 200,
@@ -174,7 +191,7 @@ test("executeDeletePlan applies untag-only roots before deleting fully deletable
           }
         };
       }
-      if (url === "https://ghcr.example.test/v2/acme/example/manifests/latest") {
+      if (url === "https://ghcr.io/v2/acme/example/manifests/latest") {
         const crypto = await import("node:crypto");
         detachedDigest = `sha256:${crypto
           .createHash("sha256")
@@ -189,7 +206,7 @@ test("executeDeletePlan applies untag-only roots before deleting fully deletable
           }
         };
       }
-      if (url === "https://api.github.test/orgs/acme/packages/container/example/versions?per_page=100&page=1") {
+      if (url === "https://api.github.com/orgs/acme/packages/container/example/versions?per_page=100&page=1") {
         return {
           ok: true,
           status: 200,
@@ -227,7 +244,7 @@ test("executeDeletePlan applies untag-only roots before deleting fully deletable
     ["latest"]
   );
   assert.equal(
-    fetchCalls.some((call) => call.url === "https://ghcr.example.test/v2/acme/example/manifests/latest"),
+    fetchCalls.some((call) => call.url === "https://ghcr.io/v2/acme/example/manifests/latest"),
     true
   );
 });

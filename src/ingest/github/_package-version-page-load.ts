@@ -1,4 +1,4 @@
-import { getOwnerURIComponent } from "../../core/index.js";
+import { getOwnerURIComponent, githubApiBaseUrl } from "../../core/index.js";
 import {
   buildFetchTransportErrorMessage,
   buildHttpErrorMessage,
@@ -21,12 +21,11 @@ export interface GitHubPackageVersionPageItem {
 
 export async function loadPackageVersionPage(
   fetchImpl: FetchLike,
-  githubApiBaseUrl: string,
   options: GitHubScanOptions,
   page: number
 ): Promise<GitHubPackageVersionPageItem[]> {
   const startTime = Date.now();
-  const url = await buildPackageVersionPageUrl(fetchImpl, githubApiBaseUrl, options, page);
+  const url = await buildPackageVersionPageUrl(fetchImpl, options, page);
   let response;
   try {
     response = await withFetchRetry(
@@ -69,17 +68,10 @@ export async function loadPackageVersionPage(
 
 async function buildPackageVersionPageUrl(
   fetchImpl: FetchLike,
-  githubApiBaseUrl: string,
   options: GitHubScanOptions,
   page: number
 ): Promise<string> {
-  const ownerURIComponent = await getOwnerURIComponent(
-    fetchImpl,
-    githubApiBaseUrl,
-    options.owner,
-    options.token,
-    options.logger
-  );
+  const ownerURIComponent = await getOwnerURIComponent(fetchImpl, options.owner, options.token, options.logger);
   const url = new URL(
     `/${ownerURIComponent}/packages/container/${encodeURIComponent(options.packageName)}/versions`,
     githubApiBaseUrl

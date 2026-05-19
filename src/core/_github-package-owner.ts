@@ -1,5 +1,6 @@
 import { ingestRequestRetryCount, ingestRequestRetryDelayMs } from "../tuning/index.js";
 import { buildHttpErrorMessage } from "./_http-error.js";
+import { githubApiBaseUrl } from "./_service-urls.js";
 
 interface _FetchLikeResponse {
   ok: boolean;
@@ -16,7 +17,6 @@ const _ownerUriComponentByOwner = new Map<string, string>();
 
 export async function getOwnerURIComponent(
   fetchImpl: (input: string, init?: RequestInit) => Promise<_FetchLikeResponse>,
-  githubApiBaseUrl: string,
   owner: string,
   token: string,
   logger: _Logger

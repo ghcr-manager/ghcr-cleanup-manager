@@ -17,9 +17,8 @@ test("deletePackageVersion deletes a package version via the org endpoint", asyn
       error() {}
     },
     {
-      githubApiBaseUrl: "https://api.github.test",
       fetchImpl: async (input, init) => {
-        if (input === "https://api.github.test/users/acme") {
+        if (input === "https://api.github.com/users/acme") {
           return {
             ok: true,
             status: 200,
@@ -47,7 +46,7 @@ test("deletePackageVersion deletes a package version via the org endpoint", asyn
 
   assert.deepEqual(calls, [
     {
-      url: "https://api.github.test/orgs/acme/packages/container/example/versions/42",
+      url: "https://api.github.com/orgs/acme/packages/container/example/versions/42",
       method: "DELETE"
     }
   ]);
@@ -68,9 +67,8 @@ test("deletePackageVersion deletes a package version via the user endpoint", asy
       error() {}
     },
     {
-      githubApiBaseUrl: "https://api.github.test",
       fetchImpl: async (input, init) => {
-        if (input === "https://api.github.test/users/wuodan") {
+        if (input === "https://api.github.com/users/wuodan") {
           return {
             ok: true,
             status: 200,
@@ -98,7 +96,7 @@ test("deletePackageVersion deletes a package version via the user endpoint", asy
 
   assert.deepEqual(calls, [
     {
-      url: "https://api.github.test/users/wuodan/packages/container/example/versions/42",
+      url: "https://api.github.com/users/wuodan/packages/container/example/versions/42",
       method: "DELETE"
     }
   ]);
@@ -119,9 +117,8 @@ test("deletePackageVersion surfaces GitHub error details", async () => {
           error() {}
         },
         {
-          githubApiBaseUrl: "https://api.github.test",
           fetchImpl: async (input) =>
-            input === "https://api.github.test/users/acme"
+            input === "https://api.github.com/users/acme"
               ? {
                   ok: true,
                   status: 200,
@@ -162,9 +159,8 @@ test("deletePackageVersion sends the expected headers and surfaces transport fai
       error() {}
     },
     {
-      githubApiBaseUrl: "https://api.github.test",
       fetchImpl: async (input, init) => {
-        if (input === "https://api.github.test/users/acme") {
+        if (input === "https://api.github.com/users/acme") {
           return {
             ok: true,
             status: 200,
@@ -207,9 +203,8 @@ test("deletePackageVersion sends the expected headers and surfaces transport fai
           error() {}
         },
         {
-          githubApiBaseUrl: "https://api.github.test",
           fetchImpl: async (input) => {
-            if (input === "https://api.github.test/users/acme") {
+            if (input === "https://api.github.com/users/acme") {
               return {
                 ok: true,
                 status: 200,
@@ -253,9 +248,8 @@ test("deletePackageVersion retries retryable HTTP failures", async () => {
         error() {}
       },
       {
-        githubApiBaseUrl: "https://api.github.test",
         fetchImpl: async (input) => {
-          if (input === "https://api.github.test/users/acme") {
+          if (input === "https://api.github.com/users/acme") {
             return {
               ok: true,
               status: 200,

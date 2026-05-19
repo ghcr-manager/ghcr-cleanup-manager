@@ -1,4 +1,4 @@
-import { getOwnerURIComponent } from "../core/index.js";
+import { getOwnerURIComponent, githubApiBaseUrl, githubApiVersion } from "../core/index.js";
 import {
   buildHttpErrorMessage,
   buildTransportErrorMessage,
@@ -7,9 +7,6 @@ import {
   runWithRetry
 } from "./_http.js";
 import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
-
-const _DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
-const _GITHUB_API_VERSION = "2022-11-28";
 
 interface _GitHubPackageVersionPageItem {
   id: number;
@@ -29,11 +26,9 @@ export async function findPackageVersionByDigestAndTag(
   token: string,
   logger: DeleteExecutionLogger,
   runtime?: {
-    githubApiBaseUrl?: string;
     fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<number> {
-  const githubApiBaseUrl = runtime?.githubApiBaseUrl ?? _DEFAULT_GITHUB_API_BASE_URL;
   const fetchImpl = resolveFetch(runtime?.fetchImpl);
 
   for (let attempt = 1; attempt <= 5; attempt += 1) {
@@ -44,7 +39,6 @@ export async function findPackageVersionByDigestAndTag(
       tag,
       token,
       logger,
-      githubApiBaseUrl,
       fetchImpl
     );
     if (versionId !== undefined) {
@@ -69,14 +63,10 @@ async function _findPackageVersionByDigestAndTagOnce(
   tag: string,
   token: string,
   logger: DeleteExecutionLogger,
-  githubApiBaseUrl: string,
   fetchImpl: GitHubPackageFetch
 ): Promise<number | undefined> {
   for (let page = 1; ; page += 1) {
-    const items = await loadPackageVersionPage(owner, packageName, page, token, logger, fetchImpl, {
-      githubApiBaseUrl,
-      fetchImpl
-    });
+    const items = await loadPackageVersionPage(owner, packageName, page, token, logger, fetchImpl);
     if (items.length === 0) {
       return undefined;
     }
@@ -98,16 +88,12 @@ async function loadPackageVersionPage(
   page: number,
   token: string,
   logger: DeleteExecutionLogger,
-  fetchImpl: GitHubPackageFetch,
-  runtime: {
-    githubApiBaseUrl: string;
-    fetchImpl: GitHubPackageFetch;
-  }
+  fetchImpl: GitHubPackageFetch
 ): Promise<_GitHubPackageVersionPageItem[]> {
-  const ownerURIComponent = await getOwnerURIComponent(fetchImpl, runtime.githubApiBaseUrl, owner, token, logger);
+  const ownerURIComponent = await getOwnerURIComponent(fetchImpl, owner, token, logger);
   const url = new URL(
     `/${ownerURIComponent}/packages/container/${encodeURIComponent(packageName)}/versions`,
-    runtime.githubApiBaseUrl
+    githubApiBaseUrl
   );
   url.searchParams.set("per_page", "100");
   url.searchParams.set("page", String(page));
@@ -115,12 +101,12 @@ async function loadPackageVersionPage(
   let response;
   try {
     response = await runWithRetry(`GitHub Packages request for page ${page}`, logger, async () => {
-      const pageResponse = await runtime.fetchImpl(url.toString(), {
+      const pageResponse = await fetchImpl(url.toString(), {
         headers: {
           Accept: "application/vnd.github+json",
           Authorization: `Bearer ${token}`,
           "User-Agent": "ghcr-manager",
-          "X-GitHub-Api-Version": _GITHUB_API_VERSION
+          "X-GitHub-Api-Version": githubApiVersion
         }
       });
       if (!pageResponse.ok && isRetryableStatus(pageResponse.status)) {

@@ -6,24 +6,23 @@ import { type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 export async function ingestPackageVersions(
   fetchImpl: FetchLike,
-  githubApiBaseUrl: string,
   options: GitHubScanOptions,
   writer: ScanWriter
 ): Promise<{ packageVersions: number; tags: number }> {
   let tagCount = 0;
-  const firstPageItems = await loadPackageVersionPage(fetchImpl, githubApiBaseUrl, options, 1);
+  const firstPageItems = await loadPackageVersionPage(fetchImpl, options, 1);
   const result = await ingestParallelPaginated<GitHubPackageVersionPageItem>({
     logger: options.logger,
     firstPageItems,
     loadPage(page) {
-      return loadPackageVersionPage(fetchImpl, githubApiBaseUrl, options, page);
+      return loadPackageVersionPage(fetchImpl, options, page);
     },
     writePage(pageItems) {
       _writePage(writer, pageItems);
       tagCount += _countTags(pageItems);
     }
   });
-  await _assertStableFirstPage(fetchImpl, githubApiBaseUrl, options, firstPageItems);
+  await _assertStableFirstPage(fetchImpl, options, firstPageItems);
 
   return { packageVersions: result.items, tags: tagCount };
 }
@@ -79,11 +78,10 @@ function _countTags(pageItems: GitHubPackageVersionPageItem[]): number {
 
 async function _assertStableFirstPage(
   fetchImpl: FetchLike,
-  githubApiBaseUrl: string,
   options: GitHubScanOptions,
   initialPageItems: GitHubPackageVersionPageItem[]
 ): Promise<void> {
-  const reloadedPageItems = await loadPackageVersionPage(fetchImpl, githubApiBaseUrl, options, 1);
+  const reloadedPageItems = await loadPackageVersionPage(fetchImpl, options, 1);
   if (_buildPageSignature(initialPageItems) === _buildPageSignature(reloadedPageItems)) {
     return;
   }

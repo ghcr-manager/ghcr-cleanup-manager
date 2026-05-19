@@ -13,17 +13,25 @@ test("untagRootTags retargets tags and deletes the temporary package versions", 
       warn() {},
       error() {}
     },
-    githubApiBaseUrl: "https://api.github.test",
-    registryBaseUrl: "https://ghcr.example.test",
     fetchImpl: async (input, init) => {
       const url = String(input);
+      if (url === "https://api.github.com/users/acme") {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers(),
+          async json() {
+            return { type: "Organization" };
+          }
+        };
+      }
       calls.push({
         url,
         method: init?.method,
         body: typeof init?.body === "string" ? init.body : undefined
       });
 
-      if (url.startsWith("https://ghcr.example.test/token")) {
+      if (url.startsWith("https://ghcr.io/token")) {
         return {
           ok: true,
           status: 200,
@@ -33,7 +41,7 @@ test("untagRootTags retargets tags and deletes the temporary package versions", 
           }
         };
       }
-      if (url === "https://ghcr.example.test/v2/acme/example/manifests/sha256:source") {
+      if (url === "https://ghcr.io/v2/acme/example/manifests/sha256:source") {
         return {
           ok: true,
           status: 200,
@@ -48,7 +56,7 @@ test("untagRootTags retargets tags and deletes the temporary package versions", 
           }
         };
       }
-      if (url === "https://ghcr.example.test/v2/acme/example/manifests/latest") {
+      if (url === "https://ghcr.io/v2/acme/example/manifests/latest") {
         return {
           ok: true,
           status: 201,
@@ -58,9 +66,9 @@ test("untagRootTags retargets tags and deletes the temporary package versions", 
           }
         };
       }
-      if (url === "https://api.github.test/orgs/acme/packages/container/example/versions?per_page=100&page=1") {
+      if (url === "https://api.github.com/orgs/acme/packages/container/example/versions?per_page=100&page=1") {
         const detachedDigest = calls.find(
-          (call) => call.url === "https://ghcr.example.test/v2/acme/example/manifests/latest"
+          (call) => call.url === "https://ghcr.io/v2/acme/example/manifests/latest"
         )?.body;
         const bodyDigest = detachedDigest ? `sha256:${await _sha256(detachedDigest)}` : "sha256:missing";
         return {
@@ -83,6 +91,16 @@ test("untagRootTags retargets tags and deletes the temporary package versions", 
         };
       }
       if (url === "https://api.github.test/orgs/acme/packages/container/example/versions/202") {
+        return {
+          ok: true,
+          status: 204,
+          headers: new Headers(),
+          async json() {
+            return {};
+          }
+        };
+      }
+      if (url === "https://api.github.com/orgs/acme/packages/container/example/versions/202") {
         return {
           ok: true,
           status: 204,

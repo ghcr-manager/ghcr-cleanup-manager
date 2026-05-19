@@ -14,7 +14,6 @@ export async function untagRootTags(
   options: DeleteExecutionOptions
 ): Promise<UntagTagOperation[]> {
   const registryToken = await loadRegistryPushToken(owner, packageName, options.token, options.logger, {
-    registryBaseUrl: options.registryBaseUrl,
     fetchImpl: options.fetchImpl
   });
   const sourceManifest = await loadRegistryManifestByDigest(
@@ -24,7 +23,6 @@ export async function untagRootTags(
     registryToken,
     options.logger,
     {
-      registryBaseUrl: options.registryBaseUrl,
       fetchImpl: options.fetchImpl
     }
   );
@@ -45,7 +43,6 @@ export async function untagRootTags(
       registryToken,
       options.logger,
       {
-        registryBaseUrl: options.registryBaseUrl,
         fetchImpl: options.fetchImpl
       }
     );
@@ -57,12 +54,10 @@ export async function untagRootTags(
       options.token,
       options.logger,
       {
-        githubApiBaseUrl: options.githubApiBaseUrl,
         fetchImpl: options.fetchImpl
       }
     );
     await deletePackageVersion(owner, packageName, detachedVersionId, options.token, options.logger, {
-      githubApiBaseUrl: options.githubApiBaseUrl,
       fetchImpl: options.fetchImpl
     });
     operations.push({

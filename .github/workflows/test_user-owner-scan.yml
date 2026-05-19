@@ -3,6 +3,12 @@ run-name: Test User Owner Scan
 
 "on":
   workflow_dispatch:
+    inputs:
+      db_artifact_encryption_passphrase:
+        description: Optional passphrase for encrypting uploaded DB artifacts; required for non-public registries.
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -50,4 +56,4 @@ jobs:
           github-token: ${{ secrets.GHCR_TEST_PAT }}
           owner: ${{ vars.GHCR_TEST_PAT_USERNAME }}
           package: ${{ env.PACKAGE_NAME }}
-          upload-db-artifact: "false"
+          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}

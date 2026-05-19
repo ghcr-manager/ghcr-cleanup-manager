@@ -45,7 +45,6 @@ export async function executeDeletePlan(
       `Deleting package version ${root.versionId} for ${plan.owner}/${plan.packageName} (${root.digest})`
     );
     await deletePackageVersion(plan.owner, plan.packageName, root.versionId, options.token, options.logger, {
-      githubApiBaseUrl: options.githubApiBaseUrl,
       fetchImpl: options.fetchImpl
     });
     deletedPackageVersions.push({

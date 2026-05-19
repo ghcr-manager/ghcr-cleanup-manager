@@ -175,6 +175,12 @@ This section is the canonical place for session-to-session continuity.
   - container package API calls now resolve owner kind explicitly through `GET /users/{owner}` and then choose the
     `orgs/...` vs `users/...` package route family once
   - do not probe one package route and then fall back to the other; explicit owner-kind lookup is the chosen behavior
+  - owner-kind routing is cached per owner through `getOwnerURIComponent(...)`; callers should not thread owner-kind
+    through deeper internal APIs
+- Bedrock service constants:
+  - `https://api.github.com`, `https://ghcr.io`, and the GitHub API version header are fixed values, not runtime
+    configuration
+  - keep them as shared/private constants rather than threading them through TypeScript runtime options or action env
 - Relational integrity direction:
   - add FKs by default and satisfy them via ingest order
   - only relax constraints later if a demonstrated ingest problem requires it

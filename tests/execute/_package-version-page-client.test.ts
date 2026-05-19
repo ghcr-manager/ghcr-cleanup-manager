@@ -17,9 +17,8 @@ test("findPackageVersionByDigestAndTag finds a temporary version by digest and t
       error() {}
     },
     {
-      githubApiBaseUrl: "https://api.github.test",
       fetchImpl: async (input) => {
-        if (input === "https://api.github.test/users/acme") {
+        if (input === "https://api.github.com/users/acme") {
           return {
             ok: true,
             status: 200,
@@ -53,9 +52,7 @@ test("findPackageVersionByDigestAndTag finds a temporary version by digest and t
   );
 
   assert.equal(versionId, 42);
-  assert.deepEqual(calls, [
-    "https://api.github.test/orgs/acme/packages/container/example/versions?per_page=100&page=1"
-  ]);
+  assert.deepEqual(calls, ["https://api.github.com/orgs/acme/packages/container/example/versions?per_page=100&page=1"]);
 });
 
 test("findPackageVersionByDigestAndTag scans additional pages and matches tag membership", async () => {
@@ -74,9 +71,8 @@ test("findPackageVersionByDigestAndTag scans additional pages and matches tag me
       error() {}
     },
     {
-      githubApiBaseUrl: "https://api.github.test",
       fetchImpl: async (input) => {
-        if (input === "https://api.github.test/users/acme") {
+        if (input === "https://api.github.com/users/acme") {
           return {
             ok: true,
             status: 200,
@@ -127,8 +123,8 @@ test("findPackageVersionByDigestAndTag scans additional pages and matches tag me
 
   assert.equal(versionId, 303);
   assert.deepEqual(calls, [
-    "https://api.github.test/orgs/acme/packages/container/example/versions?per_page=100&page=1",
-    "https://api.github.test/orgs/acme/packages/container/example/versions?per_page=100&page=2"
+    "https://api.github.com/orgs/acme/packages/container/example/versions?per_page=100&page=1",
+    "https://api.github.com/orgs/acme/packages/container/example/versions?per_page=100&page=2"
   ]);
 });
 
@@ -157,9 +153,8 @@ test("findPackageVersionByDigestAndTag retries visibility polling until the temp
         error() {}
       },
       {
-        githubApiBaseUrl: "https://api.github.test",
         fetchImpl: async (input) => {
-          if (input === "https://api.github.test/users/acme") {
+          if (input === "https://api.github.com/users/acme") {
             return {
               ok: true,
               status: 200,
@@ -229,9 +224,8 @@ test("findPackageVersionByDigestAndTag fails after exhausting visibility polling
             error() {}
           },
           {
-            githubApiBaseUrl: "https://api.github.test",
             fetchImpl: async (input) =>
-              input === "https://api.github.test/users/acme"
+              input === "https://api.github.com/users/acme"
                 ? {
                     ok: true,
                     status: 200,
@@ -273,9 +267,8 @@ test("findPackageVersionByDigestAndTag surfaces non-retryable HTTP failures and 
           error() {}
         },
         {
-          githubApiBaseUrl: "https://api.github.test",
           fetchImpl: async (input) =>
-            input === "https://api.github.test/users/acme"
+            input === "https://api.github.com/users/acme"
               ? {
                   ok: true,
                   status: 200,
@@ -312,9 +305,8 @@ test("findPackageVersionByDigestAndTag surfaces non-retryable HTTP failures and 
           error() {}
         },
         {
-          githubApiBaseUrl: "https://api.github.test",
           fetchImpl: async (input) => {
-            if (input === "https://api.github.test/users/acme") {
+            if (input === "https://api.github.com/users/acme") {
               return {
                 ok: true,
                 status: 200,
@@ -350,9 +342,8 @@ test("findPackageVersionByDigestAndTag supports user-owned packages", async () =
       error() {}
     },
     {
-      githubApiBaseUrl: "https://api.github.test",
       fetchImpl: async (input) => {
-        if (input === "https://api.github.test/users/wuodan") {
+        if (input === "https://api.github.com/users/wuodan") {
           return {
             ok: true,
             status: 200,
@@ -387,6 +378,6 @@ test("findPackageVersionByDigestAndTag supports user-owned packages", async () =
 
   assert.equal(versionId, 42);
   assert.deepEqual(calls, [
-    "https://api.github.test/users/wuodan/packages/container/example/versions?per_page=100&page=1"
+    "https://api.github.com/users/wuodan/packages/container/example/versions?per_page=100&page=1"
   ]);
 });

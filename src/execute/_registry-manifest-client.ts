@@ -1,3 +1,4 @@
+import { ghcrRegistryBaseUrl } from "../core/index.js";
 import { createHash } from "node:crypto";
 import {
   buildHttpErrorMessage,
@@ -16,8 +17,6 @@ const _ACCEPTED_MANIFEST_MEDIA_TYPES = [
   "application/vnd.docker.distribution.manifest.v2+json",
   "application/vnd.oci.artifact.manifest.v1+json"
 ].join(", ");
-const _DEFAULT_REGISTRY_BASE_URL = "https://ghcr.io";
-
 export interface LoadedRegistryManifest {
   digest: string;
   mediaType: string;
@@ -31,13 +30,11 @@ export async function loadRegistryManifestByDigest(
   registryToken: string,
   logger: DeleteExecutionLogger,
   runtime?: {
-    registryBaseUrl?: string;
     fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<LoadedRegistryManifest> {
-  const registryBaseUrl = runtime?.registryBaseUrl ?? _DEFAULT_REGISTRY_BASE_URL;
   const fetchImpl = resolveFetch(runtime?.fetchImpl);
-  const url = new URL(`/v2/${owner}/${packageName}/manifests/${digest}`, registryBaseUrl);
+  const url = new URL(`/v2/${owner}/${packageName}/manifests/${digest}`, ghcrRegistryBaseUrl);
 
   let response;
   try {
@@ -86,13 +83,11 @@ export async function putRegistryManifestForTag(
   registryToken: string,
   logger: DeleteExecutionLogger,
   runtime?: {
-    registryBaseUrl?: string;
     fetchImpl?: GitHubPackageFetch;
   }
 ): Promise<string> {
-  const registryBaseUrl = runtime?.registryBaseUrl ?? _DEFAULT_REGISTRY_BASE_URL;
   const fetchImpl = resolveFetch(runtime?.fetchImpl);
-  const url = new URL(`/v2/${owner}/${packageName}/manifests/${encodeURIComponent(tag)}`, registryBaseUrl);
+  const url = new URL(`/v2/${owner}/${packageName}/manifests/${encodeURIComponent(tag)}`, ghcrRegistryBaseUrl);
 
   let response;
   try {

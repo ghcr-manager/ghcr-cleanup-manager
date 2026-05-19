@@ -7,7 +7,7 @@ test("package version page loader requests the expected page", async () => {
 
   const items = await loadPackageVersionPage(
     async (input, init) => {
-      if (input === "https://api.github.test/users/acme") {
+      if (input === "https://api.github.com/users/acme") {
         return {
           ok: true,
           status: 200,
@@ -36,7 +36,6 @@ test("package version page loader requests the expected page", async () => {
         }
       };
     },
-    "https://api.github.test",
     {
       owner: "acme",
       packageName: "example",
@@ -46,7 +45,7 @@ test("package version page loader requests the expected page", async () => {
     3
   );
 
-  assert.equal(seenUrl, "https://api.github.test/orgs/acme/packages/container/example/versions?per_page=100&page=3");
+  assert.equal(seenUrl, "https://api.github.com/orgs/acme/packages/container/example/versions?per_page=100&page=3");
   assert.equal(items[0]?.id, 7);
 });
 
@@ -55,7 +54,7 @@ test("package version page loader surfaces fetch transport failures with page co
     () =>
       loadPackageVersionPage(
         async (input) => {
-          if (input === "https://api.github.test/users/acme") {
+          if (input === "https://api.github.com/users/acme") {
             return {
               ok: true,
               status: 200,
@@ -67,7 +66,6 @@ test("package version page loader surfaces fetch transport failures with page co
           }
           throw new TypeError("fetch failed");
         },
-        "https://api.github.test",
         {
           owner: "acme",
           packageName: "example",
@@ -85,7 +83,7 @@ test("package version page loader supports user-owned packages", async () => {
 
   await loadPackageVersionPage(
     async (input) => {
-      if (input === "https://api.github.test/users/wuodan") {
+      if (input === "https://api.github.com/users/wuodan") {
         return {
           ok: true,
           status: 200,
@@ -105,7 +103,6 @@ test("package version page loader supports user-owned packages", async () => {
         }
       };
     },
-    "https://api.github.test",
     {
       owner: "wuodan",
       packageName: "example",
@@ -115,5 +112,5 @@ test("package version page loader supports user-owned packages", async () => {
     1
   );
 
-  assert.equal(seenUrl, "https://api.github.test/users/wuodan/packages/container/example/versions?per_page=100&page=1");
+  assert.equal(seenUrl, "https://api.github.com/users/wuodan/packages/container/example/versions?per_page=100&page=1");
 });

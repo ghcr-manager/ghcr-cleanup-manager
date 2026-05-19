@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+readonly _GITHUB_API_VERSION="2022-11-28"
+
 : "${GH_TOKEN:?GH_TOKEN is required}"
-: "${GITHUB_API_VERSION:?GITHUB_API_VERSION is required}"
 : "${GITHUB_REPOSITORY:?GITHUB_REPOSITORY is required}"
 : "${GITHUB_RUN_ID:?GITHUB_RUN_ID is required}"
 : "${RUNNER_TEMP:?RUNNER_TEMP is required}"
@@ -17,7 +18,7 @@ mkdir -p "$download_dir" "$extract_dir"
 artifact_list="$(
   gh api \
     -H "Accept: application/vnd.github+json" \
-    -H "X-GitHub-Api-Version: $GITHUB_API_VERSION" \
+    -H "X-GitHub-Api-Version: $_GITHUB_API_VERSION" \
     "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
     | jq -r --arg artifact_name_pattern "$ARTIFACT_NAME_PATTERN" '.artifacts[]
       | select(.name | test($artifact_name_pattern))
@@ -37,7 +38,7 @@ while IFS=$'\t' read -r _artifact_id artifact_name artifact_url; do
 
   gh api \
     -H "Accept: application/vnd.github+json" \
-    -H "X-GitHub-Api-Version: $GITHUB_API_VERSION" \
+    -H "X-GitHub-Api-Version: $_GITHUB_API_VERSION" \
     "$artifact_url" \
     > "$artifact_zip_path"
 

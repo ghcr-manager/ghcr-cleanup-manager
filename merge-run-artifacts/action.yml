@@ -49,7 +49,6 @@ runs:
       env:
         ARTIFACT_NAME_PATTERN: ${{ inputs.artifact-name-pattern }}
         GH_TOKEN: ${{ github.token }}
-        GITHUB_API_VERSION: "2022-11-28"
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_RUN_ID: ${{ github.run_id }}
         RUNNER_TEMP: ${{ runner.temp }}
@@ -101,7 +100,6 @@ runs:
       env:
         ARTIFACT_NAME_PATTERN: ${{ inputs.artifact-name-pattern }}
         GH_TOKEN: ${{ github.token }}
-        GITHUB_API_VERSION: "2022-11-28"
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_RUN_ID: ${{ github.run_id }}
       run: |
