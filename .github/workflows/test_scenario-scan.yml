@@ -37,11 +37,6 @@ run-name: Test Scenario Scan (${{ inputs.scenario }})
         required: false
         default: true
         type: boolean
-      db_artifact_encryption_passphrase:
-        description: Optional passphrase for encrypting uploaded DB artifacts; still accepted for manual use.
-        required: false
-        default: ""
-        type: string
       artifact_retention_days:
         description: Optional artifact retention-days override for action-owned DB uploads.
         required: false
@@ -125,7 +120,6 @@ jobs:
           package: ${{ steps.scenario.outputs.package_name }}
           db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
-          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
 
       - name: Assert scenario scan

@@ -32,10 +32,6 @@ inputs:
       Whether live cleanup should run a second full scan so the DB reflects post-mutation state; unsupported by `untag`
     required: false
     default: "false"
-  db-artifact-encryption-passphrase:
-    description: Optional passphrase used to encrypt uploaded DB artifacts; required for non-public registries
-    required: false
-    default: ""
   db-artifact-retention-days:
     description: Optional retention days override for uploaded database artifacts
     required: false
@@ -193,23 +189,6 @@ runs:
         echo "db_file=$db_file" >> "$GITHUB_OUTPUT"
         echo "db_path=$db_path" >> "$GITHUB_OUTPUT"
 
-    - name: Validate plaintext DB artifact upload policy
-      if:
-        ${{ (inputs.command == 'scan' || inputs.command == 'cleanup') && steps.resolve-upload.outputs.upload_db_artifact
-        == 'true' && inputs.db-artifact-encryption-passphrase == '' }}
-      shell: bash
-      run: |
-        set -euo pipefail
-
-        package_metadata_json="$(node tools/read-package-metadata.mjs "${{ inputs.owner }}" "${{ inputs.package }}" "${{ inputs.github-token }}")"
-        has_non_public_scan="$(node tools/db-has-non-public-scans.mjs "${{ steps.prepare-db.outputs.db_path }}")"
-
-        if [[ "$package_metadata_json" != *'"visibility":"public"'* ]] || [[ "$has_non_public_scan" == "true" ]]; then
-          echo "Refusing to upload DB artifact for a non-public registry without encryption." >&2
-          echo "Provide db-artifact-encryption-passphrase to encrypt the uploaded artifact." >&2
-          exit 1
-        fi
-
     - name: Scan before command
       id: scan-before
       if: ${{ inputs.command == 'scan' || inputs.command == 'cleanup' }}
@@ -356,5 +335,4 @@ runs:
       with:
         db-path: ${{ steps.prepare-db.outputs.db_path }}
         db-file: ${{ steps.prepare-db.outputs.db_file }}
-        db-artifact-encryption-passphrase: ${{ inputs.db-artifact-encryption-passphrase }}
         db-artifact-retention-days: ${{ inputs.db-artifact-retention-days }}

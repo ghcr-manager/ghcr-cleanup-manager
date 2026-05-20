@@ -9,11 +9,6 @@ run-name: Test Untag Matrix
         required: false
         default: true
         type: boolean
-      db_artifact_encryption_passphrase:
-        description: Optional passphrase for encrypting uploaded DB artifacts; required for non-public registries.
-        required: false
-        default: ""
-        type: string
       artifact_retention_days:
         description: Optional artifact retention-days override for action-owned DB uploads.
         required: false
@@ -52,7 +47,6 @@ jobs:
     with:
       scenario: ${{ matrix.scenario }}
       upload_db_artifact: ${{ inputs.upload_db_artifact }}
-      db_artifact_encryption_passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
       artifact_retention_days: ${{ inputs.artifact_retention_days }}
 
   bundle-db-artifacts:
@@ -72,10 +66,9 @@ jobs:
         with:
           upload-db-artifact: "true"
           db-file: ghcr-manager-merged--scenario-matrix-untag.sqlite
-          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
           delete-source-artifacts: "true"
-          artifact-name-pattern: '\.sqlite(\.enc)?$'
+          artifact-name-pattern: '\.sqlite$'
 
       - name: Print merged artifact outputs
         shell: bash

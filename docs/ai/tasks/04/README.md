@@ -4,9 +4,9 @@ We are nearing publication of this tool, but the documentation is not ready for 
 
 ## Status
 
-The current `README.md` started as an early work-in-progress document and no longer reflects what users now need.
-Some newer parameters and behaviors were added over time, but the overall document structure and style should not be
-treated as a strong base for release documentation.
+The current `README.md` started as an early work-in-progress document and no longer reflects what users now need. Some
+newer parameters and behaviors were added over time, but the overall document structure and style should not be treated
+as a strong base for release documentation.
 
 This task should therefore not assume that the current `README.md` merely needs polishing. It may need partial or near
 complete replacement in structure, tone, and flow.
@@ -25,8 +25,8 @@ optimize for:
 
 This is foremost a GitHub Action.
 
-Secondary use cases exist, especially around looking at the exported DB, but they are not the primary entry point.
-Very few users will start by running the Node tool locally just to inspect a dry-run result.
+Secondary use cases exist, especially around looking at the exported DB, but they are not the primary entry point. Very
+few users will start by running the Node tool locally just to inspect a dry-run result.
 
 ### User groups
 
@@ -45,8 +45,8 @@ Most users will want to solve problems such as:
 
 For these users, a quick and simple start is critical.
 
-The main entry documentation should not feel like a long manual they must fully read before using the tool. It should
-be clear where they can stop once they have enough to succeed safely.
+The main entry documentation should not feel like a long manual they must fully read before using the tool. It should be
+clear where they can stop once they have enough to succeed safely.
 
 ### Medium users
 
@@ -87,8 +87,8 @@ Relevant context:
 - upstream repository: <https://github.com/dataaxiom/ghcr-cleanup-action>
 - thank-you issue: <https://github.com/dataaxiom/ghcr-cleanup-action/issues/116>
 
-The point here is simple acknowledgment. This tool follows a related concept, mirrors parts of the input surface, and
-in some areas aims for feature parity or a different implementation approach.
+The point here is simple acknowledgment. This tool follows a related concept, mirrors parts of the input surface, and in
+some areas aims for feature parity or a different implementation approach.
 
 Include a respectful reference to that action where it fits naturally.
 

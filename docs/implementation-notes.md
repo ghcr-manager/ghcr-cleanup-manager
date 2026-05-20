@@ -76,7 +76,6 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - `cleanup` always performs a pre-scan and may upload the resulting DB.
 - `cleanup` only performs the post-mutation rescan when `scan-after-cleanup` is enabled.
 - `untag` does not support DB artifact upload.
-- Non-public scan data requires encrypted DB artifact upload.
 - `db-merge`:
   - takes `source-db-dir` plus required `db-file`
   - creates the merged DB in a random temp directory
@@ -84,7 +83,6 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
   - exposes `db-path`, `artifact-id`, `artifact-url`, `artifact-digest`
 - `merge-run-artifacts`:
   - collects current-run artifacts
-  - decrypts when needed
   - calls `db-merge`
   - excludes the just-uploaded merged artifact from cleanup by artifact ID
 
@@ -115,8 +113,10 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 ## Current Next Plan
 
 - [ ] Clean up remaining repo rough edges before first public release.
+- [x] Remove built-in DB artifact encryption and decryption support across actions, workflows, and docs.
 - [x] Reframe the doc-refactor task brief around layered user docs, action-first entry, and task-oriented DB guidance.
-- [x] Add upstream attribution guidance to the doc-refactor brief for respectful reference without copy/replace/better framing.
+- [x] Add upstream attribution guidance to the doc-refactor brief for respectful reference without copy/replace/better
+      framing.
 - [x] Remove regex-based package filtering from the manual test-org package cleanup workflow.
 - [x] Move untag scenario verification onto `v_latest_scan_per_package` and align the user-owner cleanup workflow with
       post-cleanup DB upload.

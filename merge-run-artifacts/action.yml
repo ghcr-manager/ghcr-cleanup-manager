@@ -1,7 +1,7 @@
 name: ghcr-manager merge-run-artifacts
 description:
-  Download matching current-run DB artifacts, optionally decrypt them, merge them, upload the merged DB, and optionally
-  delete the source artifacts.
+  Download matching current-run DB artifacts, merge them, upload the merged DB, and optionally delete the source
+  artifacts.
 
 branding:
   icon: package
@@ -11,7 +11,7 @@ inputs:
   artifact-name-pattern:
     description: Regular expression used to select current-run artifact names for download and optional deletion
     required: false
-    default: \.sqlite(\.enc)?$
+    default: \.sqlite$
   db-file:
     description: Artifact filename and local filename for the merged database
     required: false
@@ -20,12 +20,6 @@ inputs:
     description: Whether to upload the merged database as a workflow run artifact
     required: false
     default: "true"
-  db-artifact-encryption-passphrase:
-    description:
-      Optional passphrase used to decrypt source DB artifacts and encrypt uploaded merged DB artifacts; required when
-      source artifacts are encrypted or when the merged DB contains non-public scans
-    required: false
-    default: ""
   db-artifact-retention-days:
     description: Optional retention days override for uploaded database artifacts
     required: false
@@ -71,26 +65,13 @@ runs:
         extract_dir="$(tools/download-run-artifacts.sh)"
         echo "extract_dir=$extract_dir" >> "$GITHUB_OUTPUT"
 
-    - name: Decrypt downloaded DB artifacts
-      id: decrypt
-      shell: bash
-      env:
-        DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db-artifact-encryption-passphrase }}
-        SOURCE_DIR: ${{ steps.download.outputs.extract_dir }}
-      run: |
-        set -euo pipefail
-
-        source_db_dir="$(tools/decrypt-db-artifacts.sh)"
-        echo "source_db_dir=$source_db_dir" >> "$GITHUB_OUTPUT"
-
     - name: Merge DB artifacts
       id: merge
       uses: ./db-merge
       with:
-        source-db-dir: ${{ steps.decrypt.outputs.source_db_dir }}
+        source-db-dir: ${{ steps.download.outputs.extract_dir }}
         db-file: ${{ inputs.db-file }}
         upload-db-artifact: ${{ inputs.upload-db-artifact }}
-        db-artifact-encryption-passphrase: ${{ inputs.db-artifact-encryption-passphrase }}
         db-artifact-retention-days: ${{ inputs.db-artifact-retention-days }}
         log-level: ${{ inputs.log-level }}
 

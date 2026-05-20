@@ -3,12 +3,6 @@ run-name: Test User Owner Cleanup
 
 "on":
   workflow_dispatch:
-    inputs:
-      db_artifact_encryption_passphrase:
-        description: Optional passphrase for encrypting uploaded DB artifacts; required for non-public registries.
-        required: false
-        default: ""
-        type: string
 
 permissions:
   contents: read
@@ -103,7 +97,6 @@ jobs:
           db-path: ${{ env.DB_PATH }}
           upload-db-artifact: "true"
           scan-after-cleanup: "true"
-          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           delete-tags: |
             delete-me
 

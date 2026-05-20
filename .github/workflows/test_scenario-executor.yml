@@ -45,11 +45,6 @@ run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }
         required: false
         default: true
         type: boolean
-      db_artifact_encryption_passphrase:
-        description: Optional passphrase for encrypting uploaded DB artifacts; required for non-public registries.
-        required: false
-        default: ""
-        type: string
       artifact_retention_days:
         description: Optional artifact retention-days override for action-owned DB uploads.
         required: false
@@ -72,10 +67,6 @@ run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }
         required: false
         default: true
         type: boolean
-      db_artifact_encryption_passphrase:
-        required: false
-        default: ""
-        type: string
       artifact_retention_days:
         required: false
         default: ""
@@ -240,7 +231,6 @@ jobs:
           db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
           scan-after-cleanup: "true"
-          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
           delete-untagged: ${{ steps.cleanup-inputs.outputs.delete_untagged }}
           delete-tags: ${{ steps.cleanup-inputs.outputs.delete_tags }}
@@ -297,7 +287,6 @@ jobs:
           package: ${{ steps.scenario.outputs.package_name }}
           db-path: ${{ steps.scenario.outputs.db_path }}
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
-          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
 
       - name: Assert scenario scan

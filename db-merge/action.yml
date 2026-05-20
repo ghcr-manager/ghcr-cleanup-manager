@@ -16,11 +16,6 @@ inputs:
     description: Whether to upload the merged database as a workflow run artifact
     required: false
     default: "true"
-  db-artifact-encryption-passphrase:
-    description:
-      Optional passphrase used to encrypt uploaded DB artifacts; required for any merged DB with non-public scans
-    required: false
-    default: ""
   db-artifact-retention-days:
     description: Optional retention days override for uploaded database artifacts
     required: false
@@ -107,5 +102,4 @@ runs:
       with:
         db-path: ${{ steps.prepare-db.outputs.db_path }}
         db-file: ${{ inputs.db-file }}
-        db-artifact-encryption-passphrase: ${{ inputs.db-artifact-encryption-passphrase }}
         db-artifact-retention-days: ${{ inputs.db-artifact-retention-days }}

@@ -1,17 +1,13 @@
 name: upload-db-artifact
-description: Validate, optionally encrypt, and upload a ghcr-manager SQLite DB artifact.
+description: Upload a ghcr-manager SQLite DB artifact.
 
 inputs:
   db-path:
-    description: Local SQLite DB path to validate and upload
+    description: Local SQLite DB path to upload
     required: true
   db-file:
-    description: Artifact filename to upload when no encryption is applied
+    description: Artifact filename to upload
     required: true
-  db-artifact-encryption-passphrase:
-    description: Optional passphrase used to encrypt uploaded DB artifacts
-    required: false
-    default: ""
   db-artifact-retention-days:
     description: Optional retention days override for uploaded database artifacts
     required: false
@@ -31,68 +27,11 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Validate DB artifact upload policy
-      shell: bash
-      env:
-        DB_PATH: ${{ inputs.db-path }}
-        DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db-artifact-encryption-passphrase }}
-      run: |
-        set -euo pipefail
-
-        has_non_public_scan="$(node tools/db-has-non-public-scans.mjs "$DB_PATH")"
-
-        if [[ "$has_non_public_scan" == "true" && -z "$DB_ARTIFACT_ENCRYPTION_PASSPHRASE" ]]; then
-          echo "Refusing to upload DB artifact with scans of non-public registries without encryption." >&2
-          echo "Provide db-artifact-encryption-passphrase to encrypt the uploaded artifact." >&2
-          exit 1
-        fi
-
-    - name: Resolve DB artifact path
-      id: resolve-artifact
-      shell: bash
-      env:
-        DB_PATH: ${{ inputs.db-path }}
-        DB_FILE: ${{ inputs.db-file }}
-        DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db-artifact-encryption-passphrase }}
-      run: |
-        set -euo pipefail
-
-        artifact_path="$DB_PATH"
-        artifact_file="$DB_FILE"
-
-        if [[ -n "$DB_ARTIFACT_ENCRYPTION_PASSPHRASE" ]]; then
-          artifact_path="${DB_PATH}.enc"
-          artifact_file="${DB_FILE}.enc"
-        fi
-
-        echo "artifact_path=$artifact_path" >> "$GITHUB_OUTPUT"
-        echo "artifact_file=$artifact_file" >> "$GITHUB_OUTPUT"
-
-    - name: Encrypt DB artifact
-      if: ${{ inputs.db-artifact-encryption-passphrase != '' }}
-      shell: bash
-      env:
-        DB_PATH: ${{ inputs.db-path }}
-        ARTIFACT_PATH: ${{ steps.resolve-artifact.outputs.artifact_path }}
-        DB_ARTIFACT_ENCRYPTION_PASSPHRASE: ${{ inputs.db-artifact-encryption-passphrase }}
-      run: |
-        set -euo pipefail
-
-        if ! command -v openssl >/dev/null 2>&1; then
-          echo "openssl is required to encrypt DB artifacts but was not found on PATH." >&2
-          exit 1
-        fi
-
-        openssl enc -aes-256-cbc -pbkdf2 -salt \
-          -in "$DB_PATH" \
-          -out "$ARTIFACT_PATH" \
-          -pass env:DB_ARTIFACT_ENCRYPTION_PASSPHRASE
-
     - name: Upload DB artifact
       id: upload
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: ${{ steps.resolve-artifact.outputs.artifact_file }}
-        path: ${{ steps.resolve-artifact.outputs.artifact_path }}
+        name: ${{ inputs.db-file }}
+        path: ${{ inputs.db-path }}
         retention-days:
           ${{ inputs.db-artifact-retention-days != '' && inputs.db-artifact-retention-days || github.retention_days }}

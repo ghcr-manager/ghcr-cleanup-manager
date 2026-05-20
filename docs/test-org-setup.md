@@ -14,8 +14,8 @@ Current intended organization:
 Visibility intent:
 
 - scenario and seeded fixture packages are normally made `public` after publishing
-- private-package behavior is covered by dedicated hardening-focused workflows instead of forcing every live scenario
-  through encrypted DB artifact handling
+- private-package behavior is covered by dedicated hardening-focused workflows rather than by a separate artifact
+  protection path
 
 ## Configuration Names
 

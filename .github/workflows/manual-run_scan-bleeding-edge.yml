@@ -17,11 +17,6 @@ run-name: Manual Run Test for ${{ inputs.owner }}/${{ inputs.package }}
         required: false
         default: true
         type: boolean
-      db_artifact_encryption_passphrase:
-        description: Optional passphrase for encrypting uploaded DB artifacts; required for non-public registries.
-        required: false
-        default: ""
-        type: string
       db_artifact_retention_days:
         description: Optional artifact retention-days override.
         required: false
@@ -66,7 +61,6 @@ jobs:
           owner: ${{ inputs.owner }}
           package: ${{ inputs.package }}
           upload-db-artifact: ${{ inputs.upload_db_artifact }}
-          db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           db-artifact-retention-days: ${{ inputs.db_artifact_retention_days }}
 
       - name: Print DB path

@@ -24,8 +24,8 @@ least the data that action shows in tabular form is in our JSON.
 But the user-facing output should not just dump internal JSON. It should be a stable summary intended for humans first
 and machines second.
 
-The main human-readable output should go to the GitHub step summary. Concise log output may also be useful, but the
-step summary should be the primary review surface.
+The main human-readable output should go to the GitHub step summary. Concise log output may also be useful, but the step
+summary should be the primary review surface.
 
 There should be some sane cutoff for tabular output. We do not want to print 50k rows of tags. The output should
 therefore use truncation and counts when result sets get large.

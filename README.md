@@ -74,7 +74,6 @@ jobs:
           dry-run: true
           upload-db-artifact: true
           scan-after-cleanup: true
-          db-artifact-encryption-passphrase: ${{ secrets.DB_ARTIFACT_ENCRYPTION_PASSPHRASE }}
 ```
 
 > Copy the [Manual Run Workflow](.github/workflows/manual-run_scan.yml) as a ready-to-run workflow and switch `command`
@@ -84,29 +83,28 @@ jobs:
 
 <!-- markdownlint-disable MD013 MD060 -->
 
-| Input                               | Description                                                                                                         | Required | Default                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------ |
-| `command`                           | Action command: `scan`, `cleanup`, or `untag`                                                                       | Yes      |                                |
-| `github-token`                      | GitHub token used for GitHub/GHCR API calls                                                                         | Yes      | `${{ github.token }}`          |
-| `owner`                             | GitHub owner of the container package (user or org)                                                                 | Yes      |                                |
-| `package`                           | Container package name                                                                                              | Yes      |                                |
-| `db-path`                           | Optional local SQLite DB path so multiple action steps can append to the same DB                                    | No       |                                |
-| `upload-db-artifact`                | Whether `cleanup` should upload the resulting DB artifact. `scan` always uploads; `untag` does not support it       | No       | `false`                        |
-| `scan-after-cleanup`                | Whether live `cleanup` should run a second full scan so the DB reflects post-mutation state; unsupported by `untag` | No       | `false`                        |
-| `db-artifact-encryption-passphrase` | Optional passphrase for encrypting uploaded DB artifacts; required for non-public registries when upload happens    | No       |                                |
-| `db-artifact-retention-days`        | Optional retention days override for uploaded database artifact                                                     | No       | `${{ github.retention_days }}` |
-| `delete-tags`                       | Optional newline-separated tags to delete during `cleanup` or `untag`; required for `untag`                         | No       |                                |
-| `exclude-tags`                      | Optional newline-separated tags to exclude during `cleanup`                                                         | No       |                                |
-| `keep-n-tagged`                     | Optional number of tagged roots to keep during `cleanup`                                                            | No       |                                |
-| `keep-n-untagged`                   | Optional number of untagged roots to keep during `cleanup`                                                          | No       |                                |
-| `delete-untagged`                   | Whether `cleanup` should target untagged roots                                                                      | No       | `false`                        |
-| `delete-ghost-images`               | Whether `cleanup` should target ghost multi-arch roots                                                              | No       | `false`                        |
-| `delete-partial-images`             | Whether `cleanup` should target partial multi-arch roots                                                            | No       | `false`                        |
-| `delete-orphaned-images`            | Whether `cleanup` should target orphaned digest-derived tags                                                        | No       | `false`                        |
-| `older-than`                        | Optional age cutoff for `cleanup` selectors                                                                         | No       |                                |
-| `use-regex`                         | Whether `cleanup` tag selectors should be treated as regular expressions                                            | No       | `false`                        |
-| `dry-run`                           | Whether `cleanup` or `untag` should simulate changes without mutating GHCR                                          | No       | `false`                        |
-| `log-level`                         | Log level passed to the shared CLI                                                                                  | No       | `info`                         |
+| Input                        | Description                                                                                                         | Required | Default                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------ |
+| `command`                    | Action command: `scan`, `cleanup`, or `untag`                                                                       | Yes      |                                |
+| `github-token`               | GitHub token used for GitHub/GHCR API calls                                                                         | Yes      | `${{ github.token }}`          |
+| `owner`                      | GitHub owner of the container package (user or org)                                                                 | Yes      |                                |
+| `package`                    | Container package name                                                                                              | Yes      |                                |
+| `db-path`                    | Optional local SQLite DB path so multiple action steps can append to the same DB                                    | No       |                                |
+| `upload-db-artifact`         | Whether `cleanup` should upload the resulting DB artifact. `scan` always uploads; `untag` does not support it       | No       | `false`                        |
+| `scan-after-cleanup`         | Whether live `cleanup` should run a second full scan so the DB reflects post-mutation state; unsupported by `untag` | No       | `false`                        |
+| `db-artifact-retention-days` | Optional retention days override for uploaded database artifact                                                     | No       | `${{ github.retention_days }}` |
+| `delete-tags`                | Optional newline-separated tags to delete during `cleanup` or `untag`; required for `untag`                         | No       |                                |
+| `exclude-tags`               | Optional newline-separated tags to exclude during `cleanup`                                                         | No       |                                |
+| `keep-n-tagged`              | Optional number of tagged roots to keep during `cleanup`                                                            | No       |                                |
+| `keep-n-untagged`            | Optional number of untagged roots to keep during `cleanup`                                                          | No       |                                |
+| `delete-untagged`            | Whether `cleanup` should target untagged roots                                                                      | No       | `false`                        |
+| `delete-ghost-images`        | Whether `cleanup` should target ghost multi-arch roots                                                              | No       | `false`                        |
+| `delete-partial-images`      | Whether `cleanup` should target partial multi-arch roots                                                            | No       | `false`                        |
+| `delete-orphaned-images`     | Whether `cleanup` should target orphaned digest-derived tags                                                        | No       | `false`                        |
+| `older-than`                 | Optional age cutoff for `cleanup` selectors                                                                         | No       |                                |
+| `use-regex`                  | Whether `cleanup` tag selectors should be treated as regular expressions                                            | No       | `false`                        |
+| `dry-run`                    | Whether `cleanup` or `untag` should simulate changes without mutating GHCR                                          | No       | `false`                        |
+| `log-level`                  | Log level passed to the shared CLI                                                                                  | No       | `info`                         |
 
 <!-- markdownlint-enable MD013 MD060 -->
 
@@ -120,37 +118,8 @@ jobs:
 
 <!-- markdownlint-disable MD013 -->
 
-| Name                              | Filename                          | Description                                          |
-| --------------------------------- | --------------------------------- | ---------------------------------------------------- |
-| `${OWNER}__${PACKAGE}.sqlite`     | `${OWNER}__${PACKAGE}.sqlite`     | Plain SQLite database artifact for public registries |
-| `${OWNER}__${PACKAGE}.sqlite.enc` | `${OWNER}__${PACKAGE}.sqlite.enc` | OpenSSL-encrypted SQLite database artifact           |
+| Name                          | Filename                      | Description              |
+| ----------------------------- | ----------------------------- | ------------------------ |
+| `${OWNER}__${PACKAGE}.sqlite` | `${OWNER}__${PACKAGE}.sqlite` | SQLite database artifact |
 
 <!-- markdownlint-enable MD013 -->
-
-## Encrypted Artifacts
-
-If `db-artifact-encryption-passphrase` is set, `ghcr-manager` encrypts the uploaded DB artifact with OpenSSL before
-upload. For non-public registries, this passphrase is required whenever the action uploads a DB artifact.
-
-Encrypted artifacts use OpenSSL `enc` with:
-
-- `-aes-256-cbc`
-- `-pbkdf2`
-- `-salt`
-
-To decrypt an uploaded `*.sqlite.enc` artifact:
-
-```bash
-openssl enc -d -aes-256-cbc -pbkdf2 \
-  -in OWNER__PACKAGE.sqlite.enc \
-  -out OWNER__PACKAGE.sqlite
-```
-
-Or with the passphrase already in an environment variable:
-
-```bash
-openssl enc -d -aes-256-cbc -pbkdf2 \
-  -in OWNER__PACKAGE.sqlite.enc \
-  -out OWNER__PACKAGE.sqlite \
-  -pass env:DB_ARTIFACT_ENCRYPTION_PASSPHRASE
-```
