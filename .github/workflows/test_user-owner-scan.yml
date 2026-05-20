@@ -15,24 +15,49 @@ permissions:
   packages: write
 
 jobs:
-  scan:
+  cleanup:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Require user-owner test configuration
+        shell: bash
+        env:
+          GHCR_TEST_PAT_USERNAME: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          GHCR_TEST_PAT: ${{ secrets.GHCR_TEST_PAT }}
+        run: |
+          set -euo pipefail
+          [[ -n "$GHCR_TEST_PAT_USERNAME" ]] || { echo "Missing repo variable GHCR_TEST_PAT_USERNAME" >&2; exit 1; }
+          [[ -n "$GHCR_TEST_PAT" ]] || { echo "Missing repo secret GHCR_TEST_PAT" >&2; exit 1; }
+
       - name: Resolve variables
         shell: bash
         env:
           GHCR_TEST_PAT_USERNAME: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          RUNNER_TEMP: ${{ runner.temp }}
         run: |
           set -euo pipefail
-          PACKAGE_NAME="${{ github.event.repository.name }}-user-owner-scan--${{ github.run_id }}"
+          PACKAGE_NAME="${{ github.event.repository.name }}-user-owner-test"
           PACKAGE_NAME="${PACKAGE_NAME,,}"
           IMAGE_REF="ghcr.io/${GHCR_TEST_PAT_USERNAME,,}/${PACKAGE_NAME}"
-          echo "PACKAGE_NAME=$PACKAGE_NAME" >> "$GITHUB_ENV"
-          echo "IMAGE_REF=$IMAGE_REF" >> "$GITHUB_ENV"
+          DB_PATH="$RUNNER_TEMP/${GHCR_TEST_PAT_USERNAME,,}__${PACKAGE_NAME}__user-owner.sqlite"
+          {
+            echo "PACKAGE_NAME=$PACKAGE_NAME"
+            echo "IMAGE_REF=$IMAGE_REF"
+            echo "DB_PATH=$DB_PATH"
+          } >> "$GITHUB_ENV"
+
+      - name: Clear scenario package
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHCR_TEST_PAT }}
+          OWNER: ${{ vars.GHCR_TEST_PAT_USERNAME }}
+          PACKAGE: ${{ env.PACKAGE_NAME }}
+        run: |
+          set -euo pipefail
+          node tools/tests/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
 
       - name: Log in to GHCR
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
@@ -41,19 +66,54 @@ jobs:
           username: ${{ vars.GHCR_TEST_PAT_USERNAME }}
           password: ${{ secrets.GHCR_TEST_PAT }}
 
-      - name: Push repro image
+      - name: Seed two tagged images
         shell: bash
+        env:
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
           set -euo pipefail
-          docker pull --platform linux/amd64 alpine:3.22
-          docker tag alpine:3.22 "${IMAGE_REF}:latest"
-          docker push "${IMAGE_REF}:latest"
 
-      - name: Scan user-owned package
+          keep_dir="$(mktemp -d)"
+          cp tools/tests/fixtures/minimal-image/Dockerfile "$keep_dir/Dockerfile"
+          printf '%s\n' "user-owner keep" > "$keep_dir/payload.txt"
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --push \
+            --tag "$IMAGE_REF:keep-me" \
+            "$keep_dir"
+
+          delete_dir="$(mktemp -d)"
+          cp tools/tests/fixtures/minimal-image/Dockerfile "$delete_dir/Dockerfile"
+          printf '%s\n' "user-owner delete" > "$delete_dir/payload.txt"
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --push \
+            --tag "$IMAGE_REF:delete-me" \
+            "$delete_dir"
+
+      - name: Run cleanup against user-owned package
         uses: ./
         with:
-          command: scan
+          command: cleanup
           github-token: ${{ secrets.GHCR_TEST_PAT }}
           owner: ${{ vars.GHCR_TEST_PAT_USERNAME }}
           package: ${{ env.PACKAGE_NAME }}
+          db-path: ${{ env.DB_PATH }}
+          upload-db-artifact: "false"
+          scan-after-cleanup: "true"
           db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
+          delete-tags: |
+            delete-me
+
+      - name: Assert user-owner cleanup result
+        shell: bash
+        env:
+          DB_PATH: ${{ env.DB_PATH }}
+        run: |
+          set -euo pipefail
+          delete_count="$(sqlite3 "$DB_PATH" "select count(*) from tags where tag = 'delete-me';")"
+          keep_count="$(sqlite3 "$DB_PATH" "select count(*) from tags where tag = 'keep-me';")"
+          [[ "$delete_count" == "0" ]] || { echo "delete-me tag still present in DB" >&2; exit 1; }
+          [[ "$keep_count" == "1" ]] || { echo "keep-me tag missing from DB" >&2; exit 1; }
