@@ -101,7 +101,7 @@ jobs:
           owner: ${{ vars.GHCR_TEST_PAT_USERNAME }}
           package: ${{ env.PACKAGE_NAME }}
           db-path: ${{ env.DB_PATH }}
-          upload-db-artifact: "false"
+          upload-db-artifact: "true"
           scan-after-cleanup: "true"
           db-artifact-encryption-passphrase: ${{ inputs.db_artifact_encryption_passphrase }}
           delete-tags: |

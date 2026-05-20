@@ -27,19 +27,8 @@ const tagNames = Object.fromEntries(
   Object.entries(scenario.tagNames ?? {}).map(([key, value]) => [key, `${scenario.id}--${value}`])
 );
 const database = new Database(dbPath, { readonly: true });
-const latestScan = database
-  .prepare(
-    `
-      SELECT scan_id
-      FROM package_scans
-      WHERE status = 'completed'
-      ORDER BY scan_id DESC
-      LIMIT 1
-    `
-  )
-  .get();
-
-assert.ok(latestScan, `database '${dbPath}' did not contain a completed package scan`);
+const latestScanCount = database.prepare("SELECT count(*) AS count FROM v_latest_scan_per_package").get();
+assert.ok(latestScanCount && latestScanCount.count > 0, `database '${dbPath}' did not contain a latest package scan`);
 
 for (const scanAssertion of scanAssertions) {
   const tag = tagNames[scanAssertion.tagNameKey];
@@ -63,13 +52,14 @@ for (const scanAssertion of scanAssertions) {
         JOIN v_scan_root_manifests roots
           ON roots.scan_id = m.scan_id
          AND roots.root_version_id = m.version_id
-        WHERE t.scan_id = ?
-          AND t.tag = ?
+        JOIN v_latest_scan_per_package latest_scan
+          ON latest_scan.scan_id = t.scan_id
+        WHERE t.tag = ?
       `
     )
-    .get(latestScan.scan_id, tag);
+    .get(tag);
 
-  assert.ok(row, `scan ${latestScan.scan_id} did not contain tagged manifest '${tag}'`);
+  assert.ok(row, `latest scan did not contain tagged manifest '${tag}'`);
 
   if (scanAssertion.requireRoot) {
     assert.equal(row.has_ancestor, 0, `tag '${tag}' did not resolve to a root manifest`);

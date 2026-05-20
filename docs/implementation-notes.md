@@ -60,9 +60,12 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
     filtered by a literal substring on package name
 - User-owner workflow note:
   - `test_user-owner-cleanup.yml` now clears a fixed user-owned package, seeds two tagged images, deletes `delete-me`,
-    and asserts the post-cleanup DB keeps only `keep-me`
+    uploads the post-cleanup DB artifact, and asserts the latest-scan view keeps only `keep-me`
 - Untag seed note:
   - direct untag scenarios now use dedicated seed strategy IDs instead of borrowing cleanup scenario IDs for tag names
+- Untag assertion note:
+  - untag scenario verification now queries `v_latest_scan_per_package` directly instead of resolving latest scans in ad
+    hoc helper logic
 - Tagged cleanup seed note:
   - digest and wildcard tagged-delete scenarios now use dedicated seed strategy IDs instead of borrowing
     `tagged-fully-deletable`
@@ -113,6 +116,8 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 
 - [ ] Clean up remaining repo rough edges before first public release.
 - [x] Remove regex-based package filtering from the manual test-org package cleanup workflow.
+- [x] Move untag scenario verification onto `v_latest_scan_per_package` and align the user-owner cleanup workflow with
+      post-cleanup DB upload.
 - [ ] Port regex selector validation hardening for `--use-regex` cleanup selectors.
 - [ ] Update documentation for the first public release:
   - action usage

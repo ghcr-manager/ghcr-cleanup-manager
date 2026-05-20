@@ -24,31 +24,21 @@ const deleteTag = tagNames.deleteTag;
 assert.ok(deleteTag, `untag scenario '${scenarioId}' is missing a deleteTag tag name`);
 
 const database = new Database(dbPath, { readonly: true });
-const latestScan = database
-  .prepare(
-    `
-      SELECT scan_id
-      FROM package_scans
-      WHERE status = 'completed'
-      ORDER BY scan_id DESC
-      LIMIT 1
-    `
-  )
-  .get();
-
-assert.ok(latestScan, `database '${dbPath}' did not contain a completed package scan`);
+const latestScanCount = database.prepare("SELECT count(*) AS count FROM v_latest_scan_per_package").get();
+assert.ok(latestScanCount && latestScanCount.count > 0, `database '${dbPath}' did not contain a latest package scan`);
 
 const deletedTagRow = database
   .prepare(
     `
       SELECT 1
-      FROM tags
-      WHERE scan_id = ?
-        AND tag = ?
+      FROM tags t
+      JOIN v_latest_scan_per_package latest_scan
+        ON latest_scan.scan_id = t.scan_id
+      WHERE t.tag = ?
       LIMIT 1
     `
   )
-  .get(latestScan.scan_id, deleteTag);
+  .get(deleteTag);
 
 assert.equal(deletedTagRow, undefined, `tag '${deleteTag}' was still present after untag`);
 
@@ -61,13 +51,14 @@ for (const [tagNameKey, tag] of Object.entries(tagNames)) {
     .prepare(
       `
         SELECT 1
-        FROM tags
-        WHERE scan_id = ?
-          AND tag = ?
+        FROM tags t
+        JOIN v_latest_scan_per_package latest_scan
+          ON latest_scan.scan_id = t.scan_id
+        WHERE t.tag = ?
         LIMIT 1
       `
     )
-    .get(latestScan.scan_id, tag);
+    .get(tag);
 
   assert.ok(retainedTagRow, `tag '${tag}' was not present after untag`);
 }
