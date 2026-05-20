@@ -124,6 +124,7 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
   - CLI usage
   - DB artifact / merge workflow
   - direct untag behavior and caveats
+- [ ] Revisit DB/schema onboarding later with example-driven guidance if release feedback shows users need it.
 - [ ] Review release workflow and public-facing metadata before the first release tag.
 
 ## Current Documentation Notes
@@ -140,8 +141,10 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - Active user-doc split:
   - `README.md` for action-first entry
   - `action-usage.md` for the root action
-  - `db-merge-workflows.md` for workflow artifact merge helpers
+  - `db-merge-workflows.md` for multi-package workflows and combined DBs
   - `cli-usage.md` for the secondary local CLI surface
   - `schema-description.md` for DB orientation
   - `queries/missing-manifests-queries.md` for a narrow advanced SQL recipe
 - Keep internal planner/semantics notes out of the user-facing doc path.
+- Task 04 is effectively complete for now.
+  DB/schema explanation remains intentionally deferred rather than blocking release docs.
