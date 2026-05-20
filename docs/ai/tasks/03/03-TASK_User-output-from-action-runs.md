@@ -70,3 +70,26 @@ Workflow-visible output is the responsibility of the calling workflow and reposi
 
 This task should assume that workflow readers are allowed to see the package-maintenance metadata shown in summaries,
 logs, and plain JSON artifacts.
+
+## Completion
+
+Completed on the current release-prep branch for the intended first target.
+
+- `cleanup` now emits one stable summary JSON shape for both dry-run and live cleanup.
+- The root action exposes machine-readable `summary-json` output for commands that emit summary JSON.
+- `cleanup` uploads its summary JSON alongside the DB when DB artifact upload is enabled.
+- `cleanup` renders a GitHub step summary from that same summary JSON.
+- `untag` also feeds the generic `summary-json` action output.
+
+Intentional scope choice:
+
+- `scan` keeps its existing JSON stdout and scalar GitHub outputs.
+- `scan` was not added to the generic `summary-json` action output path, because that added little value for now while
+  slightly increasing action complexity.
+
+Checkpoint commits:
+
+- `3d20a13` Add cleanup run summaries to action output
+- `a5377c3` Unify action command summary output
+- `51f305a` Silence npm wrapper for action summary capture
+- `8cb45c0` Tighten cleanup step summary layout

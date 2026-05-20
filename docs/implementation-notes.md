@@ -104,6 +104,10 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 
 ## Recent Checkpoints
 
+- ☑ `3d20a13` Add cleanup run summaries to action output.
+- ☑ `a5377c3` Unify action command summary output.
+- ☑ `51f305a` Silence npm wrapper for action summary capture.
+- ☑ `8cb45c0` Tighten cleanup step summary layout.
 - ☑ `8bd644e` Remove DB artifact encryption support.
 - ☑ `5884e13` Remove scan visibility ballast.
 - ☑ `59c5520` Compact persisted planner inputs.
@@ -131,9 +135,10 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - [x] Move untag scenario verification onto `v_latest_scan_per_package` and align the user-owner cleanup workflow with
       post-cleanup DB upload.
 - [ ] Port regex selector validation hardening for `--use-regex` cleanup selectors.
-- [ ] Review and refine the new cleanup-summary action output path:
+- [x] Implement user-facing run output for `cleanup`:
   - stable cleanup summary JSON from the CLI
-  - action output plus optional JSON artifact upload
+  - action `summary-json` output
+  - optional cleanup JSON artifact upload alongside the DB
   - GitHub step summary rendering from that same JSON
 - [ ] Update documentation for the first public release:
   - action usage
