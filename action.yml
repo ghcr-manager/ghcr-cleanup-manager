@@ -100,16 +100,17 @@ runs:
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
         node-version: "24"
-        cache: npm
 
     - name: Install dependencies
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
         set -euo pipefail
         npm ci
 
     - name: Build ghcr-manager
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
         set -euo pipefail
         npm run build
@@ -196,6 +197,7 @@ runs:
       id: scan-before
       if: ${{ inputs.command == 'scan' || inputs.command == 'cleanup' }}
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
         set -euo pipefail
         scan_args=(
@@ -213,6 +215,7 @@ runs:
       id: run-cleanup
       if: ${{ inputs.command == 'cleanup' }}
       shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         DELETE_TAGS: ${{ inputs.delete-tags }}
         DELETE_UNTAGGED: ${{ inputs.delete-untagged }}
@@ -298,6 +301,7 @@ runs:
     - name: Run untag
       if: ${{ inputs.command == 'untag' }}
       shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         DELETE_TAGS: ${{ inputs.delete-tags }}
       run: |
@@ -364,6 +368,7 @@ runs:
       id: scan-after
       if: ${{ inputs.command == 'cleanup' && inputs.dry-run != 'true' && inputs.scan-after-cleanup == 'true' }}
       shell: bash
+      working-directory: ${{ github.action_path }}
       run: |
         set -euo pipefail
         npm run ghcr-manager:dist -- scan \
@@ -396,6 +401,7 @@ runs:
     - name: Write cleanup step summary
       if: ${{ inputs.command == 'cleanup' }}
       shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         CLEANUP_SUMMARY_JSON: ${{ env.COMMAND_SUMMARY_JSON }}
       run: |
