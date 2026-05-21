@@ -26,3 +26,7 @@ pretty - but functional at first.
 
 Should show at least graphs of manifests with tags and some (untrusted `manifest_kind) label what it probably is.  
 Then maybe something like see JSON on click or such.
+
+## Document older-than format better
+
+The day, days, ... format is a bit undocumented and unclear.
