@@ -99,9 +99,9 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - Composite-action nesting note:
   - the root action, `db-merge`, and `merge-run-artifacts` now avoid nested repo-local action paths for live upload and
     merge steps
-  - `merge-run-artifacts` also invokes repo scripts through `$GITHUB_ACTION_PATH`
-  - that avoids remote-consumer failures where nested local action paths or repo script paths are resolved against the
-    caller repository
+  - subdirectory actions that need repo-root helper scripts must resolve them from the parent of `$GITHUB_ACTION_PATH`
+  - that avoids local/direct-run failures where `$GITHUB_ACTION_PATH` points at the sub-action directory itself, while
+    still avoiding caller-repo path resolution for remote consumers
 
 ## Current Action / DB Notes
 
@@ -148,6 +148,9 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - [x] Move untag scenario verification onto `v_latest_scan_per_package` and align the user-owner cleanup workflow with
       post-cleanup DB upload.
 - [ ] Port regex selector validation hardening for `--use-regex` cleanup selectors.
+- [x] Fix `merge-run-artifacts` repo-script resolution and merged-artifact exclusion:
+  - resolve helper scripts from the repo root via the parent of `$GITHUB_ACTION_PATH`
+  - exclude the just-uploaded merged artifact by `steps.upload.outputs.artifact-id` during source-artifact deletion
 - [x] Persist concrete selected cleanup tags as a small sibling audit table:
   - new `cleanup_selected_tags(cleanup_run_id, scan_id, tag)` table
   - populated from `directTargetTags` during cleanup audit persistence

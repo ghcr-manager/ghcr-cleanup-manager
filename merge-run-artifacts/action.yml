@@ -62,7 +62,8 @@ runs:
       run: |
         set -euo pipefail
 
-        extract_dir="$("$GITHUB_ACTION_PATH/tools/download-run-artifacts.sh")"
+        action_repo_root="$(cd "$GITHUB_ACTION_PATH/.." && pwd)"
+        extract_dir="$("$action_repo_root/tools/download-run-artifacts.sh")"
         echo "extract_dir=$extract_dir" >> "$GITHUB_OUTPUT"
 
     - name: Set up Node.js
@@ -135,10 +136,11 @@ runs:
       shell: bash
       env:
         ARTIFACT_NAME_PATTERN: ${{ inputs.artifact-name-pattern }}
-        EXCLUDE_ARTIFACT_ID: ${{ steps.merge.outputs.artifact-id }}
+        EXCLUDE_ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
         GITHUB_TOKEN: ${{ github.token }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         GITHUB_RUN_ID: ${{ github.run_id }}
       run: |
         set -euo pipefail
-        "$GITHUB_ACTION_PATH/tools/delete-run-artifacts.sh"
+        action_repo_root="$(cd "$GITHUB_ACTION_PATH/.." && pwd)"
+        "$action_repo_root/tools/delete-run-artifacts.sh"
