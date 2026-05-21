@@ -33,7 +33,7 @@ jobs:
 
       - name: Preview GHCR cleanup
         id: ghcr-manager
-        uses: gh-workflow/ghcr-manager@0.9.3
+        uses: gh-workflow/ghcr-manager@0.9.4
         with:
           command: cleanup
           token: ${{ github.token }}
@@ -72,7 +72,7 @@ The action supports three commands:
 ### Preview cleanup
 
 ```yaml
-- uses: gh-workflow/ghcr-manager@0.9.3
+- uses: gh-workflow/ghcr-manager@0.9.4
   with:
     command: cleanup
     token: ${{ github.token }}
@@ -93,7 +93,7 @@ The action supports three commands:
 ### Apply cleanup
 
 ```yaml
-- uses: gh-workflow/ghcr-manager@0.9.3
+- uses: gh-workflow/ghcr-manager@0.9.4
   with:
     command: cleanup
     token: ${{ github.token }}
@@ -112,7 +112,7 @@ Note: the second scan only runs if cleanup actually makes changes.
 ### Remove selected tags directly
 
 ```yaml
-- uses: gh-workflow/ghcr-manager@0.9.3
+- uses: gh-workflow/ghcr-manager@0.9.4
   with:
     command: untag
     token: ${{ github.token }}
@@ -128,7 +128,7 @@ Note: the second scan only runs if cleanup actually makes changes.
 ### Scan one package
 
 ```yaml
-- uses: gh-workflow/ghcr-manager@0.9.3
+- uses: gh-workflow/ghcr-manager@0.9.4
   with:
     command: scan
     token: ${{ github.token }}

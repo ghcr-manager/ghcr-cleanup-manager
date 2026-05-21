@@ -7,6 +7,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.9.4] - 2026-05-21
+
+### Changed
+
+- The root action now exposes `summary-json-path` instead of `summary-json`, so command summaries are consumed by file
+  path rather than as a large action output payload.
+
+### Fixed
+
+- The GitHub Action now passes cleanup and untag summary JSON between steps by file path instead of large environment
+  payloads, avoiding GitHub template-memory and argument-length failures on large cleanup runs.
+
 ## [0.9.3] - 2026-05-21
 
 ### Changed
