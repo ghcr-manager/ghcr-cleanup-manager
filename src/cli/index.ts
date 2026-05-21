@@ -30,16 +30,24 @@ export async function main(argv: string[]): Promise<number> {
 
 function printUsage(): void {
   console.error(`Usage:
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --delete-untagged [--older-than <interval>]
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --delete-ghost-images [--exclude-tag <tag> ...] [--use-regex] [--keep-n-tagged <count>] [--older-than <interval>]
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --delete-partial-images [--exclude-tag <tag> ...] [--use-regex] [--keep-n-tagged <count>] [--older-than <interval>]
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --delete-orphaned-images [--exclude-tag <tag> ...] [--use-regex] [--keep-n-tagged <count>] [--older-than <interval>]
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --keep-n-tagged <count> [--older-than <interval>]
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --keep-n-untagged <count> [--older-than <interval>]
-  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] --delete-tag <tag> [--delete-tag <tag> ...] [--exclude-tag <tag> ...] [--use-regex] [--older-than <interval>]
+  ghcr-manager cleanup --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> [--token <token>] <cleanup selectors...> [--exclude-tag <tag> ...] [--use-regex] [--older-than <interval>]
   ghcr-manager db-merge --db <target-path> --source-db <path> [--source-db <path> ...]
   ghcr-manager scan --db <path> [--log-level <trace|debug|info|warn|error|silent>] [--github-output <path>] --owner <org> --package <name> --token <token>
-  ghcr-manager untag [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> --token <token> --tag <tag> [--tag <tag> ...]`);
+  ghcr-manager untag [--log-level <trace|debug|info|warn|error|silent>] [--dry-run] --owner <org> --package <name> --token <token> --tag <tag> [--tag <tag> ...]
+
+Cleanup selectors:
+  --delete-untagged
+  --delete-ghost-images
+  --delete-partial-images
+  --delete-orphaned-images
+  --delete-tag <tag> [--delete-tag <tag> ...]
+  --keep-n-tagged <count>
+  --keep-n-untagged <count>
+
+Notes:
+  - Tagged selector families may be combined with --delete-untagged.
+  - --exclude-tag requires at least one tagged selector family.
+  - --delete-untagged and --keep-n-untagged cannot be combined.`);
 }
 
 const _entryPath = process.argv[1];

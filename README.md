@@ -169,6 +169,12 @@ Note: the second scan only runs if cleanup actually makes changes.
 
 `Cmds`: `s` = `scan`, `c` = `cleanup`, `u` = `untag`
 
+Cleanup notes:
+
+- Tagged selector families may be combined with `delete-untagged`.
+- `exclude-tags` requires at least one tagged selector family.
+- `delete-untagged` and `keep-n-untagged` cannot be combined.
+
 ## Outputs
 
 | Output         | Description                            |
