@@ -15,16 +15,18 @@ export async function handleCleanup(args: string[]): Promise<number> {
   try {
     const repository = new PlannerRepository(database, logger);
     const cleanupRunWriter = new CleanupRunWriter(database);
+    const scanId = repository.getLatestCompletedScanId(inputs.owner, inputs.packageName);
     logger.debug(`Starting cleanup for ${inputs.owner}/${inputs.packageName}`);
     const plan = loadDeletePlan(repository, resolveTagSelectors(database, inputs));
-    cleanupRunWriter.persistCleanupRun(repository.getLatestCompletedScanId(inputs.owner, inputs.packageName), plan, {
+    cleanupRunWriter.persistCleanupRun(scanId, plan, {
       dryRun,
       cleanupStartedAt: new Date().toISOString()
     });
     if (dryRun) {
       const summary = buildCleanupSummary(plan, {
         dryRun: true,
-        listRootTags: (versionId) => _listRootTags(database, inputs.owner, inputs.packageName, versionId)
+        listRootTags: (versionId) => _listRootTags(database, inputs.owner, inputs.packageName, versionId),
+        listAffectedManifestDigests: (rootDigests) => _listAffectedManifestDigests(database, scanId, rootDigests)
       });
       logger.debug(`Completed dry-run cleanup for ${inputs.owner}/${inputs.packageName}`);
       console.log(JSON.stringify(summary));
@@ -39,6 +41,7 @@ export async function handleCleanup(args: string[]): Promise<number> {
     const summary = buildCleanupSummary(plan, {
       dryRun: false,
       listRootTags: (versionId) => _listRootTags(database, inputs.owner, inputs.packageName, versionId),
+      listAffectedManifestDigests: (rootDigests) => _listAffectedManifestDigests(database, scanId, rootDigests),
       executionSummary
     });
     logger.debug(`Completed cleanup for ${inputs.owner}/${inputs.packageName}`);
@@ -47,6 +50,31 @@ export async function handleCleanup(args: string[]): Promise<number> {
   } finally {
     database.close();
   }
+}
+
+function _listAffectedManifestDigests(
+  database: ReturnType<typeof openDatabase>,
+  scanId: number,
+  rootDigests: string[]
+): string[] {
+  if (rootDigests.length === 0) {
+    return [];
+  }
+
+  const placeholders = rootDigests.map(() => "?").join(", ");
+  const rows = database
+    .prepare(
+      `
+        SELECT DISTINCT descendant_digest AS digest
+        FROM manifest_reachability
+        WHERE scan_id = ?
+          AND ancestor_digest IN (${placeholders})
+        ORDER BY descendant_digest
+      `
+    )
+    .all(scanId, ...rootDigests) as Array<{ digest: string }>;
+
+  return rows.map((row) => row.digest);
 }
 
 function _listRootTags(

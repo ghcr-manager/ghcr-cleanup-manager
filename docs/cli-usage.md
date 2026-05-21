@@ -73,6 +73,7 @@ Notes:
 - `cleanup` requires `--db` because it writes and reads its scan snapshot through the SQLite DB
 - omit `--token` only when using `--dry-run`
 - `dry-run` prints stable summary JSON to stdout
+- cleanup summary JSON includes derived `affectedManifestCount` and `affectedManifests` for fully deletable roots
 - tagged selector families may be combined with `--delete-untagged`
 - `--exclude-tag` requires at least one tagged selector family
 - `--delete-untagged` and `--keep-n-untagged` cannot be combined

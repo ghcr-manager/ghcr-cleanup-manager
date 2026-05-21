@@ -72,6 +72,10 @@ test("buildCleanupSummary groups root decisions and carries live execution effec
             return [];
         }
       },
+      listAffectedManifestDigests: (rootDigests) => {
+        assert.deepEqual(rootDigests, ["sha256:fully"]);
+        return ["sha256:child", "sha256:fully"];
+      },
       executionSummary: {
         owner: "acme",
         packageName: "example",
@@ -99,6 +103,8 @@ test("buildCleanupSummary groups root decisions and carries live execution effec
   assert.equal(summary.fullyDeletableRoots.length, 1);
   assert.equal(summary.untagOnlyRoots.length, 1);
   assert.equal(summary.blockedRoots.length, 1);
+  assert.equal(summary.affectedManifestCount, 2);
+  assert.deepEqual(summary.affectedManifests, [{ digest: "sha256:child" }, { digest: "sha256:fully" }]);
   assert.deepEqual(summary.untagOnlyRoots[0]?.matchedTags, ["delete-me"]);
   assert.deepEqual(summary.deletedPackageVersions, [{ versionId: 101, digest: "sha256:fully" }]);
   assert.equal(summary.untaggedTags[0]?.tag, "delete-me");

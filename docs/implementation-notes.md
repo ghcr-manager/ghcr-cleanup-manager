@@ -85,7 +85,7 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
   - the older planner helper layer for separate tagged/untagged root-target selection was removed after the SQL
     composition refactor so `src/db/planner` reflects the live repository path instead of carrying dead adapters
 - Coverage note:
-  - CLI dispatch, cleanup-summary markdown branches, and planner repository wrapper methods now have explicit tests so
+  - CLI dispatch, cleanup-summary Markdown branches, and planner repository wrapper methods now have explicit tests so
     post-refactor line coverage reflects the live surface more closely
 - Action summary handoff note:
   - command summary JSON is now handed across action steps by file path instead of large env/expression payloads
@@ -157,6 +157,7 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
   - action summary JSON file-path output
   - optional cleanup JSON artifact upload alongside the DB
   - GitHub step summary rendering from that same JSON
+  - derived `affectedManifestCount` and `affectedManifests` from `manifest_reachability` for fully deletable roots
 - [x] Update documentation for the first public release:
   - action usage
   - CLI usage

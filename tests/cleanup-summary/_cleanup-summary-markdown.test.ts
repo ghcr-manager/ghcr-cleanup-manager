@@ -37,6 +37,8 @@ test("renderCleanupSummaryMarkdown renders sections and truncates long lists", (
       ],
       untagOnlyRoots: [],
       blockedRoots: [],
+      affectedManifestCount: 3,
+      affectedManifests: [{ digest: "sha256:a" }, { digest: "sha256:b" }, { digest: "sha256:c" }],
       deletedPackageVersions: [],
       untaggedTags: [],
       unsupportedUntagRoots: []
@@ -53,6 +55,7 @@ test("renderCleanupSummaryMarkdown renders sections and truncates long lists", (
   assert.match(markdown, /<summary>⚙️ Cleanup filter<\/summary>/);
   assert.match(markdown, /<summary>🏷️ Matched tags<\/summary>/);
   assert.match(markdown, /<summary>🗑️ Fully deletable roots<\/summary>/);
+  assert.match(markdown, /\| 📄 Affected manifests \| 3 \|/);
   assert.match(markdown, /Showing first 2 of 3 matched tags/);
   assert.match(markdown, /sha256:aaaaaaaa\.\.\.aaaaaaaa/);
   assert.match(markdown, /a, b, \+1 more/);
@@ -90,7 +93,7 @@ test("renderCleanupSummaryMarkdown renders blocked, untag-only, and live-effect 
           selectionMode: "untag-only",
           selectionReason: "partial",
           validationStatus: "untag-only",
-          validationReasonCode: "selected-tags-detach-root-retained",
+          validationReasonCode: "untag-only-partial-tag-match",
           validationReason: "detaches"
         }
       ],
@@ -103,7 +106,7 @@ test("renderCleanupSummaryMarkdown renders blocked, untag-only, and live-effect 
           selectionMode: "delete-root",
           selectionReason: "blocked",
           validationStatus: "blocked",
-          validationReasonCode: "blocked-by-retained-root",
+          validationReasonCode: "blocked-overlap-with-retained-root",
           validationReason: "blocked",
           blockingDigest: "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
           overlapDigest: "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
@@ -116,14 +119,32 @@ test("renderCleanupSummaryMarkdown renders blocked, untag-only, and live-effect 
           selectionMode: "delete-root",
           selectionReason: "blocked",
           validationStatus: "blocked",
-          validationReasonCode: "blocked-by-retained-root",
+          validationReasonCode: "blocked-overlap-with-retained-root",
           validationReason: "blocked",
           blockingDigest: "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         }
       ],
-      deletedPackageVersions: [202],
-      untaggedTags: ["keep|me"],
-      unsupportedUntagRoots: [999]
+      affectedManifestCount: 0,
+      affectedManifests: [],
+      deletedPackageVersions: [
+        { versionId: 202, digest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+      ],
+      untaggedTags: [
+        {
+          tag: "keep|me",
+          sourceVersionId: 201,
+          sourceDigest: "sha256:short",
+          detachedVersionId: 301,
+          detachedDigest: "sha256:detached"
+        }
+      ],
+      unsupportedUntagRoots: [
+        {
+          versionId: 999,
+          digest: "sha256:unsupported",
+          reason: "unsupported"
+        }
+      ]
     },
     {
       maxDirectTargetTags: 5,
@@ -142,6 +163,7 @@ test("renderCleanupSummaryMarkdown renders blocked, untag-only, and live-effect 
   assert.match(markdown, /Blocked by sha256:cccccccc\.\.\.cccccccc via sha256:dddddddd\.\.\.dddddddd/);
   assert.match(markdown, /`sha256:short`/);
   assert.match(markdown, /### Applied changes/);
+  assert.match(markdown, /\| 📄 Affected manifests \| 0 \|/);
   assert.match(markdown, /Deleted package versions: 1/);
   assert.match(markdown, /Detached tags: 1/);
   assert.match(markdown, /Unsupported untag roots: 1/);

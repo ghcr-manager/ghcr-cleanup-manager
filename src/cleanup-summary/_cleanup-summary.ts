@@ -21,6 +21,10 @@ export interface CleanupSummaryRoot {
   overlapManifestKind?: string;
 }
 
+export interface CleanupSummaryAffectedManifest {
+  digest: string;
+}
+
 export interface CleanupSummary {
   command: "cleanup";
   owner: string;
@@ -34,6 +38,8 @@ export interface CleanupSummary {
   fullyDeletableRoots: CleanupSummaryRoot[];
   untagOnlyRoots: CleanupSummaryRoot[];
   blockedRoots: CleanupSummaryRoot[];
+  affectedManifestCount: number;
+  affectedManifests: CleanupSummaryAffectedManifest[];
   deletedPackageVersions: DeleteExecutionSummary["deletedPackageVersions"];
   untaggedTags: DeleteExecutionSummary["untaggedTags"];
   unsupportedUntagRoots: DeleteExecutionSummary["unsupportedUntagRoots"];
@@ -44,6 +50,7 @@ export function buildCleanupSummary(
   options: {
     dryRun: boolean;
     listRootTags: (versionId: number) => string[];
+    listAffectedManifestDigests: (rootDigests: string[]) => string[];
     executionSummary?: DeleteExecutionSummary;
   }
 ): CleanupSummary {
@@ -51,6 +58,8 @@ export function buildCleanupSummary(
   const roots = plan.rootDecisions.map((decision) =>
     _mapRootDecision(decision, directTargetTagSet, options.listRootTags)
   );
+  const fullyDeletableRoots = roots.filter((root) => root.validationStatus === "fully-deletable");
+  const affectedManifestDigests = options.listAffectedManifestDigests(fullyDeletableRoots.map((root) => root.digest));
 
   return {
     command: "cleanup",
@@ -62,9 +71,11 @@ export function buildCleanupSummary(
     validationSummary: plan.validationSummary,
     directTargetTags: plan.directTargetTags,
     collateralTags: plan.collateralTags,
-    fullyDeletableRoots: roots.filter((root) => root.validationStatus === "fully-deletable"),
+    fullyDeletableRoots,
     untagOnlyRoots: roots.filter((root) => root.validationStatus === "untag-only"),
     blockedRoots: roots.filter((root) => root.validationStatus === "blocked"),
+    affectedManifestCount: affectedManifestDigests.length,
+    affectedManifests: affectedManifestDigests.map((digest) => ({ digest })),
     deletedPackageVersions: options.executionSummary?.deletedPackageVersions ?? [],
     untaggedTags: options.executionSummary?.untaggedTags ?? [],
     unsupportedUntagRoots: options.executionSummary?.unsupportedUntagRoots ?? []

@@ -26,6 +26,7 @@ export function renderCleanupSummaryMarkdown(
     `| 🗑️ Fully deletable roots | ${summary.validationSummary.fullyDeletableRootCount} |`,
     `| 🔗 Untag-only roots | ${summary.validationSummary.untagOnlyRootCount} |`,
     `| 🛡️ Blocked roots | ${summary.validationSummary.blockedDeleteRootCount} |`,
+    `| 📄 Affected manifests | ${summary.affectedManifestCount} |`,
     ""
   ];
 
