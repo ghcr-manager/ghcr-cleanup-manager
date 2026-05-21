@@ -90,6 +90,8 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - Action summary handoff note:
   - command summary JSON is now handed across action steps by file path instead of large env/expression payloads
   - this avoids GitHub template-memory and argument-length failures on large cleanup summaries
+  - the root action now exposes `summary-json-path`, not the full summary JSON payload, to avoid GitHub output-size
+    limits on large cleanup runs
 
 ## Current Action / DB Notes
 
@@ -137,7 +139,7 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
 - [ ] Port regex selector validation hardening for `--use-regex` cleanup selectors.
 - [x] Implement user-facing run output for `cleanup`:
   - stable cleanup summary JSON from the CLI
-  - action `summary-json` output
+  - action summary JSON file-path output
   - optional cleanup JSON artifact upload alongside the DB
   - GitHub step summary rendering from that same JSON
 - [x] Update documentation for the first public release:
@@ -155,7 +157,7 @@ Historical notes were compacted into [docs/implementation-notes.archive.md](arch
   - action-run summary output as the first cleanup review surface
   - DB/schema docs as the deeper second layer
 - Task 03 changed the recommended first-run inspection flow:
-  - `cleanup` dry-run understanding should start from the GitHub step summary or `summary-json`
+  - `cleanup` dry-run understanding should start from the GitHub step summary or `summary-json-path`
   - DB inspection is still important, but no longer the primary first-run entry path
 - Do not maintain a checkpoint commit list here. Squash/rebase workflows make that log noisy and force unnecessary
   follow-up commits.

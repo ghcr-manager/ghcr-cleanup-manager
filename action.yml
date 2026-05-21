@@ -89,9 +89,11 @@ outputs:
   db-path:
     description: Path to the SQLite database in the GitHub action runner
     value: ${{ steps.prepare-db.outputs.db_path }}
-  summary-json:
-    description: Machine-readable command summary JSON for commands that emit one
-    value: ${{ steps.publish-summary-output.outputs.summary_json }}
+  summary-json-path:
+    description: Path to the command summary JSON file for commands that emit one
+    value:
+      ${{ inputs.command == 'cleanup' && steps.run-cleanup.outputs.summary_path || steps.run-untag.outputs.summary_path
+      }}
 
 runs:
   using: composite
@@ -335,22 +337,6 @@ runs:
         summary_path="$(mktemp -p "$RUNNER_TEMP" ghcr-manager-untag-summary-XXXXXX.json)"
         printf '%s\n' "$summary_json" > "$summary_path"
         echo "summary_path=$summary_path" >> "$GITHUB_OUTPUT"
-
-    - name: Publish command summary output
-      id: publish-summary-output
-      if: ${{ inputs.command == 'cleanup' || inputs.command == 'untag' }}
-      shell: bash
-      env:
-        SUMMARY_PATH:
-          ${{ inputs.command == 'cleanup' && steps.run-cleanup.outputs.summary_path ||
-          steps.run-untag.outputs.summary_path }}
-      run: |
-        set -euo pipefail
-        {
-          echo "summary_json<<EOF"
-          cat "$SUMMARY_PATH"
-          echo "EOF"
-        } >> "$GITHUB_OUTPUT"
 
     - name: Scan after live cleanup
       id: scan-after

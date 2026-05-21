@@ -177,10 +177,10 @@ Cleanup notes:
 
 ## Outputs
 
-| Output         | Description                            |
-| -------------- | -------------------------------------- |
-| `db-path`      | SQLite DB path on the runner           |
-| `summary-json` | Summary JSON for `cleanup` and `untag` |
+| Output              | Description                                      |
+| ------------------- | ------------------------------------------------ |
+| `db-path`           | SQLite DB path on the runner                     |
+| `summary-json-path` | Summary JSON file path for `cleanup` and `untag` |
 
 ## Artifacts
 

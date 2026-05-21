@@ -15,7 +15,7 @@ Use `cleanup` for registry cleanup. Add `dry-run` for a preview.
 Behavior:
 
 - always performs a pre-cleanup scan
-- exposes `summary-json` as an action output
+- exposes `summary-json-path` as an action output
 - optionally uploads the DB and the cleanup summary JSON as artifacts
 - supports `scan-after-cleanup`
 
@@ -36,5 +36,5 @@ Use `untag` when you want to remove specific tags directly.
 Behavior:
 
 - requires explicit tags as input
-- exposes `summary-json` as an action output
+- exposes `summary-json-path` as an action output
 - no package scan and no DB used
