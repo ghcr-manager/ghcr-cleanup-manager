@@ -45,3 +45,18 @@ have to guess and hand knit args from docs and the summary and my input.
 
 And we should add a new arg to the node code for file output - if present write to file. If not (CLI usage) print
 compact JSON ... or even if file output arg not present don't print JSON, file is enough.
+
+## Prevent error deleting last tag in a GHCR
+
+GH throws an error when one tries to delete the last remaining tag. The error message confused me for a while as I read
+it as a generic problem deleting tags - but it's the last tag that matters.
+
+And by now our cleanup planner audit tables are solid enough to give that information. Simple check that the counts of
+tags to remove is not equal to the total count of tags. If counts are equals - refuse actual delete process after
+planning.
+
+If we do that I'd like a scenario test for it. Can be separate as afaik current test matrix setup expects action calls
+to pass and weaving that one use case could be complex. Maybe we even have other action-error scenarios in the future,
+so separate seems an option.
+
+> Note: we don't do that check for command `update` as there we don't see the full GHCR data.
