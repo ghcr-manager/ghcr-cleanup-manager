@@ -20,7 +20,7 @@ test("renderCleanupSummaryMarkdown renders user-facing counts and truncates long
           versionId: 101,
           digest: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           manifestKind: ManifestKinds.crossArchManifest,
-      rootTags: ["release-amd64-test", "release-arm64-test", "release-debug-test"],
+          rootTags: ["release-amd64-test", "release-arm64-test", "release-debug-test"],
           matchedTags: ["release-amd64-test"],
           selectionMode: "delete-root",
           selectionReason: "delete-tags-partial-tag-match",
@@ -36,15 +36,15 @@ test("renderCleanupSummaryMarkdown renders user-facing counts and truncates long
         { digest: "sha256:b", manifestKind: ManifestKinds.imageManifest },
         { digest: "sha256:c", manifestKind: ManifestKinds.signatureManifest }
       ],
-      plannedChanges: {
-        tagRemovals: 3,
-        imageDeletes: 1,
-        indexDeletes: 1,
-        crossArchDeletes: 1,
-        artifactDeletes: 0,
-        attestationDeletes: 0,
-        signatureDeletes: 1,
-        totalManifestDeletes: 3
+      changes: {
+        deletedTags: 3,
+        deletedImages: 1,
+        deletedIndexes: 1,
+        deletedCrossArchManifests: 1,
+        deletedArtifactManifests: 0,
+        deletedAttestations: 0,
+        deletedSignatures: 1,
+        deletedTotal: 3
       },
       deletedPackageVersions: [],
       untaggedTags: [],
@@ -146,15 +146,15 @@ test("renderCleanupSummaryMarkdown renders blocked, tag-only, and live-effect de
         }
       ],
       affectedManifests: [],
-      plannedChanges: {
-        tagRemovals: 1,
-        imageDeletes: 0,
-        indexDeletes: 0,
-        crossArchDeletes: 0,
-        artifactDeletes: 0,
-        attestationDeletes: 0,
-        signatureDeletes: 0,
-        totalManifestDeletes: 0
+      changes: {
+        deletedTags: 1,
+        deletedImages: 0,
+        deletedIndexes: 0,
+        deletedCrossArchManifests: 0,
+        deletedArtifactManifests: 0,
+        deletedAttestations: 0,
+        deletedSignatures: 0,
+        deletedTotal: 0
       },
       deletedPackageVersions: [
         { versionId: 202, digest: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
@@ -237,15 +237,15 @@ test("renderCleanupSummaryMarkdown notes when a root section is truncated", () =
       untagOnlyRoots: [],
       blockedRoots: [],
       affectedManifests: [{ digest: "sha256:a", manifestKind: ManifestKinds.imageManifest }],
-      plannedChanges: {
-        tagRemovals: 1,
-        imageDeletes: 1,
-        indexDeletes: 0,
-        crossArchDeletes: 0,
-        artifactDeletes: 0,
-        attestationDeletes: 0,
-        signatureDeletes: 0,
-        totalManifestDeletes: 1
+      changes: {
+        deletedTags: 1,
+        deletedImages: 1,
+        deletedIndexes: 0,
+        deletedCrossArchManifests: 0,
+        deletedArtifactManifests: 0,
+        deletedAttestations: 0,
+        deletedSignatures: 0,
+        deletedTotal: 1
       },
       deletedPackageVersions: [],
       untaggedTags: [],
@@ -275,15 +275,15 @@ test("renderCleanupSummaryMarkdown does not show digest-tag helper tags in user-
       untagOnlyRoots: [],
       blockedRoots: [],
       affectedManifests: [],
-      plannedChanges: {
-        tagRemovals: 0,
-        imageDeletes: 0,
-        indexDeletes: 0,
-        crossArchDeletes: 0,
-        artifactDeletes: 0,
-        attestationDeletes: 0,
-        signatureDeletes: 0,
-        totalManifestDeletes: 0
+      changes: {
+        deletedTags: 0,
+        deletedImages: 0,
+        deletedIndexes: 0,
+        deletedCrossArchManifests: 0,
+        deletedArtifactManifests: 0,
+        deletedAttestations: 0,
+        deletedSignatures: 0,
+        deletedTotal: 0
       },
       deletedPackageVersions: [],
       untaggedTags: [],

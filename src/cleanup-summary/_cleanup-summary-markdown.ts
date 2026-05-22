@@ -23,11 +23,11 @@ export function renderCleanupSummaryMarkdown(
     `| 📦 Package | \`${_escapeInlineCode(`${summary.owner}/${summary.packageName}`)}\` |`,
     `| ⚙️ Mode | ${summary.dryRun ? "Cleanup dry-run" : "Cleanup"} |`,
     `| 🏷️ Selected tags | ${summary.directTargetTags.length} |`,
-    `| 🔖 Deleted tags | ${summary.plannedChanges.tagRemovals} |`,
-    `| 🖼️ Deleted images | ${summary.plannedChanges.imageDeletes} |`,
-    `| 📚 Deleted cross-arch manifests | ${summary.plannedChanges.crossArchDeletes} |`,
-    `| 🧱 Deleted indexes | ${summary.plannedChanges.indexDeletes} |`,
-    `| 📄 Deleted total | ${summary.plannedChanges.totalManifestDeletes} |`,
+    `| 🔖 Deleted tags | ${summary.changes.deletedTags} |`,
+    `| 🖼️ Deleted images | ${summary.changes.deletedImages} |`,
+    `| 📚 Deleted cross-arch manifests | ${summary.changes.deletedCrossArchManifests} |`,
+    `| 🧱 Deleted indexes | ${summary.changes.deletedIndexes} |`,
+    `| 📄 Deleted total | ${summary.changes.deletedTotal} |`,
     `| 🔗 Tag-only updates | ${summary.untagOnlyRoots.length} |`,
     `| 🛡️ Blocked items | ${summary.blockedRoots.length} |`,
     ""
@@ -49,12 +49,12 @@ export function renderCleanupSummaryMarkdown(
 
 function _renderPlannedDeleteBreakdown(summary: CleanupSummary): string[] {
   const rows = [
-    { label: "Images", count: summary.plannedChanges.imageDeletes },
-    { label: "Cross-arch manifests", count: summary.plannedChanges.crossArchDeletes },
-    { label: "Artifact manifests", count: summary.plannedChanges.artifactDeletes },
-    { label: "Signatures", count: summary.plannedChanges.signatureDeletes },
-    { label: "Attestations", count: summary.plannedChanges.attestationDeletes },
-    { label: "Generic indexes", count: summary.plannedChanges.indexDeletes }
+    { label: "Images", count: summary.changes.deletedImages },
+    { label: "Cross-arch manifests", count: summary.changes.deletedCrossArchManifests },
+    { label: "Artifact manifests", count: summary.changes.deletedArtifactManifests },
+    { label: "Signatures", count: summary.changes.deletedSignatures },
+    { label: "Attestations", count: summary.changes.deletedAttestations },
+    { label: "Generic indexes", count: summary.changes.deletedIndexes }
   ].filter((row) => row.count > 0);
 
   if (rows.length === 0) {
@@ -106,11 +106,7 @@ function _renderDirectTargetTags(tags: string[], maxDirectTargetTags: number): s
   return lines;
 }
 
-function _renderRootSection(
-  title: string,
-  roots: CleanupSummaryRoot[],
-  maxRootsPerSection: number
-): string[] {
+function _renderRootSection(title: string, roots: CleanupSummaryRoot[], maxRootsPerSection: number): string[] {
   if (roots.length === 0) {
     return [];
   }

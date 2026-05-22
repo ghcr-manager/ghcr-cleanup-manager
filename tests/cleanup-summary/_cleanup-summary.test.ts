@@ -77,15 +77,15 @@ test("buildCleanupSummary groups root decisions and carries live execution effec
         [102, ["delete-me", "keep-me"]],
         [103, ["delete-me"]]
       ]),
-      plannedChanges: {
-        tagRemovals: 1,
-        imageDeletes: 1,
-        indexDeletes: 0,
-        crossArchDeletes: 1,
-        artifactDeletes: 0,
-        attestationDeletes: 0,
-        signatureDeletes: 0,
-        totalManifestDeletes: 2
+      changes: {
+        deletedTags: 1,
+        deletedImages: 1,
+        deletedIndexes: 0,
+        deletedCrossArchManifests: 1,
+        deletedArtifactManifests: 0,
+        deletedAttestations: 0,
+        deletedSignatures: 0,
+        deletedTotal: 2
       },
       executionSummary: {
         owner: "acme",
@@ -119,15 +119,15 @@ test("buildCleanupSummary groups root decisions and carries live execution effec
     { digest: "sha256:child", manifestKind: ManifestKinds.imageManifest },
     { digest: "sha256:fully", manifestKind: ManifestKinds.crossArchManifest }
   ]);
-  assert.deepEqual(summary.plannedChanges, {
-    tagRemovals: 1,
-    imageDeletes: 1,
-    indexDeletes: 0,
-    crossArchDeletes: 1,
-    artifactDeletes: 0,
-    attestationDeletes: 0,
-    signatureDeletes: 0,
-    totalManifestDeletes: 2
+  assert.deepEqual(summary.changes, {
+    deletedTags: 1,
+    deletedImages: 1,
+    deletedIndexes: 0,
+    deletedCrossArchManifests: 1,
+    deletedArtifactManifests: 0,
+    deletedAttestations: 0,
+    deletedSignatures: 0,
+    deletedTotal: 2
   });
   assert.deepEqual(summary.untagOnlyRoots[0]?.matchedTags, ["delete-me"]);
   assert.deepEqual(summary.deletedPackageVersions, [{ versionId: 101, digest: "sha256:fully" }]);
@@ -174,15 +174,15 @@ test("buildCleanupSummary trusts planner-facing direct target tags as already fi
     {
       dryRun: true,
       rootTagsByVersionId: new Map([[101, ["release-1"]]]),
-      plannedChanges: {
-        tagRemovals: 1,
-        imageDeletes: 1,
-        indexDeletes: 0,
-        crossArchDeletes: 0,
-        artifactDeletes: 0,
-        attestationDeletes: 0,
-        signatureDeletes: 0,
-        totalManifestDeletes: 1
+      changes: {
+        deletedTags: 1,
+        deletedImages: 1,
+        deletedIndexes: 0,
+        deletedCrossArchManifests: 0,
+        deletedArtifactManifests: 0,
+        deletedAttestations: 0,
+        deletedSignatures: 0,
+        deletedTotal: 1
       }
     }
   );

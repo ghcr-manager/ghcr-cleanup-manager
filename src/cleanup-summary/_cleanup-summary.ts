@@ -31,15 +31,15 @@ export interface CleanupSummaryAffectedManifest {
   manifestKind?: ManifestKind;
 }
 
-export interface CleanupSummaryPlannedChanges {
-  tagRemovals: number;
-  imageDeletes: number;
-  indexDeletes: number;
-  crossArchDeletes: number;
-  artifactDeletes: number;
-  attestationDeletes: number;
-  signatureDeletes: number;
-  totalManifestDeletes: number;
+export interface CleanupSummaryChanges {
+  deletedTags: number;
+  deletedImages: number;
+  deletedIndexes: number;
+  deletedCrossArchManifests: number;
+  deletedArtifactManifests: number;
+  deletedAttestations: number;
+  deletedSignatures: number;
+  deletedTotal: number;
 }
 
 export interface CleanupSummary {
@@ -55,7 +55,7 @@ export interface CleanupSummary {
   untagOnlyRoots: CleanupSummaryRoot[];
   blockedRoots: CleanupSummaryRoot[];
   affectedManifests: CleanupSummaryAffectedManifest[];
-  plannedChanges: CleanupSummaryPlannedChanges;
+  changes: CleanupSummaryChanges;
   deletedPackageVersions: DeleteExecutionSummary["deletedPackageVersions"];
   untaggedTags: DeleteExecutionSummary["untaggedTags"];
   unsupportedUntagRoots: DeleteExecutionSummary["unsupportedUntagRoots"];
@@ -66,7 +66,7 @@ export function buildCleanupSummary(
   options: {
     dryRun: boolean;
     rootTagsByVersionId: ReadonlyMap<number, string[]>;
-    plannedChanges: CleanupSummaryPlannedChanges;
+    changes: CleanupSummaryChanges;
     executionSummary?: DeleteExecutionSummary;
   }
 ): CleanupSummary {
@@ -97,7 +97,7 @@ export function buildCleanupSummary(
     untagOnlyRoots,
     blockedRoots,
     affectedManifests,
-    plannedChanges: options.plannedChanges,
+    changes: options.changes,
     deletedPackageVersions: options.executionSummary?.deletedPackageVersions ?? [],
     untaggedTags: options.executionSummary?.untaggedTags ?? [],
     unsupportedUntagRoots: options.executionSummary?.unsupportedUntagRoots ?? []

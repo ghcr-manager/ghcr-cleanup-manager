@@ -33,7 +33,7 @@ export async function handleCleanup(args: string[]): Promise<number> {
       const summary = buildCleanupSummary(plan, {
         dryRun: true,
         rootTagsByVersionId,
-        plannedChanges: _loadPlannedChanges(database, cleanupRunId)
+        changes: _loadSummaryChanges(database, cleanupRunId)
       });
       logger.debug(`Completed dry-run cleanup for ${inputs.owner}/${inputs.packageName}`);
       console.log(JSON.stringify(summary));
@@ -48,7 +48,7 @@ export async function handleCleanup(args: string[]): Promise<number> {
     const summary = buildCleanupSummary(plan, {
       dryRun: false,
       rootTagsByVersionId,
-      plannedChanges: _loadPlannedChanges(database, cleanupRunId),
+      changes: _loadSummaryChanges(database, cleanupRunId),
       executionSummary
     });
     logger.debug(`Completed cleanup for ${inputs.owner}/${inputs.packageName}`);
@@ -125,20 +125,20 @@ function _loadRootTagsByVersionId(
   return tagsByVersionId;
 }
 
-function _loadPlannedChanges(
+function _loadSummaryChanges(
   database: ReturnType<typeof openDatabase>,
   cleanupRunId: number
 ): {
-  tagRemovals: number;
-  imageDeletes: number;
-  indexDeletes: number;
-  crossArchDeletes: number;
-  artifactDeletes: number;
-  attestationDeletes: number;
-  signatureDeletes: number;
-  totalManifestDeletes: number;
+  deletedTags: number;
+  deletedImages: number;
+  deletedIndexes: number;
+  deletedCrossArchManifests: number;
+  deletedArtifactManifests: number;
+  deletedAttestations: number;
+  deletedSignatures: number;
+  deletedTotal: number;
 } {
-  const tagRemovals = (
+  const deletedTags = (
     database
       .prepare(
         `
@@ -180,13 +180,13 @@ function _loadPlannedChanges(
   const countsByKind = new Map(manifestCounts.map((row) => [row.manifest_kind ?? "", row.count]));
 
   return {
-    tagRemovals,
-    imageDeletes: countsByKind.get(ManifestKinds.imageManifest) ?? 0,
-    indexDeletes: countsByKind.get(ManifestKinds.indexManifest) ?? 0,
-    crossArchDeletes: countsByKind.get(ManifestKinds.crossArchManifest) ?? 0,
-    artifactDeletes: countsByKind.get(ManifestKinds.artifactManifest) ?? 0,
-    attestationDeletes: countsByKind.get(ManifestKinds.attestationManifest) ?? 0,
-    signatureDeletes: countsByKind.get(ManifestKinds.signatureManifest) ?? 0,
-    totalManifestDeletes: manifestCounts.reduce((total, row) => total + row.count, 0)
+    deletedTags,
+    deletedImages: countsByKind.get(ManifestKinds.imageManifest) ?? 0,
+    deletedIndexes: countsByKind.get(ManifestKinds.indexManifest) ?? 0,
+    deletedCrossArchManifests: countsByKind.get(ManifestKinds.crossArchManifest) ?? 0,
+    deletedArtifactManifests: countsByKind.get(ManifestKinds.artifactManifest) ?? 0,
+    deletedAttestations: countsByKind.get(ManifestKinds.attestationManifest) ?? 0,
+    deletedSignatures: countsByKind.get(ManifestKinds.signatureManifest) ?? 0,
+    deletedTotal: manifestCounts.reduce((total, row) => total + row.count, 0)
   };
 }
