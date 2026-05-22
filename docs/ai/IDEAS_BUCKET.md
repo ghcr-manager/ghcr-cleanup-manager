@@ -35,3 +35,13 @@ The day, days, ... format is a bit undocumented and unclear.
 
 Search for `" | "` and `| "` ... many such string types are inlined in objects and thus their string values used
 plain-text in code.
+
+## Make action args visible in run logs
+
+`cleanup_summary_json="$(npm run --silent ghcr-manager:dist -- cleanup "${cleanup_args[@]}")"`
+
+with the bash arg construction hides the actual args to node. Instead of nicely copying from logs to run from CLI, I
+have to guess and hand knit args from docs and the summary and my input.
+
+And we should add a new arg to the node code for file output - if present write to file. If not (CLI usage) print
+compact JSON ... or even if file output arg not present don't print JSON, file is enough.
