@@ -60,9 +60,9 @@ test("renderCleanupSummaryMarkdown renders user-facing counts and truncates long
   assert.match(markdown, /\| 📦 Package \| `acme\/example` \|/);
   assert.match(markdown, /\| 🔖 Deleted tags \| 3 \|/);
   assert.match(markdown, /\| 🖼️ Deleted images \| 1 \|/);
-  assert.match(markdown, /\| 🧱 Deleted indexes \| 1 \|/);
   assert.match(markdown, /\| 📚 Deleted cross-arch manifests \| 1 \|/);
-  assert.match(markdown, /\| 📄 Deleted items \| 3 \|/);
+  assert.match(markdown, /\| 🧱 Deleted indexes \| 1 \|/);
+  assert.match(markdown, /\| 📄 Deleted total \| 3 \|/);
   assert.match(markdown, /<summary>📦 Deleted item breakdown<\/summary>/);
   assert.match(markdown, /\| Images \| 1 \|/);
   assert.match(markdown, /\| Generic indexes \| 1 \|/);
@@ -77,16 +77,16 @@ test("renderCleanupSummaryMarkdown renders user-facing counts and truncates long
   assert.match(markdown, /`a`/);
   assert.match(markdown, /`b`/);
   assert.match(markdown, /<summary>🏷️ Selected tags<\/summary>/);
-  assert.match(markdown, /<summary>🗑️ Items to delete<\/summary>/);
+  assert.match(markdown, /<summary>🗑️ Deleted items<\/summary>/);
   assert.match(markdown, /Showing first 2 of 3 selected tags/);
   assert.match(markdown, /sha256:aaaaaaaa\.\.\.aaaaaaaa/);
   assert.match(markdown, /release-amd64-test, release-arm64-tes\.\.\./);
   assert.match(markdown, /Tag lists may be truncated for table width\./);
   assert.match(
     markdown,
-    /\| 101 \| cross-arch \| `sha256:aaaaaaaa\.\.\.aaaaaaaa` \| release-amd64-test, release-arm64-tes\.\.\. \| Delete this item and its descendants \|/
+    /\| 101 \| cross-arch \| `sha256:aaaaaaaa\.\.\.aaaaaaaa` \| release-amd64-test, release-arm64-tes\.\.\. \| Delete item and descendants \|/
   );
-  assert.doesNotMatch(markdown, /<summary>🔗 Tags to remove only<\/summary>/);
+  assert.doesNotMatch(markdown, /<summary>🔗 Tags removed only<\/summary>/);
   assert.doesNotMatch(markdown, /<summary>🛡️ Blocked items<\/summary>/);
 });
 
@@ -183,12 +183,12 @@ test("renderCleanupSummaryMarkdown renders blocked, tag-only, and live-effect de
   );
 
   assert.match(markdown, /`acme\\`team\/example`/);
-  assert.match(markdown, /<summary>🔗 Tags to remove only<\/summary>/);
+  assert.match(markdown, /<summary>🔗 Tags removed only<\/summary>/);
   assert.match(markdown, /<summary>🛡️ Blocked items<\/summary>/);
   assert.match(markdown, /\(untagged\)/);
   assert.match(markdown, /keep\\\|me/);
   assert.match(markdown, /line1 line2/);
-  assert.match(markdown, /Remove selected tags, keep this item/);
+  assert.match(markdown, /Remove selected tags, keep item/);
   assert.match(markdown, /Blocked by retained item sha256:cccccccc\.\.\.cccccccc via sha256:dddddddd\.\.\.dddddddd/);
   assert.match(markdown, /\| Delete untagged \| yes \|/);
   assert.match(markdown, /### Applied changes/);
@@ -257,7 +257,7 @@ test("renderCleanupSummaryMarkdown notes when a root section is truncated", () =
     }
   );
 
-  assert.match(markdown, /Showing first 1 of 2 🗑️ items to delete\./i);
+  assert.match(markdown, /Showing first 1 of 2 🗑️ deleted items\./i);
 });
 
 test("renderCleanupSummaryMarkdown does not show digest-tag helper tags in user-facing markdown", () => {

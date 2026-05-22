@@ -25,9 +25,9 @@ export function renderCleanupSummaryMarkdown(
     `| 🏷️ Selected tags | ${summary.directTargetTags.length} |`,
     `| 🔖 Deleted tags | ${summary.plannedChanges.tagRemovals} |`,
     `| 🖼️ Deleted images | ${summary.plannedChanges.imageDeletes} |`,
-    `| 🧱 Deleted indexes | ${summary.plannedChanges.indexDeletes} |`,
     `| 📚 Deleted cross-arch manifests | ${summary.plannedChanges.crossArchDeletes} |`,
-    `| 📄 Deleted items | ${summary.plannedChanges.totalManifestDeletes} |`,
+    `| 🧱 Deleted indexes | ${summary.plannedChanges.indexDeletes} |`,
+    `| 📄 Deleted total | ${summary.plannedChanges.totalManifestDeletes} |`,
     `| 🔗 Tag-only updates | ${summary.untagOnlyRoots.length} |`,
     `| 🛡️ Blocked items | ${summary.blockedRoots.length} |`,
     ""
@@ -36,8 +36,8 @@ export function renderCleanupSummaryMarkdown(
   lines.push(..._renderPlannedDeleteBreakdown(summary));
   lines.push(..._renderPlannerInputs(summary.plannerInputs));
   lines.push(..._renderDirectTargetTags(summary.directTargetTags, maxDirectTargetTags));
-  lines.push(..._renderRootSection("🗑️ Items to delete", summary.fullyDeletableRoots, maxRootsPerSection));
-  lines.push(..._renderRootSection("🔗 Tags to remove only", summary.untagOnlyRoots, maxRootsPerSection));
+  lines.push(..._renderRootSection("🗑️ Deleted items", summary.fullyDeletableRoots, maxRootsPerSection));
+  lines.push(..._renderRootSection("🔗 Tags removed only", summary.untagOnlyRoots, maxRootsPerSection));
   lines.push(..._renderRootSection("🛡️ Blocked items", summary.blockedRoots, maxRootsPerSection));
 
   if (!summary.dryRun && (summary.deletedPackageVersions.length > 0 || summary.untaggedTags.length > 0)) {
@@ -167,10 +167,10 @@ function _formatReason(root: CleanupSummaryRoot): string {
   }
 
   if (root.validationStatus === DeletePlanValidationStatuses.untagOnly) {
-    return "Remove selected tags, keep this item";
+    return "Remove selected tags, keep item";
   }
 
-  return "Delete this item and its descendants";
+  return "Delete item and descendants";
 }
 
 function _shortDigest(value: string): string {
