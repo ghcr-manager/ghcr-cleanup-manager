@@ -54,12 +54,16 @@ export function renderCleanupSummaryMarkdown(
 }
 
 function _renderPlannedDeleteBreakdown(summary: CleanupSummary): string[] {
-  if (
-    summary.plannedChanges.indexDeletes === 0 &&
-    summary.plannedChanges.signatureDeletes === 0 &&
-    summary.plannedChanges.attestationDeletes === 0 &&
-    summary.plannedChanges.artifactDeletes === 0
-  ) {
+  const rows = [
+    { label: "Images", count: summary.plannedChanges.imageDeletes },
+    { label: "Cross-arch manifests", count: summary.plannedChanges.crossArchDeletes },
+    { label: "Artifact manifests", count: summary.plannedChanges.artifactDeletes },
+    { label: "Signatures", count: summary.plannedChanges.signatureDeletes },
+    { label: "Attestations", count: summary.plannedChanges.attestationDeletes },
+    { label: "Generic indexes", count: summary.plannedChanges.indexDeletes }
+  ].filter((row) => row.count > 0);
+
+  if (rows.length === 0) {
     return [];
   }
 
@@ -69,12 +73,7 @@ function _renderPlannedDeleteBreakdown(summary: CleanupSummary): string[] {
     "",
     "| Type | Count |",
     "| --- | --- |",
-    `| Images | ${summary.plannedChanges.imageDeletes} |`,
-    `| Generic indexes | ${summary.plannedChanges.indexDeletes} |`,
-    `| Cross-arch manifests | ${summary.plannedChanges.crossArchDeletes} |`,
-    `| Signatures | ${summary.plannedChanges.signatureDeletes} |`,
-    `| Attestations | ${summary.plannedChanges.attestationDeletes} |`,
-    `| OCI artifacts | ${summary.plannedChanges.artifactDeletes} |`,
+    ...rows.map((row) => `| ${row.label} | ${row.count} |`),
     "",
     "</details>",
     ""
@@ -131,6 +130,8 @@ function _renderRootSection(
       `| ${root.versionId} | ${_escapeMarkdown(_describeManifestKind(root.manifestKind))} | \`${_escapeInlineCode(_shortDigest(root.digest))}\` | ${_escapeMarkdown(_formatTags(root, maxTagsPerRoot))} | ${_escapeMarkdown(_formatReason(root))} |`
     );
   }
+
+  lines.push("", "_Tag lists may be truncated; `+N more` means additional tags were omitted._");
 
   if (roots.length > maxRootsPerSection) {
     lines.push("", `_Showing first ${maxRootsPerSection} of ${roots.length} ${title.toLowerCase()}._`);

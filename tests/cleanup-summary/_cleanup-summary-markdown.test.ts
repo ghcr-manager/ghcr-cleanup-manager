@@ -65,6 +65,12 @@ test("renderCleanupSummaryMarkdown renders user-facing counts and truncates long
   assert.match(markdown, /\| 📚 Deleted cross-arch manifests \| 1 \|/);
   assert.match(markdown, /\| 📄 Deleted items \| 3 \|/);
   assert.match(markdown, /<summary>📦 Deleted item breakdown<\/summary>/);
+  assert.match(markdown, /\| Images \| 1 \|/);
+  assert.match(markdown, /\| Generic indexes \| 1 \|/);
+  assert.match(markdown, /\| Cross-arch manifests \| 1 \|/);
+  assert.match(markdown, /\| Signatures \| 1 \|/);
+  assert.doesNotMatch(markdown, /\| Attestations \| 0 \|/);
+  assert.doesNotMatch(markdown, /\| Artifact manifests \| 0 \|/);
   assert.match(markdown, /<summary>⚙️ Cleanup filter<\/summary>/);
   assert.match(markdown, /\| Delete tags \| 2 patterns \|/);
   assert.match(markdown, /\| Use regex \| yes \|/);
@@ -76,6 +82,7 @@ test("renderCleanupSummaryMarkdown renders user-facing counts and truncates long
   assert.match(markdown, /Showing first 2 of 3 selected tags/);
   assert.match(markdown, /sha256:aaaaaaaa\.\.\.aaaaaaaa/);
   assert.match(markdown, /a, b, \+1 more/);
+  assert.match(markdown, /Tag lists may be truncated; `\+N more` means additional tags were omitted\./);
   assert.match(
     markdown,
     /\| 101 \| cross-arch \| `sha256:aaaaaaaa\.\.\.aaaaaaaa` \| a, b, \+1 more \| Delete this item and its descendants \|/
