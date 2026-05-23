@@ -14,6 +14,7 @@ export async function executeDeletePlan(
   const deletedPackageVersions: DeletePackageVersionOperation[] = [];
   const untaggedTags = [];
   const directTargetTagSet = new Set(plan.directTargetTags);
+  const deletedVersionIds = new Set<number>();
 
   for (const decision of plan.rootDecisions) {
     if (decision.validationStatus !== DeletePlanValidationStatuses.untagOnly) {
@@ -40,17 +41,47 @@ export async function executeDeletePlan(
     );
   }
 
+  const closureMembersByRootDigest = new Map(
+    plan.fullyDeletableRoots.map((root) => [
+      root.digest,
+      plan.closureManifests
+        .filter((manifest) => manifest.sourceDigest === root.digest)
+        .sort((left, right) => {
+          if (left.hopsFromRoot !== right.hopsFromRoot) {
+            return right.hopsFromRoot - left.hopsFromRoot;
+          }
+          return left.memberVersionId - right.memberVersionId;
+        })
+    ])
+  );
+
   for (const root of plan.fullyDeletableRoots) {
-    options.logger.info(
-      `Deleting package version ${root.versionId} for ${plan.owner}/${plan.packageName} (${root.digest})`
-    );
-    await deletePackageVersion(plan.owner, plan.packageName, root.versionId, options.token, options.logger, {
-      fetchImpl: options.fetchImpl
-    });
-    deletedPackageVersions.push({
-      versionId: root.versionId,
-      digest: root.digest
-    });
+    const closureMembers = closureMembersByRootDigest.get(root.digest) ?? [];
+    const deleteTargets =
+      closureMembers.length > 0
+        ? closureMembers.map((member) => ({
+            versionId: member.memberVersionId,
+            digest: member.memberDigest
+          }))
+        : [{ versionId: root.versionId, digest: root.digest }];
+
+    for (const target of deleteTargets) {
+      if (deletedVersionIds.has(target.versionId)) {
+        continue;
+      }
+
+      options.logger.info(
+        `Deleting package version ${target.versionId} for ${plan.owner}/${plan.packageName} (${target.digest})`
+      );
+      await deletePackageVersion(plan.owner, plan.packageName, target.versionId, options.token, options.logger, {
+        fetchImpl: options.fetchImpl
+      });
+      deletedVersionIds.add(target.versionId);
+      deletedPackageVersions.push({
+        versionId: target.versionId,
+        digest: target.digest
+      });
+    }
   }
 
   return {

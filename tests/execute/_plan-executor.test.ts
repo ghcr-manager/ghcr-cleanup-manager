@@ -35,7 +35,35 @@ test("executeDeletePlan deletes fully deletable roots and returns a summary", as
       }
     ],
     protectedRoots: [],
-    closureManifests: [],
+    closureManifests: [
+      {
+        sourceVersionId: 104,
+        sourceDigest: "sha256:untagged-old",
+        memberVersionId: 204,
+        memberDigest: "sha256:descendant-child",
+        memberManifestKind: "image_manifest",
+        hopsFromRoot: 1,
+        memberRole: "descendant"
+      },
+      {
+        sourceVersionId: 104,
+        sourceDigest: "sha256:untagged-old",
+        memberVersionId: 304,
+        memberDigest: "sha256:descendant-referrer",
+        memberManifestKind: "artifact_manifest",
+        hopsFromRoot: 2,
+        memberRole: "descendant"
+      },
+      {
+        sourceVersionId: 104,
+        sourceDigest: "sha256:untagged-old",
+        memberVersionId: 104,
+        memberDigest: "sha256:untagged-old",
+        memberManifestKind: "image_manifest",
+        hopsFromRoot: 0,
+        memberRole: "root"
+      }
+    ],
     blockedRoots: [],
     fullyDeletableRoots: [
       {
@@ -79,8 +107,12 @@ test("executeDeletePlan deletes fully deletable roots and returns a summary", as
     }
   });
 
-  assert.deepEqual(deletedVersionIds, [104]);
-  assert.deepEqual(summary.deletedPackageVersions, [{ versionId: 104, digest: "sha256:untagged-old" }]);
+  assert.deepEqual(deletedVersionIds, [304, 204, 104]);
+  assert.deepEqual(summary.deletedPackageVersions, [
+    { versionId: 304, digest: "sha256:descendant-referrer" },
+    { versionId: 204, digest: "sha256:descendant-child" },
+    { versionId: 104, digest: "sha256:untagged-old" }
+  ]);
   assert.deepEqual(summary.untaggedTags, []);
 });
 
