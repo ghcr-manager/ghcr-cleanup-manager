@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.9.9] - 2026-05-30
+
+No additional user-facing changes were introduced beyond `0.9.8`.
+
+This version number exists because a release attempt consumed `0.9.9` on npm.org, so later publishes must continue from
+a newer version.
+
 ## [0.9.8] - 2026-06-03
 
 ### Added
