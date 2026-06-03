@@ -2,13 +2,11 @@
 
 This document explains the current SQLite schema in practical terms.
 
-If you open a scan DB for the first time, the shortest useful path is usually:
+For most inspection work, start with the visualizer rather than raw SQL:
 
-1. `package_scans`: what package and run this DB contains
-2. `package_versions` + `tags`: which versions and tags exist
-3. `manifests`: which root digest each package version points to
+- see [docs/visualizer.md](visualizer.md)
 
-The rest of the schema helps when you want to inspect manifest relations, referrers, or cleanup audit detail.
+The database is still useful to query directly when you want audits, debugging, or one-off analysis across scans.
 
 ## Table Of Contents
 
@@ -17,12 +15,10 @@ The rest of the schema helps when you want to inspect manifest relations, referr
 - [Core Scan Tables](#core-scan-tables)
 - [Manifest Tables](#manifest-tables)
 - [Manifest Graph Tables](#manifest-graph-tables)
-- [What Is And Is Not Fetched](#what-is-and-is-not-fetched)
-- [Derived Views](#derived-views)
 - [Cleanup Audit Tables](#cleanup-audit-tables)
-- [Raw JSON Versus Derived Meaning](#raw-json-versus-derived-meaning)
+- [Derived Views](#derived-views)
+- [What Is And Is Not Fetched](#what-is-and-is-not-fetched)
 - [Practical Reading Order](#practical-reading-order)
-- [Example Queries](#example-queries)
 
 ## Big Picture
 
@@ -32,32 +28,33 @@ One database can contain:
 - of many `owner/package` pairs
 - plus optional cleanup audit runs linked to those scans
 
-The database is therefore not "one package" or "one workflow run". It is a small local registry-analysis store.
+So the database is not “one package” or “one workflow run”. It is a local registry-analysis store.
 
 The high-level flow is:
 
-1. Read package versions from the GitHub Packages API.
-2. Read tags from those package-version payloads.
-3. Fetch the manifest JSON for each package-version digest from GHCR.
-4. Store the fetched manifests and the direct relations named inside them.
-5. Precompute reachability between known manifests.
-6. Optionally persist cleanup planner/execution audit rows linked to a chosen scan.
+1. read package versions from the GitHub Packages API
+2. read tags from those package-version payloads
+3. fetch the root manifest JSON for each package-version digest from GHCR
+4. store the fetched manifests and their direct relations
+5. precompute reachability and graph membership
+6. optionally persist cleanup planner and execution audit rows
 
 ## Mental Model
 
-The most useful way to read this schema is:
+The most useful way to read the schema is:
 
-- `package_versions` is GitHub's deletable unit
+- `package_versions` is GitHub’s deletable unit
 - `tags` tells you which package version currently carries which human-readable names
-- `manifests` is the registry document for that package version
+- `manifests` is the root registry document for that package version
 - `manifest_edges` says which known manifests point to which other known manifests
 - `manifest_reachability` says what is reachable through those edges
+- `manifest_graphs` says which fetched manifests belong to the same connected graph
 
 So:
 
-- GitHub Packages gives the "version list"
-- GHCR gives the actual registry documents
-- `ghcr-manager` joins both worlds into one queryable model
+- GitHub Packages gives the version inventory
+- GHCR gives the registry documents
+- `ghcr-manager` joins both into one graph-aware model
 
 ## Core Scan Tables
 
@@ -82,8 +79,8 @@ What this means:
 - a scan is the top-level unit for all registry data loaded at one point in time
 - the same database can hold several scans for the same package over time
 - it can also hold scans for different packages
-- `package_metadata_json` keeps the raw-ish package metadata that came from GitHub
-- `github_actions_run_url` is just provenance: where this scan came from, if it ran in GitHub Actions
+- `package_metadata_json` keeps package-level metadata from GitHub
+- `github_actions_run_url` records where the scan came from, when relevant
 
 ### `package_versions`
 
@@ -98,19 +95,15 @@ Important columns:
 
 What this means:
 
-- this is GitHub's package-version identity
-- cleanup ultimately deletes by package version
-- every fetched root manifest is attached to one `package_versions` row
+- this is GitHub’s package-version identity
+- cleanup ultimately deletes package versions
+- every fetched root manifest belongs to one `package_versions` row
 
 ### `package_version_payloads`
 
-Raw JSON for each `package_versions` row.
+Raw GitHub Packages JSON for each `package_versions` row.
 
-This is mainly for:
-
-- debugging
-- later analysis
-- not having to guess what GitHub returned
+Use this when you need to verify what GitHub returned.
 
 ### `tags`
 
@@ -125,16 +118,15 @@ Important columns:
 
 What this means:
 
-- `latest`, `1.2.3`, `pr-123`, and so on are stored here
-- tags are not free-floating objects in this DB
+- tags such as `latest`, `1.2.3`, and `pr-123` live here
 - a tag belongs to one package version in one scan
-- `is_digest_tag = 1` marks internal tags that point at manifests.
+- `is_digest_tag = 1` marks helper-style digest tags such as `sha256-*`
 
 ## Manifest Tables
 
 ### `manifests`
 
-One row per fetched manifest document that corresponds to a package version.
+One row per fetched root manifest that corresponds to a package version.
 
 Important columns:
 
@@ -146,47 +138,33 @@ Important columns:
 - `config_media_type`
 - `subject_digest`
 - `annotations_json`
-- `platform_os`
-- `platform_architecture`
-- `platform_variant`
 - `manifest_kind`
 
 What this means:
 
 - a package version points to exactly one fetched root manifest row
-- this row represents one of:
-  - a generic index/list manifest or a refined cross-arch image manifest
-  - a single-platform image manifest
-  - an OCI artifact manifest
-  - a signature or attestation-like artifact
+- that manifest may be an image, an index, a multi-arch manifest, or an OCI artifact-style document
 
-`manifest_kind` is a best-effort helper classification. It is useful for queries and debugging, but when correctness
-matters, trust the actual manifest payload fields first.
-
-Current values:
+`manifest_kind` is a helper classification used throughout the repo. Current values:
 
 - `index_manifest`
-- `cross_arch_manifest`
+- `multi_arch_manifest`
 - `image_manifest`
 - `artifact_manifest`
 - `attestation_manifest`
 - `signature_manifest`
 
+When exact OCI meaning matters, trust the raw manifest payload first and `manifest_kind` second.
+
 ### `manifest_payloads`
 
 Raw JSON body for each fetched manifest digest.
 
-This is the exact registry document body `ghcr-manager` used to derive:
-
-- child descriptors
-- `subject_digest`
-- media type
-- platform hints
-- annotations
+Use this when you need the exact registry document body that `ghcr-manager` classified and analyzed.
 
 ### `manifest_descriptors`
 
-Direct child descriptors as named inside fetched manifest JSON.
+Direct child descriptors named inside fetched manifest JSON.
 
 Important columns:
 
@@ -194,13 +172,16 @@ Important columns:
 - `child_digest`
 - `media_type`
 - `artifact_type`
-- platform columns
+- `platform_os`
+- `platform_architecture`
+- `platform_variant`
 
 What this means:
 
-- if a manifest document names another digest inside its JSON, a descriptor row is stored here
-- the child digest does not have to exist as a fetched `manifests` row
-- this table preserves what the manifest said, even when the child is not otherwise present in the package-version set
+- if a manifest document names another digest, a descriptor row is stored here
+- the child digest does not need to exist as a fetched `manifests` row
+- this table preserves what the manifest said even when the child is otherwise absent from the scanned package-version
+  set
 
 ## Manifest Graph Tables
 
@@ -218,13 +199,15 @@ Current edge kinds:
 
 - `image-child`
 - `referrer`
+- `digest-tag-referrer`
 
 What this means:
 
-- `image index -> image manifest` becomes `image-child`
-- `artifact -> subject` becomes `referrer` when both sides are present in the known manifest set
+- image/index child relations become `image-child`
+- subject/referrer relations become `referrer`
+- helper digest-tag relations are modeled as `digest-tag-referrer`
 
-This is the main "graph" table.
+This is the main direct graph table.
 
 ### `manifest_reachability`
 
@@ -238,129 +221,41 @@ Important columns:
 
 What this means:
 
-- if `A -> B` and `B -> C`, then reachability stores:
-  - `A -> B`
-  - `B -> C`
-  - `A -> C`
-- self rows are also present with `min_distance = 0`
+- if `A -> B` and `B -> C`, reachability stores `A -> B`, `B -> C`, and `A -> C`
+- self rows are present with `min_distance = 0`
 
 This table exists so planner and analysis queries do not need recursive SQL at read time.
 
-## What Is And Is Not Fetched
+### `manifest_graphs`
 
-Important limitation:
-
-- `manifests` only contains package-version-backed manifest rows
-- a digest mentioned inside a manifest is not fetched automatically just because it was referenced
-
-So:
-
-- known package-version digests become `manifests`
-- referenced-but-absent digests remain external to `manifests`
-- they are visible through derived views instead
-
-## Derived Views
-
-### `v_latest_scan_per_package`
-
-One latest completed scan per `owner/package`.
-
-Use this when you want "current latest picture" style queries instead of manually picking a `scan_id`.
-
-### `v_scan_root_manifests`
-
-One root manifest per package version, enriched with query-friendly flags.
-
-Important columns include:
-
-- `root_version_id`
-- `root_digest`
-- `root_manifest_kind`
-- `created_at`
-- `updated_at`
-- `tag_count`
-- `is_tagged`
-- `has_ancestor`
-
-This is the main convenience view for "what are the roots in this scan?"
-
-### `v_digest_tag_relations`
-
-Heuristic helper view for digest-shaped tags such as `sha256-<digest>.sig`.
-
-It extracts a parent digest from the tag name and compares that with:
-
-- whether that digest exists in `manifests`
-- whether the artifact's `subject_digest` matches that parent
-
-This is exploratory/helper data, not authoritative graph structure.
-
-In practice, use it to inspect suspicious digest-shaped tags or orphan-style companion artifacts, not to replace
-`manifest_edges` or `manifest_reachability`.
-
-### `v_cleanup_root_closure_members`
-
-Derived closure members for persisted cleanup runs.
-
-It starts from `cleanup_root_decisions` and expands each selected root through `manifest_reachability`.
-
-This is useful for answering:
-
-- what would this cleanup decision remove?
-- which manifests sat in the root's closure?
-
-### `v_cleanup_blocking_overlaps`
-
-Derived explanation view for persisted cleanup blocking relations.
-
-It joins:
-
-- cleanup run
-- blocked root
-- protected root
-- overlap manifest
-
-This is the query-friendly explanation layer for "why was this root blocked?"
-
-### `v_cleanup_root_decision_readable`
-
-Derived readable view for persisted cleanup root decisions.
-
-It adds:
-
-- plain-language labels for `selection_mode`
-- plain-language labels for `selection_reason`
-- plain-language labels for `validation_status`
-- plain-language labels for `validation_reason_code`
-- `selected_tag_count` and comma-joined `selected_tags` per resolved root
-
-Use it when the raw audit codes are too terse to inspect directly.
-
-## Cleanup Audit Tables
-
-### `cleanup_runs`
-
-One row per `cleanup` invocation persisted to the DB.
+Connected-component ids for fetched manifests within one scan.
 
 Important columns:
 
-- `cleanup_run_id`
 - `scan_id`
-- `cleanup_uuid`
-- `github_actions_run_url`
-- `dry_run`
-- `planner_inputs_json`
-- summary counts such as:
-  - `direct_target_root_count`
-  - `untag_only_root_count`
-  - `fully_deletable_root_count`
-  - `blocked_delete_root_count`
+- `digest`
+- `graph_id`
 
 What this means:
 
-- a cleanup run is attached to the exact scan it planned from
-- both `dry-run` and cleanup that makes changes can be persisted
-- the summary counts make the run readable without re-running planner logic
+- manifests that share a `graph_id` belong to the same connected graph inside that scan
+- this is useful for graph-scoped analysis and visualizer work
+
+## Cleanup Audit Tables
+
+These matter only when the DB contains persisted `cleanup` runs.
+
+### `cleanup_runs`
+
+One row per `cleanup` invocation persisted to the database.
+
+It stores:
+
+- the exact `scan_id` planned from
+- whether the run was dry-run
+- planner inputs as JSON
+- summary counts for direct targets, delete candidates, untag-only roots, fully deletable roots, blocked roots, and
+  protected roots
 
 ### `cleanup_root_decisions`
 
@@ -394,14 +289,19 @@ What this means:
   - `delete-untagged`
   - `keep-n-tagged-overflow`
   - `keep-n-untagged-overflow`
+- `validation_status` is constrained to:
+  - `fully-deletable`
+  - `blocked`
+  - `untag-only`
 - `validation_reason_code` is constrained to:
-  - `fully-deletable-no-retained-overlap`
   - `untag-only-partial-tag-match`
+  - `untag-only-retained-manifest`
+  - `fully-deletable-no-retained-overlap`
   - `blocked-overlap-with-retained-root`
 
 ### `cleanup_selected_tags`
 
-One row per concrete tag selected by a cleanup run.
+One row per concrete selected tag for a cleanup run.
 
 Important columns:
 
@@ -413,7 +313,7 @@ What this means:
 - this is the tag-side audit evidence for cleanup
 - it records concrete selected tags, not selector-clause provenance
 - `is_deleted = 1` means the selected tag is planned to disappear in a dry-run or does disappear in a live cleanup
-- `is_deleted = 0` means the selected tag survived because its root was blocked
+- `is_deleted = 0` means the selected tag survived
 - version, digest, and root-outcome context are derived by joining through `tags`, `manifests`, and
   `cleanup_root_decisions`
 
@@ -431,122 +331,50 @@ Important columns:
 What this means:
 
 - root A blocked root B because both reach overlap manifest C
-- the table enforces that evidence via foreign keys into `manifest_reachability`
+- this is the normalized evidence behind blocked delete decisions
+- `block_reason_code` is currently constrained to:
+  - `overlap-with-retained-root`
+- the table enforces that explanation via foreign keys into `manifest_reachability`
 
-## Raw JSON Versus Derived Meaning
+## Derived Views
 
-Two recurring patterns matter in this schema:
+There is currently one live view:
 
-1. raw payload side tables preserve what GitHub/GHCR actually returned
-2. derived tables/views add planner- and analysis-friendly structure
+### `v_latest_scan_per_package`
 
-So if you are unsure:
+One latest completed scan per `owner/package`.
 
-- trust payloads for factual source data
-- trust derived tables/views for repo-specific interpretation and convenience
+Use this when you want the current latest picture for a package without manually choosing a `scan_id`.
+
+## What Is And Is Not Fetched
+
+Important limitation:
+
+- `manifests` contains only package-version-backed fetched root manifests
+- a digest mentioned by a manifest is not fetched automatically just because it was referenced
+
+So:
+
+- known package-version digests become `manifests`
+- referenced-but-absent digests are still visible through `manifest_descriptors`
+- the graph model is intentionally bounded to what the scan actually knows
 
 ## Practical Reading Order
 
-If you open a DB and want to understand a package quickly, this order works well:
+If you are using SQL directly, this order is usually enough:
 
 1. `package_scans`
 2. `v_latest_scan_per_package`
-3. `v_scan_root_manifests`
+3. `package_versions`
 4. `tags`
 5. `manifests`
 6. `manifest_edges`
 7. `manifest_reachability`
-8. cleanup audit tables/views if a cleanup run exists
+8. cleanup audit tables, if a cleanup run exists
 
-That path usually gets someone from "I know Docker tags and manifests" to "I can see how this GHCR package is shaped"
-without needing to learn every table up front.
+That is usually sufficient to understand:
 
-## Example Queries
-
-### Latest Cleanup Run With Readable Root Decisions
-
-Use this to inspect the latest cleanup run for one package with friendlier labels and selected tags per root:
-
-<!-- markdownlint-disable MD033 -->
-<details>
-<summary>Show Query</summary>
-
-```sql
-WITH latest_cleanup AS (
-  SELECT cr.cleanup_run_id
-  FROM cleanup_runs cr
-  JOIN package_scans ps
-    ON ps.scan_id = cr.scan_id
-  WHERE ps.owner = 'acme'
-    AND ps.package_name = 'example'
-  ORDER BY cr.cleanup_started_at DESC, cr.cleanup_run_id DESC
-  LIMIT 1
-)
-SELECT
-  root_digest,
-  root_manifest_kind,
-  selected_tags,
-  selection_mode_label,
-  selection_reason_label,
-  validation_status_label,
-  validation_reason_code_label,
-  blocking_digest,
-  overlap_digest
-FROM v_cleanup_root_decision_readable
-WHERE cleanup_run_id = (SELECT cleanup_run_id FROM latest_cleanup)
-ORDER BY root_digest;
-```
-
-</details>
-<!-- markdownlint-enable MD033 -->
-
-### Selected Tags Expanded To Affected Manifests
-
-Use this to answer "which selected tag led to which root, and what manifests sit in that root's affected closure?":
-
-<!-- markdownlint-disable MD033 -->
-<details>
-<summary>Show Query</summary>
-
-```sql
-WITH latest_cleanup AS (
-  SELECT cr.cleanup_run_id, cr.scan_id
-  FROM cleanup_runs cr
-  JOIN package_scans ps
-    ON ps.scan_id = cr.scan_id
-  WHERE ps.owner = 'acme'
-    AND ps.package_name = 'example'
-  ORDER BY cr.cleanup_started_at DESC, cr.cleanup_run_id DESC
-  LIMIT 1
-)
-SELECT
-  selected.tag AS selected_tag,
-  root.digest AS root_digest,
-  readable.validation_status_label,
-  closure.member_digest AS affected_manifest_digest,
-  closure.member_manifest_kind,
-  closure.hops_from_root,
-  closure.member_role
-FROM latest_cleanup lc
-JOIN cleanup_selected_tags selected
-  ON selected.cleanup_run_id = lc.cleanup_run_id
- AND selected.scan_id = lc.scan_id
-JOIN tags selected_tag
-  ON selected_tag.scan_id = selected.scan_id
- AND selected_tag.tag = selected.tag
-JOIN manifests root
-  ON root.scan_id = selected.scan_id
- AND root.version_id = selected_tag.version_id
-JOIN v_cleanup_root_decision_readable readable
-  ON readable.cleanup_run_id = selected.cleanup_run_id
- AND readable.scan_id = selected.scan_id
- AND readable.root_digest = root.digest
-JOIN v_cleanup_root_closure_members closure
-  ON closure.cleanup_run_id = selected.cleanup_run_id
- AND closure.scan_id = selected.scan_id
- AND closure.root_digest = root.digest
-ORDER BY selected.tag, closure.hops_from_root, closure.member_digest;
-```
-
-</details>
-<!-- markdownlint-enable MD033 -->
+- what was scanned
+- what tags and root manifests exist
+- how fetched manifests relate to each other
+- what cleanup decided
