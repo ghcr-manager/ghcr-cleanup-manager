@@ -7,6 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.9.8] - 2026-06-03
+
+### Added
+
+- Added dedicated graph-matrix GHCR scenarios and workflows to exercise shared-image, multi-arch, cosign, and
+  attestation cleanup cases in isolation.
+- Added a local manifest-graph visualizer with browser UI for `ghcr-manager` SQLite databases, including manifest
+  details, zoom controls, one-hop expansion, and scan-to-scan compare mode.
+- Added a separately publishable npm package, `ghcr-manager-visualizer`, plus user-facing visualizer documentation.
+- Added repo-local manual visualizer demo scripts for seeding and updating GHCR packages during graph investigation.
+
+### Changed
+
+- Cleanup planning was reworked around the current graph model, including direct SQL-backed tagged/untagged root
+  selection, graph-scoped closure walking, and refined `untag-only` vs `fully-deletable` decisions for complex
+  multi-arch, cosign, and attestation shapes.
+- Large planner SQL bodies were split into smaller internal modules, and direct-target root selection logic was split
+  into smaller planner helpers.
+- Orphaned digest-tag resolution now uses a direct latest-scan query instead of relying on older helper views.
+- Manifest platform display now derives from descriptor data in the visualizer instead of relying on manifest-level
+  platform fields.
+- Cross-architecture terminology is now consistently named `multi-arch` across runtime, tests, and docs.
+- The root action and public CLI surface are now centered on `scan` and `cleanup` only.
+
+### Fixed
+
+- Fixed digest-tag helper-edge direction and root-detection behavior so helper-tagged artifacts no longer interfere with
+  normal cleanup root semantics.
+- Fixed shared-graph cleanup handling so selected indexes and helper-linked artifacts are deleted or retained according
+  to surviving real tags instead of simplistic descendant-only closure rules.
+
+### Removed
+
+- The public `untag` CLI command, root-action mode, and dedicated direct-untag workflow coverage were removed. Internal
+  tag detachment for partial-tag cleanup matches remains part of `cleanup`.
+- Several older cleanup helper views were removed after the planner rewrite moved the live logic into direct SQL query
+  paths.
+
 ## [0.9.7] - 2026-05-23
 
 ### Added
@@ -20,7 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Cleanup dry-run output and GitHub step summaries were reworked to explain the plan more clearly, including a filters
   table and clearer counts for tags, images, and cross-arch manifests.
-- Informational manifest classification was tuned so only real multi-arch roots are labeled `cross_arch_manifest`, while
+- Informational manifest classification was tuned so only real multi-arch roots are labeled `multi_arch_manifest`, while
   helper-tagged indexes remain `index_manifest`.
 - `merge-run-artifacts` now uses a simpler current-run download flow with direct artifact download handling.
 - Cleanup selected-tag audit and DB-merge metadata handling were tightened alongside the summary/output refactor.
