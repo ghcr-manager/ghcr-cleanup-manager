@@ -7,6 +7,16 @@ Choose the pattern that matches your workflow:
 - [`Sequential Steps`](#sequential-steps): one job, several package steps, one shared DB
 - [`Parallel Jobs`](#parallel-jobs): several jobs, merged DB afterward
 
+Direct sub-action docs:
+
+- [db-merge](../db-merge/README.md)
+- [merge-run-artifacts](../merge-run-artifacts/README.md)
+
+> Permission note:
+>
+> - The examples below use `dry-run`, where `packages: read` is enough.
+> - If you switch them to live cleanup, change those jobs to `packages: write`.
+
 ## Sequential Steps
 
 For one job with several package steps, let the first step create the DB and pass its `db-path` to the later steps.

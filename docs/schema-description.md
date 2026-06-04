@@ -4,7 +4,7 @@ This document explains the current SQLite schema in practical terms.
 
 For most inspection work, start with the visualizer rather than raw SQL:
 
-- see [docs/visualizer.md](visualizer.md)
+- see [visualizer/README.md](../visualizer/README.md)
 
 The database is still useful to query directly when you want audits, debugging, or one-off analysis across scans.
 
@@ -153,6 +153,8 @@ What this means:
 - `artifact_manifest`
 - `attestation_manifest`
 - `signature_manifest`
+
+If no known classification matches, `manifest_kind` is `NULL`.
 
 When exact OCI meaning matters, trust the raw manifest payload first and `manifest_kind` second.
 

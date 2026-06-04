@@ -20,6 +20,12 @@ Behavior:
 
 Note: `scan-after-cleanup` only runs a second scan when cleanup actually makes changes.
 
+Permissions:
+
+- `dry-run` needs `packages: read`
+- live cleanup needs `packages: write`
+- artifact upload needs `actions: write`
+
 ### `scan`
 
 Use `scan` to get an SQLite snapshot of one GHCR package.
@@ -27,3 +33,8 @@ Use `scan` to get an SQLite snapshot of one GHCR package.
 Behavior:
 
 - performs one package scan and uploads the DB as an artifact
+
+Permissions:
+
+- `packages: read`
+- `actions: write` for the uploaded DB artifact

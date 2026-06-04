@@ -21,6 +21,15 @@ Previous handoff material was archived to
 - [x] Evaluate `ghcrctl` as an optional third graph-matrix executor.
 - [x] Limit `ghcrctl` support to graph-matrix scenarios with exactly one delete-tag target.
 - [x] Add minimal workflow support for one-call `ghcrctl delete graph --tag` execution.
+- [x] Add separate test-facing docs for scenarios and the workflow-to-visualizer path.
+- [x] Add release-DB quick-demo notes to the visualizer doc and main README.
+- [x] Add one visualizer screenshot to the README quick-demo section.
+- [x] Collapse visualizer docs to one canonical `visualizer/README.md`.
+- [x] Refresh user-facing docs for release readiness:
+  - add explicit action permission guidance for dry-run vs live cleanup
+  - add Node.js 24 requirements to CLI and visualizer install docs
+  - align terminology docs with current manifest kinds and edge kinds
+  - fix small prose issues in the workflow-to-visualizer doc
 
 ## Current Next Plan
 
@@ -41,6 +50,10 @@ Previous handoff material was archived to
   - graph-matrix scenario workflows and test harness
   - optional `ghcrctl` graph-matrix executor for single-tag graph deletions
   - local `visualizer/` workspace for manifest-graph inspection
+  - basic live-test documentation in `docs/test/scenarios.md`, `docs/test/package-setup.md`, and
+    `docs/test/matrix-workflow-to-visualizer.md`
+  - release assets now include a merged scenario DB that can be used as a ready-made visualizer demo
+  - visualizer docs now live only in `visualizer/README.md`
 
 ## Current Decisions
 

@@ -8,6 +8,8 @@ Install from `npm` and run `ghcr-manager` directly.
 npm install --global ghcr-manager
 ```
 
+> Requirement: Node.js `24` or newer.
+
 ## Commands
 
 ```sh

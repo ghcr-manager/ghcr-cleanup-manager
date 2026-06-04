@@ -477,7 +477,7 @@ This section is the canonical place for session-to-session continuity.
 - Cleanup planning roadmap: [docs/cleanup-roadmap.md](cleanup-roadmap.md)
 - Cleanup semantics note: [docs/cleanup-semantics.md](../terminology.md)
 - Planner data model: [docs/planner-data-model.md](../schema-description.md)
-- GHCR test package setup reference: [docs/test-package-setup.md](../test-package-setup.md)
+- GHCR test package setup reference: [docs/test/package-setup.md](../test/package-setup.md)
 
 ### Current Module Layout
 

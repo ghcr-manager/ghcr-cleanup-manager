@@ -5,13 +5,19 @@
 [![Immutable Releases](https://img.shields.io/badge/releases-immutable-blue?labelColor=333)](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/immutable-releases)
 [![Tests](https://img.shields.io/github/actions/workflow/status/ghcr-manager/ghcr-manager/.github/workflows/ci_change-validation.yml?branch=main&label=test&style=flat-square)](https://github.com/ghcr-manager/ghcr-manager/actions/workflows/ci_change-validation.yml)
 
-Inspect, review, and manage GitHub Container Registry packages.
+Inspect, analyze, and manage large GitHub Container Registry packages.
 
 `ghcr-manager` is a GitHub Action for:
 
-- scanning one GHCR package into a SQLite database artifact
-- running cleanup with a GitHub step summary and optional DB artifact
-- previewing cleanup decisions with `dry-run` before making changes
+- scan GHCR packages: into SQLite database artifacts
+- cleanup packages: with a GitHub step summary and optional DB artifact
+- preview cleanup: with `dry-run` before making changes
+- visualize graphs: and their changes with the
+  [visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md)
+
+![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")
+
+_Example graph compare view: red-bordered manifests are present in the older scan and removed in the newer one._
 
 ## Quick Start
 
@@ -45,6 +51,12 @@ jobs:
             latest
           upload-artifacts: true
 ```
+
+> Permission notes:
+>
+> - `scan` and `cleanup` dry-runs need `packages: read`
+> - live `cleanup` that mutates GHCR needs `packages: write`
+> - artifact upload needs `actions: write`
 
 After the run:
 
@@ -105,6 +117,9 @@ The action supports two commands:
 If `scan-after-cleanup` is `true`, `cleanup` performs a second scan so the uploaded DB reflects post-mutation state.
 
 Note: the second scan only runs if cleanup actually makes changes.
+
+Live cleanup permission note: change the workflow permission from `packages: read` to `packages: write` before turning
+off `dry-run`.
 
 ### Scan one package
 
@@ -182,13 +197,46 @@ Current naming:
 
 ## Documentation Map
 
-- [GitHub Action usage](docs/action-usage.md): action commands, including `cleanup` and `scan`
-- [Visualizer](docs/visualizer.md): local graph inspection and scan-to-scan comparison
-- [Multi-package workflows](docs/db-merge-workflows.md): cleaning up multiple packages with one combined DB
-- [SQLite schema guide](docs/schema-description.md): practical explanation of the SQLite schema
-- [CLI usage](docs/cli-usage.md): companion CLI usage
+- [GitHub Action usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/action-usage.md): action commands,
+  including `cleanup` and `scan`
+- [Visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md): local graph inspection and
+  scan-to-scan comparison
+- [Multi-package workflows](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/db-merge-workflows.md): cleaning
+  up multiple packages with one combined DB
+- [SQLite schema guide](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/schema-description.md): practical
+  explanation of the SQLite schema
+- [CLI usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/cli-usage.md): companion CLI usage
 
-## Acknowledgment
+## Explore A Real Scenario DB
 
-This project was influenced by [dataaxiom/ghcr-cleanup-action](https://github.com/dataaxiom/ghcr-cleanup-action), with a
-similar problem focus and a different implementation approach.
+The release assets also include one merged SQLite DB from `ghcr-manager`'s live scenario workflows. You can use it as a
+quick visualizer demo and as a compact way to inspect dozens of real cleanup and graph cases.
+
+```sh
+curl -LO https://github.com/ghcr-manager/ghcr-manager/releases/latest/download/ghcr-manager-release-scenarios.sqlite
+npx ghcr-manager-visualizer --db ./ghcr-manager-release-scenarios.sqlite
+```
+
+For a first look in the visualizer, start with:
+
+- owner: `ghcr-manager-test`
+- package: select one with `2images` or `2multiarch` in the name
+- tag search: `image` or `multiarch`
+
+For more details, see
+[visualizer/README.md](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md).
+
+## Project
+
+Main project and issue tracker:
+
+- Repository: <https://github.com/ghcr-manager/ghcr-manager>
+- Issues: <https://github.com/ghcr-manager/ghcr-manager/issues>
+
+## Similar Tools
+
+- [ghcr-manager/ghcr-untag-action](https://github.com/ghcr-manager/ghcr-untag-action): focused tag removal without the
+  broader scan and cleanup workflow.
+- [dataaxiom/ghcr-cleanup-action](https://github.com/dataaxiom/ghcr-cleanup-action): another GHCR cleanup action with a
+  similar problem focus.
+- [mkoepf/ghcrctl](https://github.com/mkoepf/ghcrctl): CLI tooling for working with GHCR packages and graph deletions.

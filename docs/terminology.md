@@ -69,6 +69,7 @@ This is how the planner knows which digests are tagged.
   - `attestation_manifest`
   - `signature_manifest`
 - If no reliable classification is assigned, `manifest_kind` is `NULL`.
+- Treat `manifest_kind` as a helper label, not as a canonical OCI type system.
 - Every row has a matching `package_versions(scan_id, version_id)` row.
 
 This is the registry-document view of the world.
@@ -86,6 +87,8 @@ Current edge kinds:
   - Example: image index -> image manifest
 - `referrer`
   - Example: image manifest or index -> attestation artifact manifest
+- `digest-tag-referrer`
+  - Example: helper digest tag -> related manifest/referrer target
 
 This is the known relation table.
 
