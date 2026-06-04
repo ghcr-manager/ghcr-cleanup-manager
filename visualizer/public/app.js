@@ -336,13 +336,15 @@ function buildNodeLabel(node) {
   const secondaryLines = [];
 
   if (node.displayPlatform) {
-    secondaryLines.push(node.displayPlatform);
+    secondaryLines.push(`arch: ${node.displayPlatform}`);
   }
 
-  secondaryLines.push(node.tags.length > 0 ? buildTagDisplayText(node.tags[0]) : `#${node.versionId}`);
-
-  if (node.tags.length > 1) {
-    secondaryLines.push(node.tags.slice(1).map(buildTagDisplayText).join(" | "));
+  if (node.tags.length > 0) {
+    for (const tag of node.tags) {
+      secondaryLines.push(`tag: ${buildTagDisplayText(tag)}`);
+    }
+  } else {
+    secondaryLines.push(`version: ${node.versionId}`);
   }
 
   return [primaryLine, "", ...secondaryLines].join("\n");
