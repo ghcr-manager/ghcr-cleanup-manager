@@ -9,7 +9,6 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
   ),
   retained_tagged_manifests AS (
     SELECT DISTINCT
-      m.version_id,
       m.digest
     FROM selected_graphs
     CROSS JOIN manifest_graphs
@@ -30,55 +29,40 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
   ),
   retained_manifests AS (
     SELECT
-      retained.version_id,
       retained.digest
     FROM retained_tagged_manifests retained
 
     UNION
 
     SELECT
-      m.version_id,
-      m.digest
+      mr.descendant_digest AS digest
     FROM retained_tagged_manifests retained
     CROSS JOIN manifest_reachability mr
-    CROSS JOIN manifests m
     WHERE mr.scan_id = ?
       AND mr.ancestor_digest = retained.digest
       AND mr.min_distance > 0
-      AND m.scan_id = ?
-      AND m.digest = mr.descendant_digest
   ),
   direct_target_closure AS (
     SELECT
-      dtr.root_version_id AS source_version_id,
       dtr.root_digest AS source_digest,
-      dtr.root_version_id AS member_version_id,
       dtr.root_digest AS member_digest,
-      dtr.root_manifest_kind AS member_manifest_kind,
       0 AS hops_from_root
     FROM temp_direct_target_roots dtr
 
     UNION ALL
 
     SELECT
-      dtr.root_version_id AS source_version_id,
       dtr.root_digest AS source_digest,
-      m.version_id AS member_version_id,
-      m.digest AS member_digest,
-      m.manifest_kind AS member_manifest_kind,
+      mr.descendant_digest AS member_digest,
       mr.min_distance AS hops_from_root
     FROM temp_direct_target_roots dtr
     CROSS JOIN manifest_reachability mr
-    CROSS JOIN manifests m
     WHERE mr.scan_id = ?
       AND mr.ancestor_digest = dtr.root_digest
       AND mr.min_distance > 0
-      AND m.scan_id = ?
-      AND m.digest = mr.descendant_digest
   ),
   closure_seed AS (
     SELECT
-      dtc.source_version_id,
       dtc.source_digest,
       dtc.member_digest,
       dtc.hops_from_root
@@ -101,6 +85,12 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
       AND selected_graphs.graph_id = parent_graph.graph_id
       AND parent_graph.digest = me.parent_digest
       AND me.scan_id = ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM retained_manifests retained
+        WHERE retained.digest = me.parent_digest
+           OR retained.digest = me.child_digest
+      )
 
     UNION
 
@@ -114,10 +104,15 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
       AND selected_graphs.graph_id = child_graph.graph_id
       AND child_graph.digest = me.child_digest
       AND me.scan_id = ?
+      AND NOT EXISTS (
+        SELECT 1
+        FROM retained_manifests retained
+        WHERE retained.digest = me.parent_digest
+           OR retained.digest = me.child_digest
+      )
   ),
   delete_component_members AS (
     SELECT
-      seed.source_version_id,
       seed.source_digest,
       seed.member_digest
     FROM closure_seed seed
@@ -125,19 +120,15 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
     UNION
 
     SELECT
-      walk.source_version_id,
       walk.source_digest,
-      m.digest AS member_digest
+      edge.target_digest AS member_digest
     FROM delete_component_members walk
     JOIN undirected_edges edge
       ON edge.source_digest = walk.member_digest
-    JOIN manifests m
-      ON m.scan_id = ?
-     AND m.digest = edge.target_digest
     WHERE NOT EXISTS (
         SELECT 1
         FROM retained_manifests retained
-        WHERE retained.digest = m.digest
+        WHERE retained.digest = edge.target_digest
       )
   ),
   source_seed_hops AS (
@@ -157,7 +148,7 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
     GROUP BY dtc.source_digest, dtc.member_digest
   )
   SELECT
-    walk.source_version_id,
+    dtr.root_version_id AS source_version_id,
     walk.source_digest,
     MIN(member_manifest.version_id) AS member_version_id,
     walk.member_digest,
@@ -177,6 +168,8 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
       ELSE 'connected'
     END AS member_role
   FROM delete_component_members walk
+  JOIN temp_direct_target_roots dtr
+    ON dtr.root_digest = walk.source_digest
   JOIN manifests member_manifest
     ON member_manifest.scan_id = ?
    AND member_manifest.digest = walk.member_digest
@@ -186,7 +179,7 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
     ON descendant_hops.source_digest = walk.source_digest
    AND descendant_hops.member_digest = walk.member_digest
   GROUP BY
-    walk.source_version_id,
+    dtr.root_version_id,
     walk.source_digest,
     walk.member_digest,
     descendant_hops.min_hops_from_root,
