@@ -38,6 +38,10 @@ run-name: "Test Scenario Graph Matrix (executors: ${{ inputs.executors }})"
         required: false
         default: ""
         type: string
+      db_file:
+        required: false
+        default: ghcr-manager-merged--scenario-graph-matrix-cleanup.sqlite
+        type: string
 
 permissions:
   contents: read
@@ -97,7 +101,7 @@ jobs:
         uses: ./merge-run-artifacts
         with:
           upload-artifacts: "true"
-          db-file: ghcr-manager-merged--scenario-graph-matrix-cleanup.sqlite
+          db-file: ${{ inputs.db_file || 'ghcr-manager-merged--scenario-graph-matrix-cleanup.sqlite' }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
           delete-source-artifacts: "true"
           artifact-name-glob: "*.sqlite"
