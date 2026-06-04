@@ -398,6 +398,61 @@ test("planner plan artifacts include reverse-linked untagged manifests connected
   );
 });
 
+test("planner plan artifacts do not delete graph members behind a preserved barrier", (t) => {
+  const harness = _createHarness("recursive-preserve-barrier");
+  t.after(() => harness.database.close());
+
+  _insertManifestVersion(harness.writer, 1, "sha256:selected-root", "2026-05-01T10:00:00.000Z");
+  _insertManifestVersion(harness.writer, 2, "sha256:preserved-root", "2026-05-01T10:01:00.000Z", {
+    tag: "keep-me"
+  });
+  _insertManifestVersion(harness.writer, 3, "sha256:barrier-child", "2026-05-01T10:02:00.000Z", {
+    manifestKind: ManifestKinds.imageManifest,
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  _insertManifestVersion(harness.writer, 4, "sha256:behind-barrier", "2026-05-01T10:03:00.000Z", {
+    manifestKind: ManifestKinds.imageManifest,
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+
+  harness.writer.insertManifestEdge({
+    parentDigest: "sha256:selected-root",
+    childDigest: "sha256:barrier-child",
+    edgeKind: "image-child"
+  });
+  harness.writer.insertManifestEdge({
+    parentDigest: "sha256:preserved-root",
+    childDigest: "sha256:barrier-child",
+    edgeKind: "image-child"
+  });
+  harness.writer.insertManifestEdge({
+    parentDigest: "sha256:behind-barrier",
+    childDigest: "sha256:barrier-child",
+    edgeKind: "image-child"
+  });
+
+  harness.writer.rebuildManifestReachability();
+
+  const directTargetRoots: DeletePlanRoot[] = [
+    {
+      versionId: 1,
+      digest: "sha256:selected-root",
+      manifestKind: ManifestKinds.multiArchManifest,
+      reason: "delete-untagged",
+      selectionMode: "delete-root"
+    }
+  ];
+  const artifacts = harness.artifacts.build(harness.scanId, directTargetRoots);
+
+  assert.deepEqual(artifacts.blockedRoots, []);
+  assert.deepEqual(artifacts.fullyDeletableRoots, directTargetRoots);
+  assert.deepEqual(artifacts.supportedUntagOnlyRootDigests, new Set());
+  assert.deepEqual(
+    artifacts.closureManifests.map((manifest) => [manifest.memberDigest, manifest.memberRole]),
+    [["sha256:selected-root", "root"]]
+  );
+});
+
 test("planner plan artifacts ignore unrelated tagged manifests in different graphs", (t) => {
   const harness = _createHarness("graph-prune");
   t.after(() => harness.database.close());
