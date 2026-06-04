@@ -14,15 +14,15 @@ Previous handoff material was archived to
 
 - [x] Close and archive the previous implementation-notes handoff.
 - [x] Complete the cleanup/planner rethink, graph-matrix scenario work, and visualizer first-pass refinement.
-- [ ] Start the next active implementation task and record it here before substantial changes begin.
+- [x] Start the next active implementation task and record it here before substantial changes begin.
+- [x] Apply graph-scoped `graph_id` narrowing to blocked-roots planner SQL.
+- [ ] Measure the updated blocked-roots query on the large large test package DB dry-run workload.
 
 ## Current Next Plan
 
-- No active implementation task is in progress in this handoff yet.
-- Before starting the next substantial change:
-  - read the archive if older cleanup/planner or visualizer context is needed
-  - replace the placeholder open checklist item above with the real next task
-  - record any new architecture or workflow decisions here as they happen
+- Re-run the dry-run with large test package DB after the blocked-roots `graph_id` narrowing change.
+- If blocked-roots is still dominant, inspect the direct-target-roots query next rather than
+  the already-fast supported-untag-only query.
 
 ## Current Status
 
@@ -46,3 +46,5 @@ Previous handoff material was archived to
   - do not create workflow-managed release commits that add `dist/`
 - Visualizer packaging stays separate from the main package.
 - Task and handoff history should be archived rather than left as stale active notes in `docs/`.
+- Use `graph_id` narrowing in planner SQL where the workload is already graph-scoped; do not
+  denormalize `graph_id` into `manifest_reachability` before measuring query-level gains.

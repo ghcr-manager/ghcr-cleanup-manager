@@ -1,14 +1,23 @@
 export const _LIST_BLOCKED_ROOTS_SQL = `
-  WITH selected_graphs AS (
-    SELECT DISTINCT
+  WITH selected_root_graphs AS (
+    SELECT
+      dtr.root_version_id,
+      dtr.root_digest,
+      dtr.root_manifest_kind,
       manifest_graphs.graph_id
     FROM temp_direct_target_roots dtr
     CROSS JOIN manifest_graphs
     WHERE manifest_graphs.scan_id = ?
       AND manifest_graphs.digest = dtr.root_digest
   ),
+  selected_graphs AS (
+    SELECT DISTINCT
+      selected_root_graphs.graph_id
+    FROM selected_root_graphs
+  ),
   retained_tagged_manifests AS (
-    SELECT
+    SELECT DISTINCT
+      manifest_graphs.graph_id,
       m.version_id AS tagged_version_id,
       m.digest AS tagged_digest
     FROM selected_graphs
@@ -30,26 +39,27 @@ export const _LIST_BLOCKED_ROOTS_SQL = `
   ),
   ranked_blocks AS (
     SELECT
-      dtr.root_version_id AS blocked_version_id,
-      dtr.root_digest AS blocked_digest,
+      root_graph.root_version_id AS blocked_version_id,
+      root_graph.root_digest AS blocked_digest,
       retained.tagged_version_id AS blocking_version_id,
       retained.tagged_digest AS blocking_digest,
-      dtr.root_digest AS overlap_digest,
-      dtr.root_manifest_kind AS overlap_manifest_kind,
+      root_graph.root_digest AS overlap_digest,
+      root_graph.root_manifest_kind AS overlap_manifest_kind,
       'overlap-with-retained-root' AS block_reason,
       ROW_NUMBER() OVER (
-        PARTITION BY dtr.root_digest, retained.tagged_digest
+        PARTITION BY root_graph.root_digest, retained.tagged_digest
         ORDER BY
           retained_overlap.min_distance,
-          dtr.root_digest
+          root_graph.root_digest
       ) AS rn
-    FROM temp_direct_target_roots dtr
+    FROM selected_root_graphs root_graph
     JOIN retained_tagged_manifests retained
-      ON retained.tagged_digest <> dtr.root_digest
+      ON retained.graph_id = root_graph.graph_id
+     AND retained.tagged_digest <> root_graph.root_digest
     JOIN manifest_reachability retained_overlap
       ON retained_overlap.scan_id = ?
      AND retained_overlap.ancestor_digest = retained.tagged_digest
-     AND retained_overlap.descendant_digest = dtr.root_digest
+     AND retained_overlap.descendant_digest = root_graph.root_digest
   )
   SELECT
     blocked_version_id,
