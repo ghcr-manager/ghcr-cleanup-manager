@@ -30,6 +30,7 @@ Previous handoff material was archived to
   - add Node.js 24 requirements to CLI and visualizer install docs
   - align terminology docs with current manifest kinds and edge kinds
   - fix small prose issues in the workflow-to-visualizer doc
+- [x] Align release docs and workflow with the planned `v1.0.0` tag style.
 
 ## Current Next Plan
 
@@ -64,6 +65,8 @@ Previous handoff material was archived to
   - do not create workflow-managed release commits that add `dist/`
 - Visualizer packaging stays separate from the main package.
 - Task and handoff history should be archived rather than left as stale active notes in `docs/`.
+- Release tags use `v`-prefixed semver such as `v1.0.0`.
+- `package.json`, `visualizer/package.json`, and changelog headings now also use the same `v`-prefixed semver format.
 - Use `graph_id` narrowing in planner SQL where the workload is already graph-scoped; do not denormalize `graph_id` into
   `manifest_reachability` before measuring query-level gains.
 - Prefer indexed per-root `EXISTS` and `COUNT` lookups over broad pre-aggregating CTEs when large-table scans dominate
