@@ -1,6 +1,17 @@
 {
   "name": "ghcr-manager",
   "description": "Inspect, analyze, and manage GitHub Container Registry packages.",
+  "keywords": [
+    "ghcr",
+    "github-container-registry",
+    "github-packages",
+    "container-registry",
+    "docker",
+    "oci",
+    "cleanup",
+    "github-actions",
+    "sqlite"
+  ],
   "homepage": "https://github.com/ghcr-manager/ghcr-manager#readme",
   "bugs": {
     "url": "https://github.com/ghcr-manager/ghcr-manager/issues"
