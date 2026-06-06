@@ -225,8 +225,8 @@ For a first look in the visualizer, start with:
 - package: select one with `2images` or `2multiarch` in the name
 - tag search: `image` or `multiarch`
 
-For more details, see
-[visualizer/README.md](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md).
+For more details, see [visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md) and
+[test-scenarios](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/test/scenarios.md).
 
 ## Cleanup Behavior
 
@@ -238,7 +238,7 @@ removed during cleanup. If you pull images by digest, make sure those digests ar
 cleanup rules keep.
 
 For the full explanation and graph examples, see
-[docs/cleanup-behavior.md](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/cleanup-behavior.md).
+[cleanup-behavior](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/cleanup-behavior.md).
 
 ## Project
 

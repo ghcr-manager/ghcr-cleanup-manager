@@ -1,4 +1,4 @@
-# Scenarios
+# Test Scenarios
 
 This document gives a basic map of the live GHCR test scenarios used by `ghcr-manager`.
 

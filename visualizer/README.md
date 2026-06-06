@@ -27,6 +27,9 @@ Open the local URL printed by the command and select:
 
 Good search terms for tags in most scenarios are: `image`, `multiarch`, `keep`, or `delete`.
 
+For an overview of the test scenario graphs and cleanup cases, see
+[test-scenarios](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/test/scenarios.md).
+
 ## Install
 
 ```sh
@@ -89,6 +92,12 @@ Tags in the details panel:
 This is the fastest way to inspect what changed between two scans of one package graph.
 
 [![Visualizer Show Compare Mode](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/visualizer-show-compare-mode.png)](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/visualizer-show-compare-mode.png)
+
+_Example compare view: red-bordered manifests are present in the older scan and removed in the newer one._
+
+[![Visualizer Show Compare Mode Tags](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/visualizer-show-compare-mode--tag-removed.png)](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/visualizer-show-compare-mode--tag-removed.png)
+
+_Example compare view: tags with '(-)' were removed. Here the manifest with the other tag remained._
 
 ## Source Checkout
 
