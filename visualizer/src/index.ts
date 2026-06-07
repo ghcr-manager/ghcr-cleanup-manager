@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { startVisualizerServer } from "./_server.js";
 export type { VisualizerServerHandle } from "./_server.js";
 
@@ -73,6 +75,10 @@ export function resolveDatabasePath(databasePath: string): string {
   return resolve(databasePath);
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
-  await main(process.argv.slice(2));
+if (process.argv[1]) {
+  const invokedPath = realpathSync(process.argv[1]);
+  const currentPath = realpathSync(fileURLToPath(import.meta.url));
+  if (invokedPath === currentPath) {
+    await main(process.argv.slice(2));
+  }
 }
