@@ -2,6 +2,7 @@
 /* global process */
 
 import { scenarios } from "./test-scenarios/_definitions.mjs";
+import { getSupportedExecutors, resolveExecutorConfig } from "./test-scenarios/_executor-config.mjs";
 import { resolveScenarioTagNames } from "./test-scenarios/_resolve-tag-names.mjs";
 
 const scenarioId = process.argv[2];
@@ -17,11 +18,12 @@ if (!scenario) {
   throw new Error(`unknown scenario: ${scenarioId}`);
 }
 
-if (!scenario.supportedExecutors.includes(executor)) {
+if (!getSupportedExecutors(scenario).includes(executor)) {
   throw new Error(`scenario '${scenarioId}' does not support executor '${executor}'`);
 }
 
 const resolvedTagNames = resolveScenarioTagNames(scenario);
+const resolvedExecutorConfig = resolveExecutorConfig(scenario, executor, resolvedTagNames);
 
 process.stdout.write(
   JSON.stringify({
@@ -30,20 +32,7 @@ process.stdout.write(
     packageName: `${repositoryName}-${scenario.packageSuffix}`,
     seedStrategy: scenario.seedStrategy,
     digestSelectorTagNameKey: scenario.digestSelectorTagNameKey ?? null,
-    ghcrctlTag: scenario.ghcrctlTagNameKey ? (resolvedTagNames[scenario.ghcrctlTagNameKey] ?? null) : null,
     tagNames: resolvedTagNames,
-    ghcrManagerArgs: scenario.ghcrManagerArgs.map((value) => _replaceTagTokens(value, resolvedTagNames)),
-    dataaxiomInputs: Object.fromEntries(
-      Object.entries(scenario.dataaxiomInputs).map(([key, value]) => [key, _replaceTagTokens(value, resolvedTagNames)])
-    )
+    executorConfig: resolvedExecutorConfig
   })
 );
-
-function _replaceTagTokens(value, tagNames) {
-  return value.replaceAll(/\{([a-zA-Z0-9]+)\}/g, (_match, key) => {
-    if (!(key in tagNames)) {
-      throw new Error(`unknown tag token '${key}' in scenario '${scenarioId}'`);
-    }
-    return tagNames[key];
-  });
-}

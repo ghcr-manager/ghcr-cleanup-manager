@@ -72,13 +72,13 @@ run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }
           - graph-2multiarch-cosign-attestations--delete-image-a
           - graph-2multiarch-cosign-attestations--delete-multiarch-a
           - graph-2multiarch-cosign-attestations--delete-image-a-and-multiarch-a
-          - graph-2multiarch2tags-base
+          - graph-2multiarch2tags-base--delete-untagged
           - graph-2multiarch2tags-base--delete-multiarch-a
-          - graph-2multiarch2tags-attestations
+          - graph-2multiarch2tags-attestations--delete-untagged
           - graph-2multiarch2tags-attestations--delete-multiarch-a
-          - graph-2multiarch2tags-cosign
+          - graph-2multiarch2tags-cosign--delete-untagged
           - graph-2multiarch2tags-cosign--delete-multiarch-a
-          - graph-2multiarch2tags-cosign-attestations
+          - graph-2multiarch2tags-cosign-attestations--delete-untagged
           - graph-2multiarch2tags-cosign-attestations--delete-multiarch-a
       executor:
         description: Cleanup executor to run against the seeded scenario package.
@@ -203,18 +203,14 @@ jobs:
           registry_password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Set up Node.js for pre-scan
-        if:
-          ${{ inputs.executor == 'ghcr-cleanup-action' || inputs.executor == 'ghcrctl' ||
-          steps.scenario.outputs.digest_selector_tag_name_key != '' }}
+        if: ${{ inputs.executor != 'ghcr-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24"
           cache: npm
 
       - name: Install repo CLI for pre-scan
-        if:
-          ${{ inputs.executor == 'ghcr-cleanup-action' || inputs.executor == 'ghcrctl' ||
-          steps.scenario.outputs.digest_selector_tag_name_key != '' }}
+        if: ${{ inputs.executor != 'ghcr-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -222,9 +218,7 @@ jobs:
           npm run build
 
       - name: Scan before execution
-        if:
-          ${{ inputs.executor == 'ghcr-cleanup-action' || inputs.executor == 'ghcrctl' ||
-          steps.scenario.outputs.digest_selector_tag_name_key != '' }}
+        if: ${{ inputs.executor != 'ghcr-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -234,142 +228,21 @@ jobs:
             --package "${{ steps.scenario.outputs.package_name }}" \
             --token "${{ secrets.GH_TEST_PAT }}"
 
-      - name: Prepare cleanup action inputs
-        id: cleanup-inputs
-        shell: bash
-        env:
-          DB_PATH: ${{ steps.scenario.outputs.db_path }}
-          EXECUTOR: ${{ inputs.executor }}
-          RESOLUTION_PATH: ${{ steps.scenario.outputs.resolution_path }}
-        run: |
-          set -euo pipefail
-          delete_untagged="$(jq -r '.dataaxiomInputs["delete-untagged"] // ""' "$RESOLUTION_PATH")"
-          delete_tags="$(jq -r '.dataaxiomInputs["delete-tags"] // ""' "$RESOLUTION_PATH")"
-          exclude_tags="$(jq -r '.dataaxiomInputs["exclude-tags"] // ""' "$RESOLUTION_PATH")"
-          keep_n_tagged="$(jq -r '.dataaxiomInputs["keep-n-tagged"] // ""' "$RESOLUTION_PATH")"
-          keep_n_untagged="$(jq -r '.dataaxiomInputs["keep-n-untagged"] // ""' "$RESOLUTION_PATH")"
-          delete_ghost_images="$(jq -r '.dataaxiomInputs["delete-ghost-images"] // ""' "$RESOLUTION_PATH")"
-          delete_partial_images="$(jq -r '.dataaxiomInputs["delete-partial-images"] // ""' "$RESOLUTION_PATH")"
-          delete_orphaned_images="$(jq -r '.dataaxiomInputs["delete-orphaned-images"] // ""' "$RESOLUTION_PATH")"
-          use_regex="$(jq -r '.dataaxiomInputs["use-regex"] // ""' "$RESOLUTION_PATH")"
-          digest_selector_tag_name_key="$(jq -r '.digestSelectorTagNameKey // ""' "$RESOLUTION_PATH")"
-          if [[ "$EXECUTOR" == "ghcr-cleanup-action" && -n "$digest_selector_tag_name_key" ]]; then
-            delete_tags="$(node tools/tests/resolve-test-scenario-delete-digests.mjs "$RESOLUTION_PATH" "$DB_PATH")"
-          elif [[ "$EXECUTOR" == "ghcr-manager" && -n "$digest_selector_tag_name_key" ]]; then
-            delete_tags="$(jq -r --arg key "$digest_selector_tag_name_key" '.tagNames[$key] // ""' "$RESOLUTION_PATH")"
-          fi
-          echo "delete_untagged=$delete_untagged" >> "$GITHUB_OUTPUT"
-          echo "keep_n_tagged=$keep_n_tagged" >> "$GITHUB_OUTPUT"
-          echo "keep_n_untagged=$keep_n_untagged" >> "$GITHUB_OUTPUT"
-          echo "delete_ghost_images=$delete_ghost_images" >> "$GITHUB_OUTPUT"
-          echo "delete_partial_images=$delete_partial_images" >> "$GITHUB_OUTPUT"
-          echo "delete_orphaned_images=$delete_orphaned_images" >> "$GITHUB_OUTPUT"
-          # dataaxiom/ghcr-cleanup-action uses comma-separated where ghcr-manager uses newline-separated
-          echo "use_regex=$use_regex" >> "$GITHUB_OUTPUT"
-          {
-            echo "delete_tags<<EOF"
-            tr ',' '\n' <<< "$delete_tags"
-            echo "EOF"
-            echo "exclude_tags<<EOF"
-            tr ',' '\n' <<< "$exclude_tags"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Execute with ghcr-manager action
-        if: ${{ inputs.executor == 'ghcr-manager' }}
-        uses: ./
+      - name: Dispatch executor action
+        uses: ./.github/actions/test-scenario-executor-dispatch
         with:
-          command: cleanup
+          executor: ${{ inputs.executor }}
           token: ${{ secrets.GH_TEST_PAT }}
           owner: ${{ vars.GH_TEST_ORG }}
-          package: ${{ steps.scenario.outputs.package_name }}
-          db-path: ${{ steps.scenario.outputs.db_path }}
-          upload-artifacts: ${{ inputs.upload_artifacts }}
-          scan-after-cleanup: "true"
-          db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
-          delete-untagged: ${{ steps.cleanup-inputs.outputs.delete_untagged }}
-          delete-tags: ${{ steps.cleanup-inputs.outputs.delete_tags }}
-          exclude-tags: ${{ steps.cleanup-inputs.outputs.exclude_tags }}
-          keep-n-tagged: ${{ steps.cleanup-inputs.outputs.keep_n_tagged }}
-          keep-n-untagged: ${{ steps.cleanup-inputs.outputs.keep_n_untagged }}
-          delete-ghost-images: ${{ steps.cleanup-inputs.outputs.delete_ghost_images }}
-          delete-partial-images: ${{ steps.cleanup-inputs.outputs.delete_partial_images }}
-          delete-orphaned-images: ${{ steps.cleanup-inputs.outputs.delete_orphaned_images }}
-          use-regex: ${{ steps.cleanup-inputs.outputs.use_regex }}
-
-      - name: Record ghcr-manager executor summary
-        if: ${{ inputs.executor == 'ghcr-manager' }}
-        shell: bash
-        env:
-          SUMMARY_PATH: ${{ steps.scenario.outputs.summary_path }}
-        run: |
-          set -euo pipefail
-          printf '%s\n' '{"executor":"ghcr-manager","status":"completed"}' > "$SUMMARY_PATH"
-
-      - name: Execute with ghcr-cleanup-action action
-        if: ${{ inputs.executor == 'ghcr-cleanup-action' }}
-        uses: dataaxiom/ghcr-cleanup-action@f092b48ba3b604b2a83690dc4b2bbb3392e1045f # main
-        with:
-          token: ${{ secrets.GH_TEST_PAT }}
-          owner: ${{ vars.GH_TEST_ORG }}
-          package: ${{ steps.scenario.outputs.package_name }}
-          delete-untagged: ${{ steps.cleanup-inputs.outputs.delete_untagged }}
-          delete-tags: ${{ steps.cleanup-inputs.outputs.delete_tags }}
-          exclude-tags: ${{ steps.cleanup-inputs.outputs.exclude_tags }}
-          keep-n-tagged: ${{ steps.cleanup-inputs.outputs.keep_n_tagged }}
-          keep-n-untagged: ${{ steps.cleanup-inputs.outputs.keep_n_untagged }}
-          delete-ghost-images: ${{ steps.cleanup-inputs.outputs.delete_ghost_images }}
-          delete-partial-images: ${{ steps.cleanup-inputs.outputs.delete_partial_images }}
-          delete-orphaned-images: ${{ steps.cleanup-inputs.outputs.delete_orphaned_images }}
-          use-regex: ${{ steps.cleanup-inputs.outputs.use_regex }}
-
-      - name: Record upstream executor summary
-        if: ${{ inputs.executor == 'ghcr-cleanup-action' }}
-        shell: bash
-        env:
-          SUMMARY_PATH: ${{ steps.scenario.outputs.summary_path }}
-        run: |
-          set -euo pipefail
-          printf '%s\n' '{"executor":"dataaxiom","status":"completed"}' > "$SUMMARY_PATH"
-
-      - name: Set up Go for ghcrctl
-        if: ${{ inputs.executor == 'ghcrctl' }}
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.25.9"
-
-      - name: Install ghcrctl
-        if: ${{ inputs.executor == 'ghcrctl' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          go install github.com/mkoepf/ghcrctl@c192fc146886baa98239fe046f73bce818766416
-
-      - name: Execute with ghcrctl
-        if: ${{ inputs.executor == 'ghcrctl' }}
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TEST_PAT }}
-          OWNER: ${{ vars.GH_TEST_ORG }}
-          PACKAGE: ${{ steps.scenario.outputs.package_name }}
-          RESOLUTION_PATH: ${{ steps.scenario.outputs.resolution_path }}
-        run: |
-          set -euo pipefail
-          ghcrctl_tag="$(jq -r '.ghcrctlTag // ""' "$RESOLUTION_PATH")"
-          [[ -n "$ghcrctl_tag" ]] || { echo "Scenario does not define a ghcrctl tag target" >&2; exit 1; }
-          ghcrctl delete graph "${OWNER}/${PACKAGE}" --tag "$ghcrctl_tag" --force
-
-      - name: Record ghcrctl executor summary
-        if: ${{ inputs.executor == 'ghcrctl' }}
-        shell: bash
-        env:
-          SUMMARY_PATH: ${{ steps.scenario.outputs.summary_path }}
-        run: |
-          set -euo pipefail
-          printf '%s\n' '{"executor":"ghcrctl","status":"completed"}' > "$SUMMARY_PATH"
+          package_name: ${{ steps.scenario.outputs.package_name }}
+          db_path: ${{ steps.scenario.outputs.db_path }}
+          resolution_path: ${{ steps.scenario.outputs.resolution_path }}
+          upload_artifacts: ${{ inputs.upload_artifacts }}
+          artifact_retention_days: ${{ inputs.artifact_retention_days }}
+          summary_path: ${{ steps.scenario.outputs.summary_path }}
 
       - name: Scan after execution
-        if: ${{ inputs.executor == 'ghcr-cleanup-action' || inputs.executor == 'ghcrctl' }}
+        if: ${{ inputs.executor != 'ghcr-manager' }}
         uses: ./
         with:
           command: scan

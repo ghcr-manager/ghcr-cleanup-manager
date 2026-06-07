@@ -23,7 +23,7 @@ const latestScanAssertions = scenario.latestScanAssertions;
 const signatureSubjectAssertions = scenario.signatureSubjectAssertions ?? [];
 if (!latestScanAssertions && scanAssertions.length === 0 && signatureSubjectAssertions.length === 0) {
   process.stdout.write(`No scan assertions configured for scenario '${scenarioId}'.\n`);
-  process.exit(0);
+  process.exit(1);
 }
 
 const tagNames = resolveScenarioTagNames(scenario);
@@ -174,8 +174,7 @@ for (const signatureAssertion of signatureSubjectAssertions) {
         SELECT
           sig.digest AS signature_digest,
           sig.subject_digest,
-          subjects.manifest_kind AS subject_manifest_kind,
-          sig_roots.tag_count AS signature_root_tag_count
+          subjects.manifest_kind AS subject_manifest_kind
         FROM manifests sig
         JOIN manifests subjects
           ON subjects.scan_id = sig.scan_id

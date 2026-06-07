@@ -17,8 +17,7 @@ Now there may be more tools like this.
 I did a quick search on the GitHub marketplace and cloned all tools which at first glance looked potentially similar to
 `../../GHCR-CLEANERS/`. Example path for tool `foo/bar` would be `../../GHCR-CLEANERS/foo/bar`.
 
-> Note:
-> The tools we already compare with (`dataaxiom/ghcr-cleanup-action` and `mkoepf/ghcrctl/`) are in
+> Note: The tools we already compare with (`dataaxiom/ghcr-cleanup-action` and `mkoepf/ghcrctl/`) are in
 > `../../GHCR-CLEANERS/` too. Exclude those as we already cover them.
 
 ## Side-task: Note functionality we don't provide

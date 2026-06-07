@@ -1,0 +1,97 @@
+name: Test Scenario Executor ghcr-manager
+description: Run one scenario cleanup using the local ghcr-manager action.
+
+inputs:
+  token:
+    description: GitHub token with package permissions.
+    required: true
+  owner:
+    description: Test owner.
+    required: true
+  package_name:
+    description: Scenario package name.
+    required: true
+  db_path:
+    description: SQLite DB path.
+    required: true
+  resolution_path:
+    description: Path to the resolved scenario JSON.
+    required: true
+  upload_artifacts:
+    description: Whether action-owned artifacts should be uploaded.
+    required: true
+  artifact_retention_days:
+    description: Optional artifact retention-days override.
+    required: false
+    default: ""
+  summary_path:
+    description: Path where a short executor summary should be written.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve ghcr-manager cleanup inputs
+      id: cleanup-inputs
+      shell: bash
+      env:
+        RESOLUTION_PATH: ${{ inputs.resolution_path }}
+      run: |
+        set -euo pipefail
+        delete_untagged="$(jq -r '.executorConfig.inputs["delete-untagged"] // ""' "$RESOLUTION_PATH")"
+        delete_tags="$(jq -r '.executorConfig.inputs["delete-tags"] // ""' "$RESOLUTION_PATH")"
+        exclude_tags="$(jq -r '.executorConfig.inputs["exclude-tags"] // ""' "$RESOLUTION_PATH")"
+        keep_n_tagged="$(jq -r '.executorConfig.inputs["keep-n-tagged"] // ""' "$RESOLUTION_PATH")"
+        keep_n_untagged="$(jq -r '.executorConfig.inputs["keep-n-untagged"] // ""' "$RESOLUTION_PATH")"
+        delete_ghost_images="$(jq -r '.executorConfig.inputs["delete-ghost-images"] // ""' "$RESOLUTION_PATH")"
+        delete_partial_images="$(jq -r '.executorConfig.inputs["delete-partial-images"] // ""' "$RESOLUTION_PATH")"
+        delete_orphaned_images="$(jq -r '.executorConfig.inputs["delete-orphaned-images"] // ""' "$RESOLUTION_PATH")"
+        use_regex="$(jq -r '.executorConfig.inputs["use-regex"] // ""' "$RESOLUTION_PATH")"
+        digest_selector_tag_name_key="$(jq -r '.digestSelectorTagNameKey // ""' "$RESOLUTION_PATH")"
+        if [[ -n "$digest_selector_tag_name_key" ]]; then
+          delete_tags="$(jq -r --arg key "$digest_selector_tag_name_key" '.tagNames[$key] // ""' "$RESOLUTION_PATH")"
+        fi
+        echo "delete_untagged=$delete_untagged" >> "$GITHUB_OUTPUT"
+        echo "keep_n_tagged=$keep_n_tagged" >> "$GITHUB_OUTPUT"
+        echo "keep_n_untagged=$keep_n_untagged" >> "$GITHUB_OUTPUT"
+        echo "delete_ghost_images=$delete_ghost_images" >> "$GITHUB_OUTPUT"
+        echo "delete_partial_images=$delete_partial_images" >> "$GITHUB_OUTPUT"
+        echo "delete_orphaned_images=$delete_orphaned_images" >> "$GITHUB_OUTPUT"
+        echo "use_regex=$use_regex" >> "$GITHUB_OUTPUT"
+        {
+          echo "delete_tags<<EOF"
+          tr ',' '\n' <<< "$delete_tags"
+          echo "EOF"
+          echo "exclude_tags<<EOF"
+          tr ',' '\n' <<< "$exclude_tags"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Execute with ghcr-manager action
+      uses: ./
+      with:
+        command: cleanup
+        token: ${{ inputs.token }}
+        owner: ${{ inputs.owner }}
+        package: ${{ inputs.package_name }}
+        db-path: ${{ inputs.db_path }}
+        upload-artifacts: ${{ inputs.upload_artifacts }}
+        scan-after-cleanup: "true"
+        db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
+        delete-untagged: ${{ steps.cleanup-inputs.outputs.delete_untagged }}
+        delete-tags: ${{ steps.cleanup-inputs.outputs.delete_tags }}
+        exclude-tags: ${{ steps.cleanup-inputs.outputs.exclude_tags }}
+        keep-n-tagged: ${{ steps.cleanup-inputs.outputs.keep_n_tagged }}
+        keep-n-untagged: ${{ steps.cleanup-inputs.outputs.keep_n_untagged }}
+        delete-ghost-images: ${{ steps.cleanup-inputs.outputs.delete_ghost_images }}
+        delete-partial-images: ${{ steps.cleanup-inputs.outputs.delete_partial_images }}
+        delete-orphaned-images: ${{ steps.cleanup-inputs.outputs.delete_orphaned_images }}
+        use-regex: ${{ steps.cleanup-inputs.outputs.use_regex }}
+
+    - name: Record ghcr-manager executor summary
+      shell: bash
+      env:
+        SUMMARY_PATH: ${{ inputs.summary_path }}
+      run: |
+        set -euo pipefail
+        printf '%s\n' '{"executor":"ghcr-manager","status":"completed"}' > "$SUMMARY_PATH"

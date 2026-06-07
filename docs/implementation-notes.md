@@ -44,10 +44,30 @@ Previous handoff material was archived to
 - [x] Block selected helper roots that `digest-tag-referrer` point into the protected closure of retained manifests,
   instead of only expanding closure membership after selection.
 - [x] Start Task 09 and record the first-pass and deeper-pass candidate-tool evaluation in `docs/tasks/09/`.
+- [x] Refactor test-scenario executor config to a generic per-scenario `executors` mapping with legacy normalization for
+      current scenarios.
+- [x] Extract current scenario-executor workflow branches into per-executor composite actions so adding new executors
+      does not keep bloating one workflow file.
+- [x] Add a first pass of scan expectations to the mixed cleanup matrix so only the remaining non-obvious scenarios
+      still fail fast for missing validation.
+- [x] Rename the runnable `graph-2multiarch2tags-*` base rows to explicit `--delete-untagged` graph scenarios so their
+  ids match the existing graph operation naming pattern.
 
 ## Current Next Plan
 
-- No active follow-up is pending.
+- Inspect `artifacts/ghcr-manager-merged--scenario-matrix-cleanup.sqlite` and fill expectations for the remaining
+  mixed-matrix scenarios that are not obvious from seed shape alone:
+  - `blocked-shared-closure`
+  - `delete-ghost-images-noop`
+  - `delete-partial-images-real`
+  - `delete-partial-images-noop`
+  - `delete-orphaned-images-noop`
+- Re-run the live matrix workflows after the scenario-config refactor so the executor-action translations are verified
+  on GitHub, not just through local resolution and lint checks.
+- Consider whether to add a smaller `2images1tag` graph family as a follow-up, not a prerequisite, for clearer
+  `delete-untagged` comparisons.
+- If Task 09 continues immediately, implement the chosen executor/scenario direction before returning to the older
+  follow-up ideas.
 
 ## Current Status
 
@@ -109,3 +129,10 @@ Previous handoff material was archived to
   - prefer graph scenarios when the fit is real
   - otherwise recommend the non-graph scenarios they match best
   - do not force delete-tag graph executors onto tools that only do untagged or policy pruning
+- Scenario executor config is now generic:
+  - scenario definitions may provide an `executors` object keyed by executor id
+  - current legacy scenario fields are normalized into that shape for compatibility during the transition
+- Executor-specific workflow logic now lives in:
+  - `.github/actions/test-scenario-executor-ghcr-manager/`
+  - `.github/actions/test-scenario-executor-ghcr-cleanup-action/`
+  - `.github/actions/test-scenario-executor-ghcrctl/`

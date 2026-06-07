@@ -1,0 +1,79 @@
+name: Test Scenario Executor Dispatch
+description: Dispatch one resolved scenario run to the selected executor action.
+
+inputs:
+  executor:
+    description: Executor id to dispatch.
+    required: true
+  token:
+    description: GitHub token with package permissions.
+    required: true
+  owner:
+    description: Test owner.
+    required: true
+  package_name:
+    description: Scenario package name.
+    required: true
+  db_path:
+    description: SQLite DB path.
+    required: true
+  resolution_path:
+    description: Path to the resolved scenario JSON.
+    required: true
+  upload_artifacts:
+    description: Whether action-owned artifacts should be uploaded.
+    required: true
+  artifact_retention_days:
+    description: Optional artifact retention-days override.
+    required: false
+    default: ""
+  summary_path:
+    description: Path where a short executor summary should be written.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Execute with ghcr-manager executor action
+      if: ${{ inputs.executor == 'ghcr-manager' }}
+      uses: ./.github/actions/test-scenario-executor-ghcr-manager
+      with:
+        token: ${{ inputs.token }}
+        owner: ${{ inputs.owner }}
+        package_name: ${{ inputs.package_name }}
+        db_path: ${{ inputs.db_path }}
+        resolution_path: ${{ inputs.resolution_path }}
+        upload_artifacts: ${{ inputs.upload_artifacts }}
+        artifact_retention_days: ${{ inputs.artifact_retention_days }}
+        summary_path: ${{ inputs.summary_path }}
+
+    - name: Execute with ghcr-cleanup-action executor action
+      if: ${{ inputs.executor == 'ghcr-cleanup-action' }}
+      uses: ./.github/actions/test-scenario-executor-ghcr-cleanup-action
+      with:
+        token: ${{ inputs.token }}
+        owner: ${{ inputs.owner }}
+        package_name: ${{ inputs.package_name }}
+        db_path: ${{ inputs.db_path }}
+        resolution_path: ${{ inputs.resolution_path }}
+        summary_path: ${{ inputs.summary_path }}
+
+    - name: Execute with ghcrctl executor action
+      if: ${{ inputs.executor == 'ghcrctl' }}
+      uses: ./.github/actions/test-scenario-executor-ghcrctl
+      with:
+        token: ${{ inputs.token }}
+        owner: ${{ inputs.owner }}
+        package_name: ${{ inputs.package_name }}
+        resolution_path: ${{ inputs.resolution_path }}
+        summary_path: ${{ inputs.summary_path }}
+
+    - name: Reject unsupported executor
+      if:
+        ${{ inputs.executor != 'ghcr-manager' && inputs.executor != 'ghcr-cleanup-action' && inputs.executor !=
+        'ghcrctl' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "Unsupported executor: ${{ inputs.executor }}" >&2
+        exit 1

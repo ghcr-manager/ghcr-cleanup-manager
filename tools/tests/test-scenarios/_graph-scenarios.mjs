@@ -47,6 +47,13 @@ const _graphCountsByExtension = {
   }
 };
 
+const _deleteUntaggedCountsByExtension = {
+  base: { manifestCount: 4, tagCount: 3 },
+  attestations: { manifestCount: 7, tagCount: 3 },
+  cosign: { manifestCount: 10, tagCount: 6 },
+  "cosign-attestations": { manifestCount: 11, tagCount: 5 }
+};
+
 const _cleanupOperationsByBaseCase = {
   "1image": [
     {
@@ -134,15 +141,26 @@ for (const [baseCase, extension] of _graphVariants()) {
     id: seedStrategy,
     packageSuffix: `scenario--${seedStrategy}`,
     seedStrategy,
-    supportedExecutors: ["ghcr-manager"],
+    ..._graphBaseScenario(baseCase),
     includeInMatrix: false,
     includeInGraphMatrix: false,
-    ghcrManagerArgs: ["--delete-tag", "does-not-exist"],
-    dataaxiomInputs: {
-      "delete-tags": "does-not-exist"
-    },
     tagNames: _graphTagNamesByBaseCase[baseCase]
   };
+
+  if (baseCase === "2multiarch2tags") {
+    const id = `${seedStrategy}--delete-untagged`;
+    graphScenarios[id] = {
+      id,
+      packageSuffix: `scenario--${id}`,
+      seedStrategy,
+      ..._graphBaseScenario(baseCase),
+      includeInMatrix: false,
+      includeInGraphMatrix: true,
+      tagNames: _graphTagNamesByBaseCase[baseCase],
+      scanAssertions: ["imageA", "multiarchA", "keepDummy"].map((tagNameKey) => ({ tagNameKey })),
+      latestScanAssertions: _deleteUntaggedCountsByExtension[extension]
+    };
+  }
 
   for (const operation of _cleanupOperationsByBaseCase[baseCase]) {
     const id = `${seedStrategy}--${operation.idSuffix}`;
@@ -157,14 +175,9 @@ for (const [baseCase, extension] of _graphVariants()) {
       id,
       packageSuffix: `scenario--${id}`,
       seedStrategy,
-      supportedExecutors: _supportedExecutorsForOperation(operation),
+      ..._graphOperationScenario(operation),
       includeInMatrix: false,
       includeInGraphMatrix: true,
-      ghcrManagerArgs: _buildDeleteTagArgs(operation.deleteTagKeys),
-      dataaxiomInputs: {
-        "delete-tags": _buildDeleteTagInput(operation.deleteTagKeys)
-      },
-      ghcrctlTagNameKey: _ghcrctlTagNameKeyForOperation(operation),
       tagNames: _graphTagNamesByBaseCase[baseCase],
       scanAssertions: operation.presentTagNameKeys.map((tagNameKey) => ({ tagNameKey })),
       latestScanAssertions: {
@@ -183,12 +196,46 @@ function* _graphVariants() {
   }
 }
 
-function _buildDeleteTagArgs(tagKeys) {
-  return tagKeys.flatMap((tagKey) => ["--delete-tag", `{${tagKey}}`]);
-}
-
 function _buildDeleteTagInput(tagKeys) {
   return tagKeys.map((tagKey) => `{${tagKey}}`).join(",");
+}
+
+function _ghcrManagerScenario(inputs, supportedExecutors = ["ghcr-manager", "ghcr-cleanup-action"]) {
+  return {
+    ghcrManager: {
+      inputs
+    },
+    supportedExecutors
+  };
+}
+
+function _graphOperationScenario(operation) {
+  const supportedExecutors = ["ghcr-manager", "ghcr-cleanup-action"];
+  if (operation.deleteTagKeys.length === 1) {
+    supportedExecutors.push("ghcrctl");
+  }
+
+  return _ghcrManagerScenario(
+    {
+      "delete-tags": _buildDeleteTagInput(operation.deleteTagKeys)
+    },
+    supportedExecutors
+  );
+}
+
+function _graphBaseScenario(baseCase) {
+  if (baseCase === "2multiarch2tags") {
+    return _ghcrManagerScenario(
+      {
+        "delete-untagged": "true"
+      },
+      ["ghcr-manager", "ghcr-cleanup-action" ]
+    );
+  }
+
+  return _ghcrManagerScenario({
+    "delete-tags": "does-not-exist"
+  });
 }
 
 function _extensionUsesCosign(extension) {
@@ -197,16 +244,4 @@ function _extensionUsesCosign(extension) {
 
 function _extensionUsesAttestationsWithoutCosign(extension) {
   return extension === "attestations";
-}
-
-function _supportedExecutorsForOperation(operation) {
-  const executors = ["ghcr-manager", "ghcr-cleanup-action"];
-  if (operation.deleteTagKeys.length === 1) {
-    executors.push("ghcrctl");
-  }
-  return executors;
-}
-
-function _ghcrctlTagNameKeyForOperation(operation) {
-  return operation.deleteTagKeys.length === 1 ? operation.deleteTagKeys[0] : null;
 }

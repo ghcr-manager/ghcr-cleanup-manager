@@ -125,14 +125,10 @@ Classes:
   - only `image-a` and `multiarch-a` stay directly tagged
   - that leaves a substantial untagged graph remainder to observe
   - the `attestations`, `cosign`, and `cosign-attestations` variants make this especially interesting
-- current executor plumbing is also explicit to current tools:
-  - `ghcrManagerArgs`
-  - `dataaxiomInputs`
-  - `ghcrctlTagNameKey`
+- the framework now has a generic per-scenario `executors` mapping and no longer needs one top-level field per executor
+  flavor
 - adding another executor is not just one workflow `uses:` line
-- we either need:
-  - one new per-tool input block in scenario definitions, or
-  - one more generic per-executor input mapping shape
+- but adding a new executor no longer requires inventing another top-level scenario field just for that tool
 
 ### `quartx-analytics/ghcr-cleaner`
 
