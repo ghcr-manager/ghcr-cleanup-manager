@@ -100,11 +100,11 @@ test("visualizer server serves owner, package, and scan selector API responses",
 test("visualizer server resolves runtime asset paths for source and built installs", () => {
   assert.deepEqual(_resolveRuntimePaths("file:///tmp/ghcr-manager/visualizer/src/_server.js"), {
     publicDirectory: "/tmp/ghcr-manager/visualizer/public",
-    cytoscapePath: "/tmp/ghcr-manager/node_modules/cytoscape/dist/cytoscape.esm.min.mjs"
+    cytoscapePath: "/tmp/ghcr-manager/visualizer/public/vendor/cytoscape.js"
   });
   assert.deepEqual(_resolveRuntimePaths("file:///tmp/npm/ghcr-manager-visualizer/dist/src/_server.js"), {
     publicDirectory: "/tmp/npm/ghcr-manager-visualizer/dist/public",
-    cytoscapePath: "/tmp/npm/ghcr-manager-visualizer/node_modules/cytoscape/dist/cytoscape.esm.min.mjs"
+    cytoscapePath: "/tmp/npm/ghcr-manager-visualizer/dist/public/vendor/cytoscape.js"
   });
 });
 

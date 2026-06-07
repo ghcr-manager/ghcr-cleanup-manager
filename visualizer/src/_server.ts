@@ -100,7 +100,7 @@ export function _resolveRuntimePaths(importMetaUrl: string): {
   const baseDirectory = resolve(fileURLToPath(new URL("..", importMetaUrl)));
   return {
     publicDirectory: join(baseDirectory, "public"),
-    cytoscapePath: join(baseDirectory, "..", "node_modules", "cytoscape", "dist", "cytoscape.esm.min.mjs")
+    cytoscapePath: join(baseDirectory, "public", "vendor", "cytoscape.js")
   };
 }
 
