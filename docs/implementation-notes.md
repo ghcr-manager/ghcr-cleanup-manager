@@ -43,11 +43,6 @@ Previous handoff material was archived to
 ## Current Next Plan
 
 - No active follow-up is pending.
-- Review whether the visualizer screenshot grid should gain spacing presets or a keyboard shortcut after a few real doc
-  screenshot sessions.
-- Review whether the new cleanup behavior explainer should stay as one doc or grow a short scenario-linked appendix.
-- If `ghcrctl` matrix runs reveal mismatches worth documenting, summarize those per-scenario rather than broadening the
-  adapter surface.
 
 ## Current Status
 
