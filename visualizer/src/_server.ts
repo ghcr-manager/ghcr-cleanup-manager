@@ -69,7 +69,7 @@ export async function startVisualizerServer(options: VisualizerServerOptions): P
       const address = server.address();
       if (typeof address === "object" && address) {
         url = `http://${options.host}:${address.port}`;
-        console.log(`Visualizer listening at ${url}`);
+        console.log(`Visualizer listening. Open http://127.0.0.1:${address.port} or the host/port you configured.`);
       }
       resolvePromise();
     });
