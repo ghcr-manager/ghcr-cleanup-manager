@@ -1,5 +1,7 @@
-name: ghcr-manager
-description: Inspect, analyze, and manage GitHub Container Registry packages.
+name: GHCR Manager - OCI-Aware Cleanup
+description: >
+  Clean, prune, manage, analyze, and visualize GitHub Container Registry (GHCR) packages. OCI-aware cleanup for tags,
+  untagged versions, multi-arch images, attestations, and cosign signatures.
 
 branding:
   icon: package
