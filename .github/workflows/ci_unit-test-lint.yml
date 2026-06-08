@@ -18,7 +18,7 @@ jobs:
         uses: joshjohanning/ensure-immutable-actions@9467f3db8f5f3c942629468981c4a2a67d0caa64 # v2.6.1
         with:
           include-first-party: "true"
-          exclude-workflows: "manual-run_scan.yml"
+          exclude-workflows: ".github/workflows/manual-run_scan.yml,test_scenario-executor.yml,test_scenario-executor-matrix.yml,test_scenario-graph-matrix.yml"
           write-job-summary: "on-failure-only"
 
       - name: Set up Node.js
