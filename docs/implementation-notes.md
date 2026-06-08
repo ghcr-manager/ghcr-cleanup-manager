@@ -95,3 +95,7 @@ Previous handoff material was archived to
 - Cleanup documentation should state the current planner contract in user terms: retained tags protect reachable
   manifests, and cleanup may remove adjacent unprotected graph sections to leave the remaining package in a correct
   working state.
+- `merge-run-artifacts` should not rediscover deletion candidates after bundling:
+  - enumerate matching run artifacts once
+  - download by explicit artifact IDs
+  - delete that exact same ID set after uploading the merged DB artifact
