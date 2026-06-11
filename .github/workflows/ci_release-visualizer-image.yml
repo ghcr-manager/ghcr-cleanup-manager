@@ -56,7 +56,7 @@ jobs:
       digest_arm64: ${{ steps.out-arm64.outputs.digest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4.1.0
@@ -81,7 +81,7 @@ jobs:
           tags: ${{ env.IMAGE_REF }}:${{ github.run_id }}-${{ matrix.arch }}-test
 
       - name: Remove temporary tag on image (optional)
-        uses: ghcr-manager/ghcr-untag-action@0c32d681a3f68580cbcfebfcf126cbab8df872f8 # v1.0.4
+        uses: ghcr-manager/ghcr-untag-action@a75504a7a4682629e398c21a829040288e92ac49 # v1.0.5
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
