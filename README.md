@@ -1,4 +1,4 @@
-# ghcr-manager
+# GHCR Cleanup Manager
 
 [![GitHub Marketplace](https://img.shields.io/badge/marketplace-ghcr--manager-blue?logo=github&labelColor=333&style=flat-square)](https://github.com/marketplace/actions/ghcr-manager)
 [![Release](https://img.shields.io/github/v/release/ghcr-manager/ghcr-manager?style=flat-square)](https://github.com/ghcr-manager/ghcr-manager/releases)
@@ -7,7 +7,7 @@
 
 GHCR Cleanup Manager is a GHCR cleanup action for GitHub Container Registry packages.
 
-`ghcr-manager` is a GitHub Action for:
+GHCR Cleanup Manager is a GitHub Action for:
 
 - clean GHCR packages: including tagged and untagged images
 - preview cleanup: with `dry-run` before making changes
@@ -214,15 +214,16 @@ Current naming:
 
 ## Explore A Real Scenario DB
 
-The release assets also include one merged SQLite DB from `ghcr-manager`'s live scenario workflows. You can use it as a
-quick visualizer demo and as a compact way to inspect dozens of real cleanup and graph cases.
+The release assets also include one merged SQLite DB from GHCR Cleanup Manager's live scenario workflows. You can use it
+as a quick visualizer demo and as a compact way to inspect dozens of real cleanup and graph cases.
 
 ```sh
 curl -LO https://github.com/ghcr-manager/ghcr-manager/releases/latest/download/ghcr-manager-release-scenarios.sqlite
 npx ghcr-manager-visualizer --db ./ghcr-manager-release-scenarios.sqlite
 ```
 
-Docker image available: [visualizer Docker usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md#docker).
+Docker image available:
+[visualizer Docker usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md#docker).
 
 For a first look in the visualizer, start with:
 

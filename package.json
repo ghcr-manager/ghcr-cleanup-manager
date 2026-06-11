@@ -1,6 +1,6 @@
 {
   "name": "ghcr-manager",
-  "description": "Inspect, analyze, and manage GitHub Container Registry packages.",
+  "description": "GHCR Cleanup Manager: GitHub Action and CLI for safe GitHub Container Registry cleanup and inspection.",
   "homepage": "https://github.com/ghcr-manager/ghcr-manager#readme",
   "version": "v1.0.7",
   "license": "MIT",

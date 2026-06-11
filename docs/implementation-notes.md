@@ -67,6 +67,9 @@ Previous handoff material was archived to
 - [x] Change `exclude-tags` cleanup behavior from root-scoped protection to tag-scoped skipping so matching sibling tags
       can still be untagged on the same root.
 - [x] Refresh Marketplace-facing action metadata and README opening copy so GHCR cleanup search terms lead the listing.
+- [x] Replace generic README H1 titles in user-facing action/helper docs with descriptive titles.
+- [x] Replace leftover generic `ghcr-manager` product-name mentions in user-facing docs and metadata where the stable
+      technical identifier was not required.
 
 ## Current Next Plan
 

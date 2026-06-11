@@ -1,11 +1,11 @@
 # Cleanup Behavior
 
-This document explains how `ghcr-manager` decides what stays and what can be removed during `cleanup`.
+This document explains how GHCR Cleanup Manager decides what stays and what can be removed during `cleanup`.
 
 ## Main Idea
 
-`ghcr-manager` is graph-aware. Cleanup is planned against the package's manifest graph, not as a set of isolated tag
-deletions.
+GHCR Cleanup Manager is graph-aware. Cleanup is planned against the package's manifest graph, not as a set of isolated
+tag deletions.
 
 That is a deliberate design choice. The planner is built to leave the remaining package in a usable, internally
 consistent state after cleanup.

@@ -1,4 +1,4 @@
-name: ghcr-manager merge-run-artifacts
+name: GHCR Cleanup Manager Merge Run Artifacts Action
 description:
   Download matching current-run DB artifacts, merge them, upload the merged DB, and optionally delete the source
   artifacts.

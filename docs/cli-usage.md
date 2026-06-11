@@ -1,6 +1,6 @@
 # CLI Usage
 
-This document covers the companion CLI.
+This document covers the GHCR Cleanup Manager companion CLI.
 
 Install from `npm` and run `ghcr-manager` directly.
 

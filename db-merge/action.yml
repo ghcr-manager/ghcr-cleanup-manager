@@ -1,5 +1,5 @@
-name: ghcr-manager db-merge
-description: Merge one or more ghcr-manager SQLite databases into a single target database.
+name: GHCR Cleanup Manager DB Merge Action
+description: Merge one or more GHCR Cleanup Manager SQLite databases into a single target database.
 
 branding:
   icon: package

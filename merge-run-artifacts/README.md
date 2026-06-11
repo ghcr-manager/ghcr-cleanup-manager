@@ -1,10 +1,10 @@
-# ghcr-manager merge-run-artifacts
+# GHCR Cleanup Manager Merge Run Artifacts Action
 
 Download matching current-run SQLite artifacts, merge them into one database, upload the merged DB, and optionally
 delete the source artifacts.
 
-Use this helper action when several jobs in the same workflow run each uploaded their own `ghcr-manager` scan or cleanup
-database and you want one merged artifact at the end.
+Use this helper action when several jobs in the same workflow run each uploaded their own GHCR Cleanup Manager scan or
+cleanup database and you want one merged artifact at the end.
 
 ## Inputs
 

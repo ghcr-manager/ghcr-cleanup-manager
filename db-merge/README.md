@@ -1,6 +1,6 @@
-# ghcr-manager db-merge
+# GHCR Cleanup Manager DB Merge Action
 
-Merge one or more local `ghcr-manager` SQLite databases into a single target database.
+Merge one or more local GHCR Cleanup Manager SQLite databases into a single target database.
 
 Use this helper action when you already have several `.sqlite` files on the runner and want one merged analysis DB.
 

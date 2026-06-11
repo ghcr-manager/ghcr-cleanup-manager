@@ -1,6 +1,6 @@
-# ghcr-manager-visualizer
+# GHCR Cleanup Manager Visualizer
 
-Local browser visualizer for `ghcr-manager` SQLite scan databases.
+Local browser visualizer for GHCR Cleanup Manager SQLite scan databases.
 
 Use it to inspect manifest graphs, compare two scans of the same package, and investigate cleanup edge cases.
 
@@ -90,7 +90,8 @@ Container defaults:
 
 ## DB Input
 
-The visualizer reads the SQLite DB produced by `ghcr-manager` as GitHub Action artifacts uploaded by `scan`, `cleanup`.
+The visualizer reads the SQLite DB produced by GHCR Cleanup Manager as GitHub Action artifacts uploaded by `scan`,
+`cleanup`.
 
 Typical flow:
 
