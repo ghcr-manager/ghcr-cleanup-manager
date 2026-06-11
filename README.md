@@ -5,15 +5,18 @@
 [![Immutable Releases](https://img.shields.io/badge/releases-immutable-blue?labelColor=333)](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/immutable-releases)
 [![Tests](https://img.shields.io/github/actions/workflow/status/ghcr-manager/ghcr-manager/.github/workflows/ci_change-validation.yml?branch=main&label=test&style=flat-square)](https://github.com/ghcr-manager/ghcr-manager/actions/workflows/ci_change-validation.yml)
 
-Inspect, analyze, and manage large GitHub Container Registry packages.
+GHCR Cleanup Manager is a GHCR cleanup action for GitHub Container Registry packages.
 
 `ghcr-manager` is a GitHub Action for:
 
-- scan GHCR packages: into SQLite database artifacts
-- cleanup packages: with a GitHub step summary and optional DB artifact
+- clean GHCR packages: including tagged and untagged images
 - preview cleanup: with `dry-run` before making changes
-- visualize graphs: and their changes with the
+- scan GHCR packages: into SQLite database artifacts
+- visualize GHCR package graphs: and their changes with the
   [ghcr-manager-visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md)
+
+It is built for safe GHCR cleanup on real OCI package graphs, including multi-arch images, attestations, cosign
+signatures, and other referrers that simpler GHCR cleanup actions often mishandle.
 
 [![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/graph-2images-cosign--wide.png)
 
@@ -218,6 +221,8 @@ quick visualizer demo and as a compact way to inspect dozens of real cleanup and
 curl -LO https://github.com/ghcr-manager/ghcr-manager/releases/latest/download/ghcr-manager-release-scenarios.sqlite
 npx ghcr-manager-visualizer --db ./ghcr-manager-release-scenarios.sqlite
 ```
+
+Docker image available: [visualizer Docker usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md#docker).
 
 For a first look in the visualizer, start with:
 

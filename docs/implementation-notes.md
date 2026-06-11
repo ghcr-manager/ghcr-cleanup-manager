@@ -66,6 +66,7 @@ Previous handoff material was archived to
       tiny real SQLite DB.
 - [x] Change `exclude-tags` cleanup behavior from root-scoped protection to tag-scoped skipping so matching sibling tags
       can still be untagged on the same root.
+- [x] Refresh Marketplace-facing action metadata and README opening copy so GHCR cleanup search terms lead the listing.
 
 ## Current Next Plan
 
@@ -82,6 +83,8 @@ Previous handoff material was archived to
   `delete-untagged` comparisons.
 - If Task 09 continues immediately, implement the chosen executor/scenario direction before returning to the older
   follow-up ideas.
+- After the next release that includes the metadata/README changes, re-check Marketplace search visibility for
+  `ghcr cleanup`, `ghcr clean`, and related terms.
 - Run the initial GitHub matrix lanes for `chizkiyahu/delete-untagged-ghcr-action` and inspect how it behaves on the
   `2multiarch2tags` untagged graph family compared with `ghcr-manager`, `ghcr-cleanup-action`, and `vlaurin`.
 - Validate the visualizer release image on GitHub and confirm the published container starts with the expected default
@@ -122,6 +125,8 @@ Previous handoff material was archived to
   - do not commit `dist/` to `main`
   - do not create workflow-managed release commits that add `dist/`
 - Visualizer packaging stays separate from the main package.
+- Marketplace discoverability depends on the published Marketplace release metadata and README, not just the current
+  default-branch files.
 - Task and handoff history should be archived rather than left as stale active notes in `docs/`.
 - Release tags use `v`-prefixed semver such as `v1.0.0`.
 - `package.json`, `visualizer/package.json`, and changelog headings now also use the same `v`-prefixed semver format.
