@@ -1,7 +1,7 @@
 name: GHCR Cleanup Manager
 description: >
-  GHCR cleanup action for GitHub Container Registry packages. Clean tagged and untagged images safely, handle multi-arch
-  images correctly, and account for OCI referrers including provenance attestations and cosign signatures.
+  GHCR cleanup action for GitHub Container Registry package. Handles multi-arch, provenance attestation, and cosign
+  signature.
 
 branding:
   icon: package
