@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.0] - 2026-06-14
+
+### Changed
+
+- Renamed the project from ghcr-manager to ghcr-cleanup-manager because the old repo name was not showing up in GitHub
+  Marketplace searches for "ghcr clean" and "ghcr cleanup".
+- Kept the current behavior unchanged for this release; this version is intended as the first release under the new
+  name.
+
 ## [v1.0.8] - 2026-06-11
 
 ### Changed
