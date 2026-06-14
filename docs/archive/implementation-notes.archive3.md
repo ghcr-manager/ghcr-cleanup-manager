@@ -3,12 +3,12 @@
 Active handoff notes for `ghcr-manager`.
 
 Previous handoff material was archived to
-[docs/archive/implementation-notes.archive2.md](archive/implementation-notes.archive2.md).
+[docs/archive/implementation-notes.archive2.md](implementation-notes.archive2.md).
 
 ## Session Handoff
 
-- Developer glossary: [docs/terminology.md](terminology.md)
-- Previous handoff archive: [docs/archive/implementation-notes.archive2.md](archive/implementation-notes.archive2.md)
+- Developer glossary: [docs/terminology.md](../terminology.md)
+- Previous handoff archive: [docs/archive/implementation-notes.archive2.md](implementation-notes.archive2.md)
 
 ## Current Checklist
 
@@ -16,7 +16,7 @@ Previous handoff material was archived to
 - [x] Complete the cleanup/planner rethink, graph-matrix scenario work, and visualizer first-pass refinement.
 - [x] Start the next active implementation task and record it here before substantial changes begin.
 - [x] Apply graph-scoped `graph_id` narrowing to blocked-roots planner SQL.
-- [x] Measure the updated blocked-roots query on the large large test package DB dry-run workload.
+- [x] Measure the updated blocked-roots query on the large test package DB dry-run workload.
 - [x] Optimize combined direct-target-root planning to avoid broad edge and tag pre-aggregation.
 - [x] Evaluate `ghcrctl` as an optional third graph-matrix executor.
 - [x] Limit `ghcrctl` support to graph-matrix scenarios with exactly one delete-tag target.
