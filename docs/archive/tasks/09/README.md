@@ -4,7 +4,7 @@
 
 We already use 3 cleanup executors in our live GHCR scenario tests `.github/workflows/test_scenario-graph-matrix.yml`:
 
-- `ghcr-manager` (this tool)
+- `ghcr-cleanup-manager` (this tool)
 - `dataaxiom/ghcr-cleanup-action`
 - `mkoepf/ghcrctl/`
 

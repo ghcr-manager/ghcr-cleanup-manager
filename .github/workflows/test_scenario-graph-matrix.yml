@@ -7,11 +7,11 @@ run-name: "Test Scenario Graph Matrix (executors: ${{ inputs.executors }})"
       executors:
         description: Which executor matrix rows to include in this run.
         required: true
-        default: ghcr-manager
+        default: ghcr-cleanup-manager
         type: choice
         options:
           - all
-          - ghcr-manager
+          - ghcr-cleanup-manager
           - ghcr-cleanup-action
           - ghcrctl
           - vlaurin-action-ghcr-prune
@@ -30,7 +30,7 @@ run-name: "Test Scenario Graph Matrix (executors: ${{ inputs.executors }})"
     inputs:
       executors:
         required: false
-        default: ghcr-manager
+        default: ghcr-cleanup-manager
         type: string
       upload_artifacts:
         required: false
@@ -42,7 +42,7 @@ run-name: "Test Scenario Graph Matrix (executors: ${{ inputs.executors }})"
         type: string
       db_file:
         required: false
-        default: ghcr-manager-merged--scenario-graph-matrix-cleanup.sqlite
+        default: ghcr-cleanup-manager-merged--scenario-graph-matrix-cleanup.sqlite
         type: string
 
 permissions:
@@ -103,7 +103,7 @@ jobs:
         uses: ./merge-run-artifacts
         with:
           upload-artifacts: "true"
-          db-file: ${{ inputs.db_file || 'ghcr-manager-merged--scenario-graph-matrix-cleanup.sqlite' }}
+          db-file: ${{ inputs.db_file || 'ghcr-cleanup-manager-merged--scenario-graph-matrix-cleanup.sqlite' }}
           db-artifact-retention-days: ${{ inputs.artifact_retention_days }}
           delete-source-artifacts: "true"
           artifact-name-glob: "*.sqlite"

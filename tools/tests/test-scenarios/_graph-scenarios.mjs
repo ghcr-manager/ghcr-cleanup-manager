@@ -200,7 +200,7 @@ function _buildDeleteTagInput(tagKeys) {
   return tagKeys.map((tagKey) => `{${tagKey}}`).join(",");
 }
 
-function _ghcrManagerScenario(inputs, supportedExecutors = ["ghcr-manager", "ghcr-cleanup-action"]) {
+function _ghcrManagerScenario(inputs, supportedExecutors = ["ghcr-cleanup-manager", "ghcr-cleanup-action"]) {
   return {
     ghcrManager: {
       inputs
@@ -210,7 +210,7 @@ function _ghcrManagerScenario(inputs, supportedExecutors = ["ghcr-manager", "ghc
 }
 
 function _graphOperationScenario(operation) {
-  const supportedExecutors = ["ghcr-manager", "ghcr-cleanup-action"];
+  const supportedExecutors = ["ghcr-cleanup-manager", "ghcr-cleanup-action"];
   if (operation.deleteTagKeys.length === 1) {
     supportedExecutors.push("ghcrctl");
   }
@@ -229,7 +229,12 @@ function _graphBaseScenario(baseCase) {
       {
         "delete-untagged": "true"
       },
-      ["ghcr-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune", "chizkiyahu-delete-untagged-ghcr-action"]
+      [
+        "ghcr-cleanup-manager",
+        "ghcr-cleanup-action",
+        "vlaurin-action-ghcr-prune",
+        "chizkiyahu-delete-untagged-ghcr-action"
+      ]
     );
   }
 

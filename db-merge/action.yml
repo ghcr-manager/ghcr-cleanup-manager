@@ -55,7 +55,7 @@ runs:
         set -euo pipefail
         npm ci
 
-    - name: Build ghcr-manager
+    - name: Build ghcr-cleanup-manager
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
@@ -96,7 +96,7 @@ runs:
           merge_args+=(--source-db "$source_db_path")
         done
 
-        npm run ghcr-manager:dist -- db-merge "${merge_args[@]}"
+        npm run ghcr-cleanup-manager:dist -- db-merge "${merge_args[@]}"
 
     - name: Upload DB artifact
       id: upload

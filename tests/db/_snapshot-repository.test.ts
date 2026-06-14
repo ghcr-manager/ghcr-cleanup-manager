@@ -7,7 +7,7 @@ import { openDatabase, ScanWriter, SnapshotRepository } from "../../src/db/index
 import { importFileScan } from "../helpers/index.js";
 
 test("snapshot repository exposes counts and metadata after import", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
 
   try {

@@ -6,7 +6,7 @@ This is a categorization of the 56 graph-matrix execution jobs (28 scenarios x 2
 
 ## Summary
 
-### `ghcr-manager`
+### `ghcr-cleanup-manager`
 
 - `2` pass
 - `18` fail with `manifest-count-mismatch`
@@ -20,10 +20,10 @@ This is a categorization of the 56 graph-matrix execution jobs (28 scenarios x 2
 
 ## Main Patterns
 
-### `ghcr-manager`
+### `ghcr-cleanup-manager`
 
 - Only the plain `1image` and `attestations 1image` cases pass.
-- All failing `ghcr-manager` rows fail in the final scan assertion, not during setup.
+- All failing `ghcr-cleanup-manager` rows fail in the final scan assertion, not during setup.
 - `delete-image-a` on the shared-graph families (`2images`, `2multiarch`) tends to fail as `tag-count-mismatch`.
 - `delete-multiarch`, `delete-multiarch-a`, and combined delete operations tend to fail as `manifest-count-mismatch`.
 - `1image` starts failing once cosign is involved:
@@ -48,7 +48,7 @@ This is a categorization of the 56 graph-matrix execution jobs (28 scenarios x 2
 
 <!-- markdownlint-disable MD013 -->
 
-| Scenario                                                               | `ghcr-manager`                  | `ghcr-cleanup-action`           |
+| Scenario                                                               | `ghcr-cleanup-manager`          | `ghcr-cleanup-action`           |
 | ---------------------------------------------------------------------- | ------------------------------- | ------------------------------- |
 | `graph-1image-base--delete-image-a`                                    | pass                            | pass                            |
 | `graph-1image-attestations--delete-image-a`                            | pass                            | pass                            |
@@ -83,7 +83,7 @@ This is a categorization of the 56 graph-matrix execution jobs (28 scenarios x 2
 
 ## Notes
 
-- The `ghcr-manager` pass rows also print `No cleanup audit assertions configured` for the graph scenarios. That is
-  informational only and not a job failure.
+- The `ghcr-cleanup-manager` pass rows also print `No cleanup audit assertions configured` for the graph scenarios. That
+  is informational only and not a job failure.
 - This file categorizes by observed failure shape in the logs. It does not yet say whether the expectation or the
   executor behavior is wrong for any individual row.

@@ -4,7 +4,7 @@ Local browser visualizer for GHCR Cleanup Manager SQLite scan databases.
 
 Use it to inspect manifest graphs, compare two scans of the same package, and investigate cleanup edge cases.
 
-[![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/graph-2images-cosign--wide.png)
+[![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-cleanup-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/images/visualizer/graph-2images-cosign--wide.png)
 
 _Example compare view: red-bordered manifests are present in the older scan and removed in the newer one._
 
@@ -15,8 +15,8 @@ Download the test scenario DB from the latest release and try the visualizer wit
 The DB contains dozens of scenario packages with different graphs and before/after views of cleanup operations on them.
 
 ```sh
-curl -LO https://github.com/ghcr-manager/ghcr-manager/releases/latest/download/ghcr-manager-release-scenarios.sqlite
-npx ghcr-manager-visualizer --db ./ghcr-manager-release-scenarios.sqlite
+curl -LO https://github.com/ghcr-manager/ghcr-cleanup-manager/releases/latest/download/ghcr-cleanup-manager([^/s]*.sqlite)
+npx ghcr-cleanup-manager-visualizer --db ./ghcr-cleanup-manager([^/s]*.sqlite)
 ```
 
 Or run the release image:
@@ -25,24 +25,24 @@ Or run the release image:
 docker run --rm -p 8080:8080 \
   -v "$PWD:/data:ro" \
   ghcr.io/ghcr-manager/ghcr-manager-visualizer:latest \
-  --db /data/ghcr-manager-release-scenarios.sqlite
+  --db /data/ghcr-cleanup-manager([^/s]*.sqlite)
 ```
 
 Open the local URL printed by the command and select:
 
-- owner: `ghcr-manager-test`
+- owner: `ghcr-cleanup-manager-test`
 - package: select one with `2images` or `2multiarch` in the name
 - tag search: `image` or `multiarch`
 
 Good search terms for tags in most scenarios are: `image`, `multiarch`, `keep`, or `delete`.
 
 For an overview of the test scenario graphs and cleanup cases, see
-[test-scenarios](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/test/scenarios.md).
+[test-scenarios](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/test/scenarios.md).
 
 ## Install
 
 ```sh
-npm install --global ghcr-manager-visualizer
+npm install --global ghcr-cleanup-manager-visualizer
 ```
 
 > Requirement: Node.js `24` or newer.
@@ -50,7 +50,7 @@ npm install --global ghcr-manager-visualizer
 ## Run
 
 ```sh
-ghcr-manager-visualizer --db ./artifacts/acme__demo.sqlite
+ghcr-cleanup-manager-visualizer --db ./artifacts/acme__demo.sqlite
 ```
 
 The command prints a local URL such as `http://127.0.0.1:43217`. Open that URL in your browser.
@@ -63,7 +63,7 @@ Optional flags:
 Example:
 
 ```sh
-ghcr-manager-visualizer --db ./artifacts/acme__demo.sqlite --host 0.0.0.0 --port 4000
+ghcr-cleanup-manager-visualizer --db ./artifacts/acme__demo.sqlite --host 0.0.0.0 --port 4000
 ```
 
 ## Docker
@@ -96,7 +96,7 @@ The visualizer reads the SQLite DB produced by GHCR Cleanup Manager as GitHub Ac
 Typical flow:
 
 1. Run a `scan` or `cleanup` workflow and download the SQLite DB run artifact.
-2. Start `ghcr-manager-visualizer` with that DB.
+2. Start `ghcr-cleanup-manager-visualizer` with that DB.
 3. Select owner and package, then enter a tag or digest to center the graph.
 4. Optionally select a second scan to compare two recorded scans.
 
@@ -123,11 +123,11 @@ Tags in the details panel:
 
 This is the fastest way to inspect what changed between two scans of one package graph.
 
-[![Visualizer Show Compare Mode](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/visualizer-show-compare-mode.png)](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/visualizer-show-compare-mode.png)
+[![Visualizer Show Compare Mode](https://raw.githubusercontent.com/ghcr-manager/ghcr-cleanup-manager/main/docs/images/visualizer/visualizer-show-compare-mode.png)](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/images/visualizer/visualizer-show-compare-mode.png)
 
 _Example compare view: red-bordered manifests are present in the older scan and removed in the newer one._
 
-[![Visualizer Show Compare Mode Tags](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/visualizer-show-compare-mode--tag-removed.png)](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/visualizer-show-compare-mode--tag-removed.png)
+[![Visualizer Show Compare Mode Tags](https://raw.githubusercontent.com/ghcr-manager/ghcr-cleanup-manager/main/docs/images/visualizer/visualizer-show-compare-mode--tag-removed.png)](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/images/visualizer/visualizer-show-compare-mode--tag-removed.png)
 
 _Example compare view: tags with '(-)' were removed. Here the manifest with the other tag remained._
 
@@ -144,5 +144,5 @@ npm run visualize -- --db ./artifacts/acme__demo.sqlite
 
 Main project and issue tracker:
 
-- Repository: <https://github.com/ghcr-manager/ghcr-manager>
-- Issues: <https://github.com/ghcr-manager/ghcr-manager/issues>
+- Repository: <https://github.com/ghcr-manager/ghcr-cleanup-manager>
+- Issues: <https://github.com/ghcr-manager/ghcr-cleanup-manager/issues>

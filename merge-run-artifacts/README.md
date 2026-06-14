@@ -10,14 +10,14 @@ cleanup database and you want one merged artifact at the end.
 
 <!-- markdownlint-disable MD013 -->
 
-| Input                        | Required | Description                                              | Default                        |
-| ---------------------------- | -------- | -------------------------------------------------------- | ------------------------------ |
-| `artifact-name-glob`         | no       | Glob used to select current-run artifacts                | `"*.sqlite"`                   |
-| `db-file`                    | no       | Local filename and artifact name for the merged DB       | `ghcr-manager-merged.sqlite`   |
-| `upload-artifacts`           | no       | Whether to upload the merged DB artifact                 | `true`                         |
-| `db-artifact-retention-days` | no       | Optional retention days override for the merged artifact | `${{ github.retention_days }}` |
-| `delete-source-artifacts`    | no       | Whether to delete matching source artifacts after merge  | `true`                         |
-| `log-level`                  | no       | Log level passed through to the nested merge flow        | `info`                         |
+| Input                        | Required | Description                                              | Default                              |
+| ---------------------------- | -------- | -------------------------------------------------------- | ------------------------------------ |
+| `artifact-name-glob`         | no       | Glob used to select current-run artifacts                | `"*.sqlite"`                         |
+| `db-file`                    | no       | Local filename and artifact name for the merged DB       | `ghcr-cleanup-manager-merged.sqlite` |
+| `upload-artifacts`           | no       | Whether to upload the merged DB artifact                 | `true`                               |
+| `db-artifact-retention-days` | no       | Optional retention days override for the merged artifact | `${{ github.retention_days }}`       |
+| `delete-source-artifacts`    | no       | Whether to delete matching source artifacts after merge  | `true`                               |
+| `log-level`                  | no       | Log level passed through to the nested merge flow        | `info`                               |
 
 <!-- markdownlint-enable MD013 -->
 
@@ -34,10 +34,10 @@ cleanup database and you want one merged artifact at the end.
 
 ```yaml
 - name: Merge current-run DB artifacts
-  uses: ghcr-manager/ghcr-manager/merge-run-artifacts@v1.0.0
+  uses: ghcr-manager/ghcr-cleanup-manager/merge-run-artifacts@v1.0.0
   with:
     artifact-name-glob: "*.sqlite"
-    db-file: ghcr-manager-merged.sqlite
+    db-file: ghcr-cleanup-manager-merged.sqlite
 ```
 
 ## Notes

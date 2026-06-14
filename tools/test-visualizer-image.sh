@@ -12,7 +12,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 DB_PATH="${TMP_DIR}/smoke.sqlite"
 PORT=18080
-CONTAINER_NAME="ghcr-manager-visualizer-smoke-${RANDOM}"
+CONTAINER_NAME="ghcr-cleanup-manager-visualizer-smoke-${RANDOM}"
 
 cleanup() {
   docker logs "$CONTAINER_NAME" >/dev/null 2>&1 && docker logs "$CONTAINER_NAME" || true

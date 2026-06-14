@@ -24,7 +24,7 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     concurrency:
-      group: ghcr-manager__user-owner-cleanup
+      group: ghcr-cleanup-manager__user-owner-cleanup
 
     steps:
       - name: Checkout

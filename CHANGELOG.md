@@ -19,7 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Added a release-published Docker image for `ghcr-manager-visualizer` on GHCR, tagged as `vX.Y.Z`, `vX`, and `latest`.
+- Added a release-published Docker image for `ghcr-cleanup-manager-visualizer` on GHCR, tagged as `vX.Y.Z`, `vX`, and
+  `latest`.
 
 ### Changed
 
@@ -37,15 +38,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Fixed the published `ghcr-manager-visualizer` npm package so the visualizer UI loads correctly when run via
-  `npx ghcr-manager-visualizer`.
+- Fixed the published `ghcr-cleanup-manager-visualizer` npm package so the visualizer UI loads correctly when run via
+  `npx ghcr-cleanup-manager-visualizer`.
 
 ## [v1.0.5] - 2026-06-07
 
 ### Fixed
 
-- Fixed the published `ghcr-manager-visualizer` npm package so `npx ghcr-manager-visualizer` starts the visualizer
-  server correctly.
+- Fixed the published `ghcr-cleanup-manager-visualizer` npm package so `npx ghcr-cleanup-manager-visualizer` starts the
+  visualizer server correctly.
 
 ## [v1.0.4] - 2026-06-06
 
@@ -63,13 +64,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Fixed the published `ghcr-manager-visualizer` npm package so `npx ghcr-manager-visualizer` runs correctly under Node.
+- Fixed the published `ghcr-cleanup-manager-visualizer` npm package so `npx ghcr-cleanup-manager-visualizer` runs
+  correctly under Node.
 
 ## [v1.0.3] - 2026-06-05
 
 ### Changed
 
-- Added npm package keywords for both `ghcr-manager` and `ghcr-manager-visualizer` to improve package discovery.
+- Added npm package keywords for both `ghcr-cleanup-manager` and `ghcr-cleanup-manager-visualizer` to improve package
+  discovery.
 
 ## [v1.0.2] - 2026-06-05
 
@@ -86,7 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [v1.0.0] - 2026-06-05
 
-`v1.0.0` is the first stable `v1.x` release of `ghcr-manager`.
+`v1.0.0` is the first stable `v1.x` release of `ghcr-cleanup-manager`.
 
 This milestone reflects the current project shape after repeated live testing, cleanup-planner tuning, visualizer
 refinement, and a full documentation pass.
@@ -94,8 +97,8 @@ refinement, and a full documentation pass.
 ### Added
 
 - Added one merged graph-scenario SQLite database to the GitHub release assets as
-  `ghcr-manager-release-scenarios.sqlite`, so users can explore real before/after cleanup cases immediately in the
-  visualizer.
+  `ghcr-cleanup-manager-release-scenarios.sqlite`, so users can explore real before/after cleanup cases immediately in
+  the visualizer.
 - Added dedicated user docs for live test scenarios, package setup, and the workflow-to-visualizer path.
 
 ### Changed
@@ -133,9 +136,10 @@ a newer version.
 
 - Added dedicated graph-matrix GHCR scenarios and workflows to exercise shared-image, multi-arch, cosign, and
   attestation cleanup cases in isolation.
-- Added a local manifest-graph visualizer with browser UI for `ghcr-manager` SQLite databases, including manifest
-  details, zoom controls, one-hop expansion, and scan-to-scan compare mode.
-- Added a separately publishable npm package, `ghcr-manager-visualizer`, plus user-facing visualizer documentation.
+- Added a local manifest-graph visualizer with browser UI for `ghcr-cleanup-manager` SQLite databases, including
+  manifest details, zoom controls, one-hop expansion, and scan-to-scan compare mode.
+- Added a separately publishable npm package, `ghcr-cleanup-manager-visualizer`, plus user-facing visualizer
+  documentation.
 - Added repo-local manual visualizer demo scripts for seeding and updating GHCR packages during graph investigation.
 
 ### Changed
@@ -259,7 +263,7 @@ a newer version.
 
 ## [0.9.0] - 2026-05-21
 
-`0.9.0` is the first stable pre-`1.0` release of `ghcr-manager`.
+`0.9.0` is the first stable pre-`1.0` release of `ghcr-cleanup-manager`.
 
 ### Added
 
@@ -273,8 +277,8 @@ a newer version.
 
 ### Changed
 
-- The GitHub Action now builds and runs the repo-local CLI directly instead of installing `ghcr-manager` from npm at
-  runtime.
+- The GitHub Action now builds and runs the repo-local CLI directly instead of installing `ghcr-cleanup-manager` from
+  npm at runtime.
 - The primary maintenance surface is now `cleanup` with `dry-run` semantics, with `scan` and `untag` as supporting
   command modes.
 - The action input and artifact flow were refined around scan databases, cleanup summaries, and optional post-cleanup
@@ -289,7 +293,7 @@ a newer version.
 
 ### Fixed
 
-- Digest-selector scenario handling and related workflow wiring for `ghcr-manager`.
+- Digest-selector scenario handling and related workflow wiring for `ghcr-cleanup-manager`.
 - Latest-scan based verification for cleanup and untag test flows.
 - User-owner cleanup workflow behavior and related test setup details.
 - Numerous workflow, artifact-handling, and planner-audit edge cases discovered during pre-release hardening.
@@ -322,7 +326,7 @@ a newer version.
 
 ### Added
 
-- Initial public release of `ghcr-manager` as a GitHub Action plus companion CLI.
+- Initial public release of `ghcr-cleanup-manager` as a GitHub Action plus companion CLI.
 - GHCR scan flow that loads package versions, tags, manifests, descriptors, and manifest graph edges into SQLite.
 - Manifest reachability precomputation (`manifest_reachability`) for fast graph-based analysis queries.
 - Raw payload storage for GitHub package-version items and GHCR manifests (`package_version_payloads`,

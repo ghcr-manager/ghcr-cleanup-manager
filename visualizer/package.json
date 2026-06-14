@@ -1,7 +1,7 @@
 {
-  "name": "ghcr-manager-visualizer",
+  "name": "ghcr-cleanup-manager-visualizer",
   "description": "Inspect GHCR Cleanup Manager SQLite scan databases in a local browser graph visualizer.",
-  "homepage": "https://github.com/ghcr-manager/ghcr-manager#readme",
+  "homepage": "https://github.com/ghcr-manager/ghcr-cleanup-manager#readme",
   "version": "v1.0.8",
   "license": "MIT",
   "type": "module",
@@ -19,11 +19,11 @@
     "cytoscape"
   ],
   "bugs": {
-    "url": "https://github.com/ghcr-manager/ghcr-manager/issues"
+    "url": "https://github.com/ghcr-manager/ghcr-cleanup-manager/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ghcr-manager/ghcr-manager"
+    "url": "https://github.com/ghcr-manager/ghcr-cleanup-manager"
   },
   "engines": {
     "node": ">=24.0.0"
@@ -34,7 +34,7 @@
     "README.md"
   ],
   "bin": {
-    "ghcr-manager-visualizer": "./dist/src/index.js"
+    "ghcr-cleanup-manager-visualizer": "./dist/src/index.js"
   },
   "scripts": {
     "build": "tsc --project tsconfig.json && node scripts/copy-public.mjs",

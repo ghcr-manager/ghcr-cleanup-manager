@@ -61,7 +61,7 @@ test("buildCleanupArgs assembles cleanup argv from action env", () => {
 });
 
 test("writeArgsFile persists NUL-delimited argv entries", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
 
   try {
     const argsPath = writeArgsFile(["--owner", "acme", "--delete-tag", "release candidate"], tempDirectory);
@@ -72,7 +72,7 @@ test("writeArgsFile persists NUL-delimited argv entries", () => {
 });
 
 test("writeGitHubOutputs appends action outputs", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const outputPath = join(tempDirectory, "github-output.txt");
 
   try {

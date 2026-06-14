@@ -9,7 +9,7 @@ the main repository's package list.
 
 Current intended organization:
 
-- `ghcr-manager-test`
+- `ghcr-cleanup-manager-test`
 
 ## Configuration Names
 
@@ -21,9 +21,9 @@ Use these repository-level configuration names:
 
 Recommended value mapping:
 
-- `GH_TEST_ORG=ghcr-manager-test`
+- `GH_TEST_ORG=ghcr-cleanup-manager-test`
 - `GH_TEST_PAT_USERNAME=<username that owns GH_TEST_PAT>`
-- `GH_TEST_PAT=<classic PAT for a user that can administer packages in ghcr-manager-test>`
+- `GH_TEST_PAT=<classic PAT for a user that can administer packages in ghcr-cleanup-manager-test>`
 
 Current workflow expectation:
 
@@ -44,7 +44,7 @@ Required package scopes:
 
 Notes:
 
-- The token owner needs permission to create, update, and delete GHCR packages in `ghcr-manager-test`.
+- The token owner needs permission to create, update, and delete GHCR packages in `ghcr-cleanup-manager-test`.
 - Keep this token scoped to test-package workflows only.
 - `GH_TEST_PAT_USERNAME` must match the user account that owns `GH_TEST_PAT`.
 

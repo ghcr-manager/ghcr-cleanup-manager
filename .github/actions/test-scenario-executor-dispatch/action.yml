@@ -34,9 +34,9 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Execute with ghcr-manager executor action
-      if: ${{ inputs.executor == 'ghcr-manager' }}
-      uses: ./.github/actions/test-scenario-executor-ghcr-manager
+    - name: Execute with ghcr-cleanup-manager executor action
+      if: ${{ inputs.executor == 'ghcr-cleanup-manager' }}
+      uses: ./.github/actions/test-scenario-executor-ghcr-cleanup-manager
       with:
         token: ${{ inputs.token }}
         owner: ${{ inputs.owner }}
@@ -90,7 +90,7 @@ runs:
 
     - name: Reject unsupported executor
       if:
-        ${{ inputs.executor != 'ghcr-manager' && inputs.executor != 'ghcr-cleanup-action' && inputs.executor !=
+        ${{ inputs.executor != 'ghcr-cleanup-manager' && inputs.executor != 'ghcr-cleanup-action' && inputs.executor !=
         'ghcrctl' && inputs.executor != 'vlaurin-action-ghcr-prune' && inputs.executor !=
         'chizkiyahu-delete-untagged-ghcr-action' }}
       shell: bash

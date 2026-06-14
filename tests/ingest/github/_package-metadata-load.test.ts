@@ -23,7 +23,7 @@ test("package metadata loader returns raw package metadata json", async () => {
       assert.deepEqual(init?.headers, {
         Accept: "application/vnd.github+json",
         Authorization: "Bearer token",
-        "User-Agent": "ghcr-manager",
+        "User-Agent": "ghcr-cleanup-manager",
         "X-GitHub-Api-Version": "2022-11-28"
       });
       return {

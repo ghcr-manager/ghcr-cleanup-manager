@@ -63,7 +63,7 @@ export async function loadManifestGraph(
           headers: {
             Accept: acceptedManifestMediaTypes,
             Authorization: `Bearer ${registryToken}`,
-            "User-Agent": "ghcr-manager"
+            "User-Agent": "ghcr-cleanup-manager"
           }
         });
         if (!manifestResponse.ok && _shouldRetryStatus(manifestResponse.status)) {

@@ -1,6 +1,6 @@
 # Terminology
 
-Short glossary for developers working on `ghcr-manager`.
+Short glossary for developers working on `ghcr-cleanup-manager`.
 
 ## Mental Model
 

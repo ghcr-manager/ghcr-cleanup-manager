@@ -17,7 +17,7 @@ async function _withTempDatabase(
     writer: ScanWriter;
   }) => Promise<void> | void
 ): Promise<void> {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);

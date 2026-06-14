@@ -4,7 +4,7 @@
 
 We already use 2 cleanup executors in our live GHCR scenario tests:
 
-- `ghcr-manager`
+- `ghcr-cleanup-manager`
 - `dataaxiom/ghcr-cleanup-action`
 
 That has been useful because it gives us a second implementation to compare against. In many cases the comparison helps
@@ -36,7 +36,7 @@ simple tag-driven cleanup operations against them.
 The older mixed cleanup scenario matrix is less attractive as a target because many of those scenarios exist mainly to
 exercise the specific feature surface of:
 
-- `ghcr-manager`
+- `ghcr-cleanup-manager`
 - `ghcr-cleanup-action`
 
 Examples:
@@ -181,8 +181,8 @@ That means:
 
 Executor result mismatches are acceptable and expected in some cases.
 
-The purpose of adding `ghcrctl` is not to require parity with `ghcr-manager`. It is to run the same seeded scenario
-through another tool where the mapping is direct and small, then compare outcomes.
+The purpose of adding `ghcrctl` is not to require parity with `ghcr-cleanup-manager`. It is to run the same seeded
+scenario through another tool where the mapping is direct and small, then compare outcomes.
 
 ### Concrete support matrix
 

@@ -73,7 +73,7 @@ function buildHeaders(authToken) {
   return {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${authToken}`,
-    "User-Agent": "ghcr-manager",
+    "User-Agent": "ghcr-cleanup-manager",
     "X-GitHub-Api-Version": "2022-11-28"
   };
 }

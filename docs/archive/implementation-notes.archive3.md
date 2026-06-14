@@ -1,6 +1,6 @@
 # Implementation Notes
 
-Active handoff notes for `ghcr-manager`.
+Active handoff notes for `ghcr-cleanup-manager`.
 
 Previous handoff material was archived to
 [docs/archive/implementation-notes.archive2.md](implementation-notes.archive2.md).
@@ -35,7 +35,7 @@ Previous handoff material was archived to
 - [x] Fix visualizer compare mode so manifest details prefer older/base scan metadata instead of newer-scan metadata.
 - [x] Add the `v1.0.2` changelog entry for the visualizer compare-mode metadata fix.
 - [x] Add the `v1.0.3` changelog entry for npm package keyword metadata.
-- [x] Fix the visualizer npm `bin` packaging so `npx ghcr-manager-visualizer` runs under Node instead of `sh`.
+- [x] Fix the visualizer npm `bin` packaging so `npx ghcr-cleanup-manager-visualizer` runs under Node instead of `sh`.
 - [x] Add a visualizer screenshot grid toggle that can be enabled without reloading or re-laying out the graph.
 - [x] Add a user-facing cleanup behavior explainer covering graph-aware cleanup, tag-based protection, and digest-only
       caveats.
@@ -68,13 +68,13 @@ Previous handoff material was archived to
       can still be untagged on the same root.
 - [x] Refresh Marketplace-facing action metadata and README opening copy so GHCR cleanup search terms lead the listing.
 - [x] Replace generic README H1 titles in user-facing action/helper docs with descriptive titles.
-- [x] Replace leftover generic `ghcr-manager` product-name mentions in user-facing docs and metadata where the stable
-      technical identifier was not required.
+- [x] Replace leftover generic `ghcr-cleanup-manager` product-name mentions in user-facing docs and metadata where the
+      stable technical identifier was not required.
 
 ## Current Next Plan
 
-- Inspect `artifacts/ghcr-manager-merged--scenario-matrix-cleanup.sqlite` and fill expectations for the remaining
-  mixed-matrix scenarios that are not obvious from seed shape alone:
+- Inspect `artifacts/ghcr-cleanup-manager-merged--scenario-matrix-cleanup.sqlite` and fill expectations for the
+  remaining mixed-matrix scenarios that are not obvious from seed shape alone:
   - `blocked-shared-closure`
   - `delete-ghost-images-noop`
   - `delete-partial-images-real`
@@ -89,7 +89,7 @@ Previous handoff material was archived to
 - After the next release that includes the metadata/README changes, re-check Marketplace search visibility for
   `ghcr cleanup`, `ghcr clean`, and related terms.
 - Run the initial GitHub matrix lanes for `chizkiyahu/delete-untagged-ghcr-action` and inspect how it behaves on the
-  `2multiarch2tags` untagged graph family compared with `ghcr-manager`, `ghcr-cleanup-action`, and `vlaurin`.
+  `2multiarch2tags` untagged graph family compared with `ghcr-cleanup-manager`, `ghcr-cleanup-action`, and `vlaurin`.
 - Validate the visualizer release image on GitHub and confirm the published container starts with the expected default
   host/port behavior.
 - Decide whether Task 09 should prioritize:
@@ -185,6 +185,6 @@ Previous handoff material was archived to
   - scenario definitions may provide an `executors` object keyed by executor id
   - current legacy scenario fields are normalized into that shape for compatibility during the transition
 - Executor-specific workflow logic now lives in:
-  - `.github/actions/test-scenario-executor-ghcr-manager/`
+  - `.github/actions/test-scenario-executor-ghcr-cleanup-manager/`
   - `.github/actions/test-scenario-executor-ghcr-cleanup-action/`
   - `.github/actions/test-scenario-executor-ghcrctl/`

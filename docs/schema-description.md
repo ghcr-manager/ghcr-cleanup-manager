@@ -54,7 +54,7 @@ So:
 
 - GitHub Packages gives the version inventory
 - GHCR gives the registry documents
-- `ghcr-manager` joins both into one graph-aware model
+- `ghcr-cleanup-manager` joins both into one graph-aware model
 
 ## Core Scan Tables
 
@@ -162,7 +162,7 @@ When exact OCI meaning matters, trust the raw manifest payload first and `manife
 
 Raw JSON body for each fetched manifest digest.
 
-Use this when you need the exact registry document body that `ghcr-manager` classified and analyzed.
+Use this when you need the exact registry document body that `ghcr-cleanup-manager` classified and analyzed.
 
 ### `manifest_descriptors`
 

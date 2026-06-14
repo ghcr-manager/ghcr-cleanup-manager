@@ -3,7 +3,7 @@ const _OCI_MEDIA_TYPES = new Set([
   "application/vnd.oci.image.index.v1+json",
   "application/vnd.oci.image.manifest.v1+json"
 ]);
-const _DETACH_ANNOTATION_KEY = "io.github.ghcr-manager.detached-tag";
+const _DETACH_ANNOTATION_KEY = "io.github.ghcr-cleanup-manager.detached-tag";
 
 export function buildDetachedManifestClone(
   rawManifestJson: string,

@@ -22,7 +22,7 @@ test("writeJsonOutput prints compact JSON when no output path is provided", () =
 });
 
 test("writeJsonOutput writes JSON to a file when an output path is provided", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const outputPath = join(tempDirectory, "summary.json");
   const originalLog = console.log;
   const writes: string[] = [];

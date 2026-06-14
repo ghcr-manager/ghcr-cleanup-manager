@@ -89,7 +89,7 @@ function _appendCleanupRun(databasePath: string, cleanupStartedAt: string): void
 }
 
 test("db merge repository imports a new scan subtree and attached cleanup runs", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");
   _seedDatabase(sourceDatabasePath, ["2026-05-17T09:01:00.000Z"]);
@@ -122,7 +122,7 @@ test("db merge repository imports a new scan subtree and attached cleanup runs",
 });
 
 test("db merge repository imports only the missing cleanup suffix for an existing scan", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const baseDatabasePath = join(tempDirectory, "base.sqlite");
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");
@@ -153,7 +153,7 @@ test("db merge repository imports only the missing cleanup suffix for an existin
 });
 
 test("db merge repository rejects divergent cleanup history for the same scan", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const baseDatabasePath = join(tempDirectory, "base.sqlite");
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");
@@ -175,7 +175,7 @@ test("db merge repository rejects divergent cleanup history for the same scan", 
 });
 
 test("db merge repository rejects merging a database into itself", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "single.sqlite");
   _seedDatabase(databasePath, []);
   const database = openDatabase(databasePath);
@@ -190,7 +190,7 @@ test("db merge repository rejects merging a database into itself", () => {
 });
 
 test("db merge repository counts source cleanup runs as skipped when target history is ahead", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const baseDatabasePath = join(tempDirectory, "base.sqlite");
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");

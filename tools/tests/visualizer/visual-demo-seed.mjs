@@ -29,7 +29,7 @@ Example:
   gh auth refresh -h github.com -s read:packages -s write:packages -s delete:packages
   TOKEN="$(gh auth token)"
   echo "$TOKEN" | docker login ghcr.io -u my-username --password-stdin
-  node tools/tests/visualizer/visual-demo-seed.mjs ghcr-manager-test my-visual-demo my-username "$TOKEN"
+  node tools/tests/visualizer/visual-demo-seed.mjs ghcr-cleanup-manager-test my-visual-demo my-username "$TOKEN"
 
 How to use:
   1. Run this seed script.

@@ -13,7 +13,7 @@ test("handleScan requires an owner for GitHub scans", async () => {
 });
 
 test("handleScan imports a live scan and writes GitHub output", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const githubOutputPath = join(tempDirectory, "github-output.txt");
   const originalFetch = globalThis.fetch;

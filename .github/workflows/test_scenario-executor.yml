@@ -83,10 +83,10 @@ run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }
       executor:
         description: Cleanup executor to run against the seeded scenario package.
         required: true
-        default: ghcr-manager
+        default: ghcr-cleanup-manager
         type: choice
         options:
-          - ghcr-manager
+          - ghcr-cleanup-manager
           - ghcr-cleanup-action
           - ghcrctl
           - vlaurin-action-ghcr-prune
@@ -137,7 +137,7 @@ jobs:
   execute:
     runs-on: ubuntu-latest
     concurrency:
-      group: ghcr-manager__scenario__${{ inputs.scenario }}__${{ inputs.executor }}
+      group: ghcr-cleanup-manager__scenario__${{ inputs.scenario }}__${{ inputs.executor }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -166,7 +166,7 @@ jobs:
           TEST_OWNER: ${{ vars.GH_TEST_ORG }}
         run: |
           set -euo pipefail
-          work_dir="$RUNNER_TEMP/ghcr-manager/scenario-${SCENARIO}-${EXECUTOR}"
+          work_dir="$RUNNER_TEMP/ghcr-cleanup-manager/scenario-${SCENARIO}-${EXECUTOR}"
           mkdir -p "$work_dir"
           resolution_path="$work_dir/scenario.json"
           node tools/tests/resolve-test-scenario.mjs "$SCENARIO" "$EXECUTOR" "$REPOSITORY_NAME" > "$resolution_path"
@@ -205,14 +205,16 @@ jobs:
           registry_password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Set up Node.js for pre-scan
-        if: ${{ inputs.executor != 'ghcr-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
+        if:
+          ${{ inputs.executor != 'ghcr-cleanup-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: "24"
           cache: npm
 
       - name: Install repo CLI for pre-scan
-        if: ${{ inputs.executor != 'ghcr-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
+        if:
+          ${{ inputs.executor != 'ghcr-cleanup-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -220,11 +222,12 @@ jobs:
           npm run build
 
       - name: Scan before execution
-        if: ${{ inputs.executor != 'ghcr-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
+        if:
+          ${{ inputs.executor != 'ghcr-cleanup-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         shell: bash
         run: |
           set -euo pipefail
-          npm run ghcr-manager:dist -- scan \
+          npm run ghcr-cleanup-manager:dist -- scan \
             --db "${{ steps.scenario.outputs.db_path }}" \
             --owner "${{ vars.GH_TEST_ORG }}" \
             --package "${{ steps.scenario.outputs.package_name }}" \
@@ -244,7 +247,7 @@ jobs:
           summary_path: ${{ steps.scenario.outputs.summary_path }}
 
       - name: Scan after execution
-        if: ${{ inputs.executor != 'ghcr-manager' }}
+        if: ${{ inputs.executor != 'ghcr-cleanup-manager' }}
         uses: ./
         with:
           command: scan
@@ -262,7 +265,7 @@ jobs:
           node tools/tests/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
 
       - name: Assert cleanup audit persistence
-        if: ${{ inputs.executor == 'ghcr-manager' }}
+        if: ${{ inputs.executor == 'ghcr-cleanup-manager' }}
         shell: bash
         run: |
           set -euo pipefail

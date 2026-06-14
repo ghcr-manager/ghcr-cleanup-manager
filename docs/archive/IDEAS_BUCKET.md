@@ -4,7 +4,7 @@
 
 To my knowledge no tool exists, which nicely shows the graphs in a GitHub image registry package (GHCR).
 
-And ghcr-manager has a nice DB with full data of one or several GHCR.
+And ghcr-cleanup-manager has a nice DB with full data of one or several GHCR.
 
 And it's really hard to mentally visualize even one group in a GHCR. I picture my `single` test setup with:
 
@@ -20,9 +20,9 @@ And it's really hard to mentally visualize even one group in a GHCR. I picture m
 I only briefly discussed with ChatGPT and there [Cytoscape.js](https://github.com/cytoscape/cytoscape.js#cytoscapejs)
 seemed to be a clear candidate for this.
 
-I imagine visualizing such charts in a GHCR in a browser, driven by ghcr-manager (or maybe a separate tool using
-ghcr-manager DBs). It does not have to be pretty at start - and I am a command line designer and unlikely to make it
-pretty - but functional at first.
+I imagine visualizing such charts in a GHCR in a browser, driven by ghcr-cleanup-manager (or maybe a separate tool using
+ghcr-cleanup-manager DBs). It does not have to be pretty at start - and I am a command line designer and unlikely to
+make it pretty - but functional at first.
 
 Should show at least graphs of manifests with tags and some (untrusted `manifest_kind) label what it probably is.  
 Then maybe something like see JSON on click or such.

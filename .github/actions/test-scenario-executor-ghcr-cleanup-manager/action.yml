@@ -1,5 +1,5 @@
-name: Test Scenario Executor ghcr-manager
-description: Run one scenario cleanup using the local ghcr-manager action.
+name: Test Scenario Executor ghcr-cleanup-manager
+description: Run one scenario cleanup using the local ghcr-cleanup-manager action.
 
 inputs:
   token:
@@ -31,7 +31,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Resolve ghcr-manager cleanup inputs
+    - name: Resolve ghcr-cleanup-manager cleanup inputs
       id: cleanup-inputs
       shell: bash
       env:
@@ -67,7 +67,7 @@ runs:
           echo "EOF"
         } >> "$GITHUB_OUTPUT"
 
-    - name: Execute with ghcr-manager action
+    - name: Execute with ghcr-cleanup-manager action
       uses: ./
       with:
         command: cleanup
@@ -88,10 +88,10 @@ runs:
         delete-orphaned-images: ${{ steps.cleanup-inputs.outputs.delete_orphaned_images }}
         use-regex: ${{ steps.cleanup-inputs.outputs.use_regex }}
 
-    - name: Record ghcr-manager executor summary
+    - name: Record ghcr-cleanup-manager executor summary
       shell: bash
       env:
         SUMMARY_PATH: ${{ inputs.summary_path }}
       run: |
         set -euo pipefail
-        printf '%s\n' '{"executor":"ghcr-manager","status":"completed"}' > "$SUMMARY_PATH"
+        printf '%s\n' '{"executor":"ghcr-cleanup-manager","status":"completed"}' > "$SUMMARY_PATH"

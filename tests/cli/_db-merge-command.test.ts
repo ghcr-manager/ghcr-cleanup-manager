@@ -12,7 +12,7 @@ test("handleDbMerge requires at least one source database", async () => {
 });
 
 test("handleDbMerge merges source databases and prints a summary", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");
   const sourceDatabase = openDatabase(sourceDatabasePath);

@@ -34,8 +34,8 @@ and so. And that goes beyond the current CLI tool code.
 And the current repo with all the test-scenario workflows is already complex enough for what it does. Small point for
 having the visualizer separate.
 
-Plus why would we want to compile visualizer code when ghcr-manager runs in a GH action? Sure we could split off that
-compilation - but extra complexity.
+Plus why would we want to compile visualizer code when ghcr-cleanup-manager runs in a GH action? Sure we could split off
+that compilation - but extra complexity.
 
 Not to speak of maybe needing some browser only JS code, maybe some HTML files on top.
 

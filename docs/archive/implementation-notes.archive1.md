@@ -1,6 +1,6 @@
 # Implementation Notes
 
-This document tracks the current implementation plan, decisions, and completed increments for `ghcr-manager`.
+This document tracks the current implementation plan, decisions, and completed increments for `ghcr-cleanup-manager`.
 
 ## Session Handoff
 
@@ -227,9 +227,9 @@ This section is the canonical place for session-to-session continuity.
     same encryption rule as `scan`: if the merged DB contains any non-public scan, plaintext upload is refused
   - `untag` uses direct GitHub Packages plus GHCR calls instead of a full scan DB; after the rewrite-delete sequence it
     verifies that the requested tag is gone and that the temporary package version is no longer visible
-  - `merge-run-artifacts` now names its merged output `ghcr-manager-merged.sqlite` and excludes the just-uploaded merged
-    artifact from source-artifact cleanup by using the nested `db-merge` upload artifact ID
-  - `merge-run-artifacts` now exposes `db-file` as an input, defaulting to `ghcr-manager-merged.sqlite`, while
+  - `merge-run-artifacts` now names its merged output `ghcr-cleanup-manager-merged.sqlite` and excludes the
+    just-uploaded merged artifact from source-artifact cleanup by using the nested `db-merge` upload artifact ID
+  - `merge-run-artifacts` now exposes `db-file` as an input, defaulting to `ghcr-cleanup-manager-merged.sqlite`, while
     re-exporting the nested `db-merge` outputs directly
   - current-run artifact collection plus merge now also lives in `merge-run-artifacts/action.yml`, which wraps the
     helper scripts plus the nested `db-merge` sub-action into one user-facing "collect current-run DB artifacts and
@@ -311,9 +311,9 @@ This section is the canonical place for session-to-session continuity.
     `ancestor_digest <> root_digest` probe shape on large scans
 - Current test-registry workflow shape:
   - `test-registry-fill-*.yml` performs one-time GHCR fixture seeding
-  - `test_scenario-executor.yml` clears and reseeds a dedicated package per scenario, runs either `ghcr-manager` or
-    `dataaxiom/ghcr-cleanup-action`, then reruns the local action against the shared `db-path` so the action itself can
-    upload the final rescan DB artifact
+  - `test_scenario-executor.yml` clears and reseeds a dedicated package per scenario, runs either `ghcr-cleanup-manager`
+    or `dataaxiom/ghcr-cleanup-action`, then reruns the local action against the shared `db-path` so the action itself
+    can upload the final rescan DB artifact
   - `test_scenario-scan.yml` now clears, reseeds, and scans one dedicated scenario package so a fresh DB can be captured
     without running a cleanup executor
   - test workflows no longer upload DBs directly or upload plan, execution-summary, or scenario helper artifacts; DB
@@ -372,14 +372,14 @@ This section is the canonical place for session-to-session continuity.
   - validation scenarios can now derive plan args from the scanned DB before running the planner
   - the scan and executor workflows now also run repo-local DB assertions for scenarios that declare them, so media-type
     and root-kind expectations can be checked after a live scan instead of relying on workflow success alone
-  - the executor workflow now also runs repo-local cleanup-audit assertions for selected `ghcr-manager` scenarios, so
-    action-owned DB artifacts prove persisted cleanup rows end to end without depending on ad hoc SQL
-  - the reusable executor workflow now passes the caller's DB-artifact upload settings through to the `ghcr-manager`
-    cleanup action as well as the upstream post-cleanup scan path, so both executor legs emit one action-owned final DB
-    artifact when upload is enabled
+  - the executor workflow now also runs repo-local cleanup-audit assertions for selected `ghcr-cleanup-manager`
+    scenarios, so action-owned DB artifacts prove persisted cleanup rows end to end without depending on ad hoc SQL
+  - the reusable executor workflow now passes the caller's DB-artifact upload settings through to the
+    `ghcr-cleanup-manager` cleanup action as well as the upstream post-cleanup scan path, so both executor legs emit one
+    action-owned final DB artifact when upload is enabled
   - the action-level post-cleanup rescan is now explicit via `scan-after-cleanup` instead of being unconditional for
-    every live cleanup; the scenario executor opts into it for the `ghcr-manager` leg so test DBs still capture both
-    before and after state in one SQLite file
+    every live cleanup; the scenario executor opts into it for the `ghcr-cleanup-manager` leg so test DBs still capture
+    both before and after state in one SQLite file
   - `test-scenario-seed` no longer keeps a duplicated hardcoded allowlist of seed strategies; it now sets a generic
     handled marker from whichever scenario branch ran and only fails at the end if no branch claimed the requested
     strategy
@@ -459,8 +459,9 @@ This section is the canonical place for session-to-session continuity.
   - seeded test-registry scenario assertions now verify those fields for representative delete-untagged, blocked, and
     combined tagged-keep plans
 - Debug helpers:
-  - `GITHUB_TOKEN="$(gh auth token)" ghcr-manager scan --db <path> --owner <owner> --package <package> [--log-level <level>]`
-    runs the live GitHub/GHCR scan directly via the CLI binary
+  - `export GITHUB_TOKEN="$(gh auth token)"` and then
+    `ghcr-cleanup-manager scan --db <path> --owner <owner> --package <package> [--log-level <level>]` runs the live
+    GitHub/GHCR scan directly via the CLI binary
 - Working tree expectation at the end of the last session: clean after `e33d011`.
 - Commit policy: do not commit agent changes until the user has reviewed and explicitly asked for a commit.
 - File size guideline for production TypeScript:
@@ -593,7 +594,7 @@ src/
 
 ### 2026-05-15
 
-- Added the first shared execution slice under `src/execute/` plus a new CLI command `ghcr-manager execute`.
+- Added the first shared execution slice under `src/execute/` plus a new CLI command `ghcr-cleanup-manager execute`.
 - Execution reuses the same selector parsing as `plan` and loads the already-decided delete plan from SQLite instead of
   recomputing separate execution policy.
 - Current execution scope is intentionally narrow:
@@ -612,9 +613,9 @@ src/
     executor-specific inputs
   - `.github/actions/test-scenario-seed` pushes minimal `FROM scratch` single-arch images with `provenance=false` for
     the first scenario packages, avoiding the signature/provenance-heavy `single` / `complex` fixtures
-  - `.github/workflows/test_scenario-executor.yml` clears the scenario package, seeds it, runs either `ghcr-manager` or
-    `dataaxiom/ghcr-cleanup-action`, appends the post-execution scan into the same `scan-history.sqlite`, and uploads
-    that DB plus the scenario metadata/summary files
+  - `.github/workflows/test_scenario-executor.yml` clears the scenario package, seeds it, runs either
+    `ghcr-cleanup-manager` or `dataaxiom/ghcr-cleanup-action`, appends the post-execution scan into the same
+    `scan-history.sqlite`, and uploads that DB plus the scenario metadata/summary files
   - initial scenarios are `delete-untagged-noop` and `tagged-fully-deletable`
   - current scope is observational: compare before/after DBs locally rather than asserting parity between the two
     executors
@@ -678,7 +679,7 @@ src/
   - `docs/cleanup-roadmap.md` holds the stable cross-session roadmap
   - `docs/ai/tasks/` should hold session-scoped task briefs that reference the roadmap
 - Investigated the `single` / `single-amd64` / `single-arm64` test-registry shape using
-  `artifacts/gh-workflow__ghcr-manager-test--single.sqlite`.
+  `artifacts/gh-workflow__ghcr-cleanup-manager-test--single.sqlite`.
 - Confirmed that `single-amd64` and `single-arm64` are tagged on separate per-arch `image_index` wrapper manifests, not
   on the child `image_manifest` digests referenced by `single`.
 - Confirmed that `v_manifests_related_manifests` is behaving consistently with current graph semantics: it follows
@@ -771,7 +772,7 @@ src/
 ## Next Increment
 
 1. Run the expanded scenario matrix in GitHub Actions and inspect whether the new wildcard/regex scenarios behave the
-   same for `ghcr-manager` and `dataaxiom/ghcr-cleanup-action`.
+   same for `ghcr-cleanup-manager` and `dataaxiom/ghcr-cleanup-action`.
 2. Decide whether the scenario workflow should stay observational or gain explicit per-scenario post-state assertions.
 3. Triage remaining upstream-alignment gaps after the next selector-pattern matrix: multi-package expansion,
    ghost/partial/orphaned cleanup, validate-mode parity, and action-input packaging/default semantics.
@@ -868,7 +869,7 @@ src/
 ### 2026-04-30 (npm provenance metadata fix)
 
 - [x] Added explicit npm package metadata in `package.json` for provenance validation:
-  - `repository.url` set to `https://github.com/ghcr-manager/ghcr-manager`
+  - `repository.url` set to `https://github.com/ghcr-manager/ghcr-cleanup-manager`
   - `homepage` set to the repository README URL
   - `bugs.url` set to the repository issues URL
 - [x] Reason: npm provenance bundle verification requires `package.json` repository metadata to match GitHub Actions
@@ -902,8 +903,8 @@ src/
 
 ### 2026-05-17 (cleanup interface alignment)
 
-- [x] Added `ghcr-manager cleanup` as the primary CLI cleanup surface, with `--dry-run` acting as the user-facing
-      dry-run mode for the cleanup contract.
+- [x] Added `ghcr-cleanup-manager cleanup` as the primary CLI cleanup surface, with `--dry-run` acting as the
+      user-facing dry-run mode for the cleanup contract.
 - [x] Removed the transitional `plan` and `execute` CLI aliases so the public CLI surface is now only `scan` and
       `cleanup`.
 - [x] Expanded `action.yml` from scan-only to `command: scan | cleanup`.
@@ -912,8 +913,8 @@ src/
   - live cleanup runs a post-cleanup rescan so the resulting DB reflects final package state.
   - `dry-run` is cleanup-only and maps to the same planner contract as CLI `cleanup --dry-run`.
   - `command: scan` always uploads the resulting DB artifact; cleanup DB upload remains optional.
-- [x] Updated the GHCR scenario workflow so the `ghcr-manager` executor leg now exercises the action cleanup surface
-      instead of calling the CLI directly.
+- [x] Updated the GHCR scenario workflow so the `ghcr-cleanup-manager` executor leg now exercises the action cleanup
+      surface instead of calling the CLI directly.
 
 ### 2026-05-18 (planner-side tag selector matching)
 

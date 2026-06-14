@@ -67,7 +67,7 @@ test("db merge cleanup copy lists cleanup UUIDs in local cleanup-run order", () 
 });
 
 test("db merge cleanup copy copies selected cleanup tags with their cleanup run", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");
   _seedCleanupDatabase(targetDatabasePath, false);
@@ -101,7 +101,7 @@ test("db merge cleanup copy copies selected cleanup tags with their cleanup run"
 });
 
 test("db merge cleanup copy reuses cached statements for repeated attached cleanup copies", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const targetDatabasePath = join(tempDirectory, "target.sqlite");
   const sourceDatabasePath = join(tempDirectory, "source.sqlite");
   _seedCleanupDatabase(targetDatabasePath, false);

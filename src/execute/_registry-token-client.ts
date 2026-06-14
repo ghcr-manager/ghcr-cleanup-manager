@@ -28,7 +28,7 @@ export async function loadRegistryPushToken(
     response = await runWithRetry("GHCR token request", logger, async () => {
       const tokenResponse = await fetchImpl(tokenUrl.toString(), {
         headers: {
-          "User-Agent": "ghcr-manager",
+          "User-Agent": "ghcr-cleanup-manager",
           Authorization: `Basic ${Buffer.from(`${owner}:${token}`).toString("base64")}`
         }
       });

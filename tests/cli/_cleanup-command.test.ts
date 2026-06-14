@@ -14,7 +14,7 @@ import {
 import { importFileScan } from "../helpers/index.js";
 
 test("handleCleanup dry-run does not require a token", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);
@@ -75,7 +75,7 @@ test("handleCleanup dry-run does not require a token", async () => {
 });
 
 test("handleCleanup writes summary JSON to a file when requested", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const summaryPath = join(tempDirectory, "cleanup-summary.json");
   const database = openDatabase(databasePath);
@@ -128,7 +128,7 @@ test("handleCleanup live mode requires a token", async () => {
 });
 
 test("handleCleanup live mode persists a cleanup run before execution", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);
@@ -189,7 +189,7 @@ test("handleCleanup live mode persists a cleanup run before execution", async ()
 });
 
 test("handleCleanup dry-run persists tagged fully-deletable cleanup decisions", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);
@@ -262,7 +262,7 @@ test("handleCleanup dry-run persists tagged fully-deletable cleanup decisions", 
 });
 
 test("handleCleanup live mode applies untag-only roots and records cleanup audit rows", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);

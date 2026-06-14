@@ -186,7 +186,7 @@ test("deletePackageVersion sends the expected headers and surfaces transport fai
   assert.equal(headersSeen.length, 1);
   assert.equal(headersSeen[0]?.get("accept"), "application/vnd.github+json");
   assert.equal(headersSeen[0]?.get("authorization"), "Bearer token");
-  assert.equal(headersSeen[0]?.get("user-agent"), "ghcr-manager");
+  assert.equal(headersSeen[0]?.get("user-agent"), "ghcr-cleanup-manager");
   assert.equal(headersSeen[0]?.get("x-github-api-version"), "2022-11-28");
 
   await assert.rejects(

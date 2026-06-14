@@ -38,7 +38,7 @@ export function buildCleanupArgs(env) {
 }
 
 export function writeArgsFile(args, directory) {
-  const argsDirectory = mkdtempSync(path.join(directory, "ghcr-manager-args-"));
+  const argsDirectory = mkdtempSync(path.join(directory, "ghcr-cleanup-manager-args-"));
   const argsPath = path.join(argsDirectory, "argv.bin");
   writeFileSync(argsPath, args.map((arg) => `${arg}\0`).join(""), "utf8");
   return argsPath;

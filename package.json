@@ -1,7 +1,7 @@
 {
-  "name": "ghcr-manager",
+  "name": "ghcr-cleanup-manager",
   "description": "GHCR Cleanup Manager: GitHub Action and CLI for safe GitHub Container Registry cleanup and inspection.",
-  "homepage": "https://github.com/ghcr-manager/ghcr-manager#readme",
+  "homepage": "https://github.com/ghcr-manager/ghcr-cleanup-manager#readme",
   "version": "v1.0.8",
   "license": "MIT",
   "type": "module",
@@ -17,11 +17,11 @@
     "sqlite"
   ],
   "bugs": {
-    "url": "https://github.com/ghcr-manager/ghcr-manager/issues"
+    "url": "https://github.com/ghcr-manager/ghcr-cleanup-manager/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ghcr-manager/ghcr-manager"
+    "url": "https://github.com/ghcr-manager/ghcr-cleanup-manager"
   },
   "workspaces": [
     "visualizer"
@@ -37,13 +37,13 @@
     "CHANGELOG.md"
   ],
   "bin": {
-    "ghcr-manager": "./dist/cli/index.js"
+    "ghcr-cleanup-manager": "./dist/cli/index.js"
   },
   "scripts": {
     "build": "tsc --project tsconfig.json && npm run build:visualizer",
     "build:visualizer": "npm run build --workspace visualizer",
-    "ghcr-manager": "tsx src/cli/index.ts",
-    "ghcr-manager:dist": "node dist/cli/index.js",
+    "ghcr-cleanup-manager": "tsx src/cli/index.ts",
+    "ghcr-cleanup-manager:dist": "node dist/cli/index.js",
     "visualize": "npm run start --workspace visualizer --",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

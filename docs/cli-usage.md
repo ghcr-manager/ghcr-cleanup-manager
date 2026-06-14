@@ -2,10 +2,10 @@
 
 This document covers the GHCR Cleanup Manager companion CLI.
 
-Install from `npm` and run `ghcr-manager` directly.
+Install from `npm` and run `ghcr-cleanup-manager` directly.
 
 ```sh
-npm install --global ghcr-manager
+npm install --global ghcr-cleanup-manager
 ```
 
 > Requirement: Node.js `24` or newer.
@@ -13,13 +13,13 @@ npm install --global ghcr-manager
 ## Commands
 
 ```sh
-ghcr-manager <command> ...
+ghcr-cleanup-manager <command> ...
 ```
 
 ## Scan
 
 ```sh
-ghcr-manager scan \
+ghcr-cleanup-manager scan \
   --db ./tmp/example.sqlite \
   --owner OWNER \
   --package PACKAGE \
@@ -33,7 +33,7 @@ Note: local scanning is much slower than scanning in a GitHub runner.
 Dry-run example:
 
 ```sh
-ghcr-manager cleanup \
+ghcr-cleanup-manager cleanup \
   --db ./tmp/example.sqlite \
   --owner OWNER \
   --package PACKAGE \
@@ -44,7 +44,7 @@ ghcr-manager cleanup \
 Tagged cleanup example:
 
 ```sh
-ghcr-manager cleanup \
+ghcr-cleanup-manager cleanup \
   --db ./tmp/example.sqlite \
   --owner OWNER \
   --package PACKAGE \
@@ -58,7 +58,7 @@ ghcr-manager cleanup \
 Combined tagged and untagged cleanup example:
 
 ```sh
-ghcr-manager cleanup \
+ghcr-cleanup-manager cleanup \
   --db ./tmp/example.sqlite \
   --owner OWNER \
   --package PACKAGE \
@@ -90,7 +90,7 @@ For the full model, see [Cleanup Behavior](cleanup-behavior.md).
 ## DB Merge
 
 ```sh
-ghcr-manager db-merge \
+ghcr-cleanup-manager db-merge \
   --db ./tmp/merged.sqlite \
   --source-db ./tmp/run-a.sqlite \
   --source-db ./tmp/run-b.sqlite

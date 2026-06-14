@@ -14,7 +14,7 @@ summary_path="$repo_root/artifacts/aicage__aicage--delete-test-tags--dry-run-sum
 
 cd "$repo_root"
 
-npm run ghcr-manager -- cleanup \
+npm run ghcr-cleanup-manager -- cleanup \
   --db "$db_path" \
   --owner aicage \
   --package aicage \

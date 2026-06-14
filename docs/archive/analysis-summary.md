@@ -120,7 +120,7 @@ The action is one interface for the tool, not the whole project.
 
 Current chosen name:
 
-- `ghcr-manager`
+- `ghcr-cleanup-manager`
 
 Current short description:
 

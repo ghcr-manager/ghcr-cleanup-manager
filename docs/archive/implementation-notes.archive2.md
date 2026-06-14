@@ -1,6 +1,6 @@
 # Implementation Notes
 
-Closing handoff notes for `ghcr-manager` before archive.
+Closing handoff notes for `ghcr-cleanup-manager` before archive.
 
 Historical notes were compacted into [docs/archive/implementation-notes.archive1.md](implementation-notes.archive1.md).
 
@@ -60,7 +60,7 @@ Historical notes were compacted into [docs/archive/implementation-notes.archive1
   - do not create workflow-managed release commits that add `dist/`
   - keep the tag-push release model and let the action/npm paths build or install at runtime as they do today
 - Visualizer packaging note:
-  - publish the visualizer as a separate npm package, not as part of the main `ghcr-manager` package
+  - publish the visualizer as a separate npm package, not as part of the main `ghcr-cleanup-manager` package
   - copy browser assets into `visualizer/dist/public` during build so installed npm consumers can run the local server
     outside the repo checkout
 - `delete-tags` and `exclude-tags` on the root action are newline-separated.
@@ -297,7 +297,7 @@ Historical notes were compacted into [docs/archive/implementation-notes.archive1
 - [x] Prepare the visualizer for separate npm publication:
   - make `visualizer/` a publishable package with its own bin and README
   - copy browser assets into `dist/public` during build so installed packages can serve the UI
-  - add user docs and release workflow steps for publishing `ghcr-manager-visualizer`
+  - add user docs and release workflow steps for publishing `ghcr-cleanup-manager-visualizer`
 - [x] Refactor the cleanup step summary toward release-facing terminology and counts:
   - replace planner-heavy labels like `root`/`closure` in the Markdown surface with user-facing item wording
   - derive planned delete counts for tags, images, multi-arch manifests, and optional artifact/signature classes from
@@ -410,7 +410,7 @@ Historical notes were compacted into [docs/archive/implementation-notes.archive1
     selected tags for that selector family
 - Root action argv note:
   - the root action now prepares `cleanup` argv in `tools/prepare-action-args.mjs`
-  - `action.yml` still shows the direct public CLI invocation with `npm run ... ghcr-manager:dist -- cleanup`
+  - `action.yml` still shows the direct public CLI invocation with `npm run ... ghcr-cleanup-manager:dist -- cleanup`
   - prepared argv is handed to the visible run step through a NUL-delimited temp file so log printing and execution use
     the exact same argument list
 - Older-than doc note:
@@ -434,7 +434,7 @@ Historical notes were compacted into [docs/archive/implementation-notes.archive1
   - the release workflow triggers only for full release tags like `0.9.0`, not shorthand major tags like `0`
   - after a successful release, the workflow force-moves the major shorthand tag (for example `0`) onto the same commit
   - release now requires these workflow-backed live checks before npm publish and GitHub release:
-    - `test_scenario-executor-matrix.yml` with `executors: ghcr-manager`
+    - `test_scenario-executor-matrix.yml` with `executors: ghcr-cleanup-manager`
     - `test_user-owner-cleanup.yml`
   - release tag / version / changelog verification now runs before those live checks so obvious release-prep mistakes
     fail fast
@@ -454,9 +454,10 @@ Historical notes were compacted into [docs/archive/implementation-notes.archive1
   - cleanup and graph scenario seeds now publish short plain tags like `delete-me`, `keep-me`, `ghost`, and `keep`
   - scenario-prefixed tag names were removed because the package name already carries the scenario identity
 - Cleanup matrix audit note:
-  - `blocked-shared-closure` now expects `ghcr-manager` to classify the selected delete branch as `fully-deletable`
-  - the live end state already matched `ghcr-cleanup-action`; only the stale `ghcr-manager` audit expectation still
-    claimed `blocked`
+  - `blocked-shared-closure` now expects `ghcr-cleanup-manager` to classify the selected delete branch as
+    `fully-deletable`
+  - the live end state already matched `ghcr-cleanup-action`; only the stale `ghcr-cleanup-manager` audit expectation
+    still claimed `blocked`
 - Blocked shared closure seed note:
   - `blocked-shared-closure` now also seeds a standalone `keep-dummy` image tag
   - that prevents the executor-matrix live cleanup from trying to remove the last remaining package tag

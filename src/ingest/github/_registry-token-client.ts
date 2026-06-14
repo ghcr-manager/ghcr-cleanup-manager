@@ -76,7 +76,7 @@ function _buildRegistryTokenUrl(registryBaseUrl: string, options: GitHubScanOpti
 function _buildTokenHeaders(options: GitHubScanOptions): Record<string, string> {
   const basicAuth = Buffer.from(`${options.owner}:${options.token}`).toString("base64");
   return {
-    "User-Agent": "ghcr-manager",
+    "User-Agent": "ghcr-cleanup-manager",
     Authorization: `Basic ${basicAuth}`
   };
 }

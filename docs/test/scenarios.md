@@ -1,12 +1,12 @@
 # Test Scenarios
 
-This document gives a basic map of the live GHCR test scenarios used by `ghcr-manager`.
+This document gives a basic map of the live GHCR test scenarios used by `ghcr-cleanup-manager`.
 
 Related docs:
 
 - [Test Package Setup](package-setup.md)
 - [Matrix Workflow To Visualizer](matrix-workflow-to-visualizer.md)
-- [ghcr-manager-visualizer](../../visualizer/README.md)
+- [ghcr-cleanup-manager-visualizer](../../visualizer/README.md)
 
 ## Graph Scenarios
 
@@ -179,7 +179,7 @@ Seeded setup:
 
 Cleanup:
 
-- run `ghcr-manager cleanup`
+- run `ghcr-cleanup-manager cleanup`
 - delete the tag `delete-me`
 - keep `keep-me`
 

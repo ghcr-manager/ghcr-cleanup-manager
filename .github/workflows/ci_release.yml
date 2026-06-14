@@ -86,7 +86,7 @@ jobs:
       id-token: write
     secrets: inherit
     with:
-      executors: ghcr-manager
+      executors: ghcr-cleanup-manager
 
   test-scenario-executor-matrix:
     needs:
@@ -101,7 +101,7 @@ jobs:
       id-token: write
     secrets: inherit
     with:
-      executors: ghcr-manager
+      executors: ghcr-cleanup-manager
 
   publish-npm-packages:
     name: Publish npm packages
@@ -140,11 +140,11 @@ jobs:
           npm run build
           npm run build --workspace visualizer
 
-      - name: Publish ghcr-manager to npm
+      - name: Publish ghcr-cleanup-manager to npm
         run: |
           npm publish --provenance --access public
 
-      - name: Publish ghcr-manager-visualizer to npm
+      - name: Publish ghcr-cleanup-manager-visualizer to npm
         run: |
           npm publish --workspace visualizer --provenance --access public
 
@@ -185,7 +185,7 @@ jobs:
         uses: ./merge-run-artifacts
         with:
           artifact-name-glob: "*.sqlite"
-          db-file: ghcr-manager-release-scenarios.sqlite
+          db-file: ghcr-cleanup-manager-release-scenarios.sqlite
           upload-artifacts: "true"
           delete-source-artifacts: "true"
 

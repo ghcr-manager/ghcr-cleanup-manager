@@ -43,7 +43,7 @@ export async function loadRegistryManifestByDigest(
         headers: {
           Accept: _ACCEPTED_MANIFEST_MEDIA_TYPES,
           Authorization: `Bearer ${registryToken}`,
-          "User-Agent": "ghcr-manager"
+          "User-Agent": "ghcr-cleanup-manager"
         }
       });
       if (!manifestResponse.ok && isRetryableStatus(manifestResponse.status)) {
@@ -97,7 +97,7 @@ export async function putRegistryManifestForTag(
         headers: {
           Authorization: `Bearer ${registryToken}`,
           "Content-Type": mediaType,
-          "User-Agent": "ghcr-manager"
+          "User-Agent": "ghcr-cleanup-manager"
         },
         body: manifestJson
       });

@@ -32,8 +32,9 @@ actions in it with some queries (probably
 actions differ in result on equal scenarios.
 
 - I created a branch `test-0.9.7` (pre recent changes) and ran the matrix-test with both actions.
-- The resulting DB with all results is in `artifacts/0.9.7/0.9.7-ghcr-manager-merged--scenario-matrix-cleanup.sqlite`
-- I think the final query was `artifacts/0.9.7/0.9.7-ghcr-manager-merged--scenario-matrix-cleanup.sqlite`
+- The resulting DB with all results is in
+  `artifacts/0.9.7/0.9.7-ghcr-cleanup-manager-merged--scenario-matrix-cleanup.sqlite`
+- I think the final query was `artifacts/0.9.7/0.9.7-ghcr-cleanup-manager-merged--scenario-matrix-cleanup.sqlite`
 - Running that query looks like what I remember. Maybe we were a bit closer to the action once and I tried things and
   this state contains the attempts. But it's very close to where I realized that hacking our logic in part would not be
   sufficient - we have to rethink the logic.

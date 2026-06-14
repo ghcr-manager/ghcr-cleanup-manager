@@ -31,7 +31,7 @@ jobs:
       packages: read
       actions: write
     concurrency:
-      group: ghcr-manager__${{ inputs.owner }}__${{ inputs.package }}
+      group: ghcr-cleanup-manager__${{ inputs.owner }}__${{ inputs.package }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -52,8 +52,8 @@ jobs:
           fi
           echo "token=$token" >> "$GITHUB_OUTPUT"
 
-      - name: Run ghcr-manager action
-        id: ghcr-manager
+      - name: Run ghcr-cleanup-manager action
+        id: ghcr-cleanup-manager
         uses: ./
         with:
           command: scan
@@ -66,4 +66,4 @@ jobs:
       - name: Print DB path
         shell: bash
         run: |
-          echo "DB path: ${{ steps.ghcr-manager.outputs.db-path }}"
+          echo "DB path: ${{ steps.ghcr-cleanup-manager.outputs.db-path }}"

@@ -34,7 +34,7 @@ export async function deletePackageVersion(
         headers: {
           Accept: "application/vnd.github+json",
           Authorization: `Bearer ${token}`,
-          "User-Agent": "ghcr-manager",
+          "User-Agent": "ghcr-cleanup-manager",
           "X-GitHub-Api-Version": githubApiVersion
         }
       });

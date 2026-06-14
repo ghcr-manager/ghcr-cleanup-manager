@@ -20,7 +20,7 @@ test("buildDetachedManifestClone adds a detach annotation for OCI manifests", ()
   });
 
   const parsed = JSON.parse(clone) as { annotations?: Record<string, string> };
-  assert.equal(parsed.annotations?.["io.github.ghcr-manager.detached-tag"], "latest sha256:source");
+  assert.equal(parsed.annotations?.["io.github.ghcr-cleanup-manager.detached-tag"], "latest sha256:source");
   assert.match(clone, /\n$/);
 });
 
@@ -65,7 +65,7 @@ test("buildDetachedManifestClone preserves string annotations and drops non-stri
   const parsed = JSON.parse(clone) as { annotations?: Record<string, string> };
   assert.deepEqual(parsed.annotations, {
     keep: "yes",
-    "io.github.ghcr-manager.detached-tag": "latest sha256:source"
+    "io.github.ghcr-cleanup-manager.detached-tag": "latest sha256:source"
   });
 });
 

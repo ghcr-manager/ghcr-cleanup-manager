@@ -6,7 +6,7 @@ import test from "node:test";
 import { writeGitHubScanOutputs } from "../../src/cli/_github-output.js";
 
 test("writeGitHubScanOutputs writes GitHub output lines for scan summary fields", () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const outputPath = join(tempDirectory, "github-output.txt");
 
   try {

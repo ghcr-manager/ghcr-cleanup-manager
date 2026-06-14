@@ -53,7 +53,7 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     concurrency:
-      group: ghcr-manager__scenario-scan__${{ inputs.scenario }}
+      group: ghcr-cleanup-manager__scenario-scan__${{ inputs.scenario }}
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -80,10 +80,10 @@ jobs:
           TEST_OWNER: ${{ vars.GH_TEST_ORG }}
         run: |
           set -euo pipefail
-          work_dir="$RUNNER_TEMP/ghcr-manager/scenario-scan-${SCENARIO}"
+          work_dir="$RUNNER_TEMP/ghcr-cleanup-manager/scenario-scan-${SCENARIO}"
           mkdir -p "$work_dir"
           resolution_path="$work_dir/scenario.json"
-          node tools/tests/resolve-test-scenario.mjs "$SCENARIO" "ghcr-manager" "$REPOSITORY_NAME" > "$resolution_path"
+          node tools/tests/resolve-test-scenario.mjs "$SCENARIO" "ghcr-cleanup-manager" "$REPOSITORY_NAME" > "$resolution_path"
           package_name="$(jq -r '.packageName' "$resolution_path")"
           db_path="$work_dir/${TEST_OWNER}__${package_name}__scan-history.sqlite"
           echo "resolution_path=$resolution_path" >> "$GITHUB_OUTPUT"
@@ -111,7 +111,7 @@ jobs:
           registry_password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Scan scenario package
-        id: ghcr-manager
+        id: ghcr-cleanup-manager
         uses: ./
         with:
           command: scan

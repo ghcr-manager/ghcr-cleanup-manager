@@ -35,7 +35,7 @@ export async function loadPackageVersionPage(
           headers: {
             Accept: "application/vnd.github+json",
             Authorization: `Bearer ${options.token}`,
-            "User-Agent": "ghcr-manager",
+            "User-Agent": "ghcr-cleanup-manager",
             "X-GitHub-Api-Version": githubApiVersion
           }
         });

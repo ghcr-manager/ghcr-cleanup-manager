@@ -1,9 +1,9 @@
 # GHCR Cleanup Manager
 
-[![GitHub Marketplace](https://img.shields.io/badge/marketplace-ghcr--manager-blue?logo=github&labelColor=333&style=flat-square)](https://github.com/marketplace/actions/ghcr-manager)
-[![Release](https://img.shields.io/github/v/release/ghcr-manager/ghcr-manager?style=flat-square)](https://github.com/ghcr-manager/ghcr-manager/releases)
+[![GitHub Marketplace](https://img.shields.io/badge/marketplace-ghcr--cleanup--manager-blue?logo=github&labelColor=333&style=flat-square)](https://github.com/marketplace/actions/ghcr-manager)
+[![Release](https://img.shields.io/github/v/release/ghcr-manager/ghcr-cleanup-manager?style=flat-square)](https://github.com/ghcr-manager/ghcr-cleanup-manager/releases)
 [![Immutable Releases](https://img.shields.io/badge/releases-immutable-blue?labelColor=333)](https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/immutable-releases)
-[![Tests](https://img.shields.io/github/actions/workflow/status/ghcr-manager/ghcr-manager/.github/workflows/ci_change-validation.yml?branch=main&label=test&style=flat-square)](https://github.com/ghcr-manager/ghcr-manager/actions/workflows/ci_change-validation.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/ghcr-manager/ghcr-cleanup-manager/.github/workflows/ci_change-validation.yml?branch=main&label=test&style=flat-square)](https://github.com/ghcr-manager/ghcr-cleanup-manager/actions/workflows/ci_change-validation.yml)
 
 GHCR Cleanup Manager is a GHCR cleanup action for GitHub Container Registry packages.
 
@@ -13,12 +13,12 @@ GHCR Cleanup Manager is a GitHub Action for:
 - preview cleanup: with `dry-run` before making changes
 - scan GHCR packages: into SQLite database artifacts
 - visualize GHCR package graphs: and their changes with the
-  [ghcr-manager-visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md)
+  [ghcr-cleanup-manager-visualizer](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/visualizer/README.md)
 
 It is built for safe GHCR cleanup on real OCI package graphs, including multi-arch images, attestations, cosign
 signatures, and other referrers that simpler GHCR cleanup actions often mishandle.
 
-[![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/images/visualizer/graph-2images-cosign--wide.png)
+[![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-cleanup-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/images/visualizer/graph-2images-cosign--wide.png)
 
 _Example graph compare view: red-bordered manifests are present in the older scan and removed in the newer one._
 
@@ -35,13 +35,13 @@ jobs:
       packages: read
       actions: write
     concurrency:
-      group: ghcr-manager__OWNER__PACKAGE
+      group: ghcr-cleanup-manager__OWNER__PACKAGE
     steps:
       - uses: actions/checkout@v6
 
       - name: Preview GHCR cleanup
-        id: ghcr-manager
-        uses: ghcr-manager/ghcr-manager@v1.0.8
+        id: ghcr-cleanup-manager
+        uses: ghcr-manager/ghcr-cleanup-manager@v1.0.8
         with:
           command: cleanup
           token: ${{ github.token }}
@@ -84,7 +84,7 @@ The action supports two commands:
 ### Preview cleanup
 
 ```yaml
-- uses: ghcr-manager/ghcr-manager@v1.0.8
+- uses: ghcr-manager/ghcr-cleanup-manager@v1.0.8
   with:
     command: cleanup
     token: ${{ github.token }}
@@ -105,7 +105,7 @@ The action supports two commands:
 ### Apply cleanup
 
 ```yaml
-- uses: ghcr-manager/ghcr-manager@v1.0.8
+- uses: ghcr-manager/ghcr-cleanup-manager@v1.0.8
   with:
     command: cleanup
     token: ${{ github.token }}
@@ -127,7 +127,7 @@ off `dry-run`.
 ### Scan one package
 
 ```yaml
-- uses: ghcr-manager/ghcr-manager@v1.0.8
+- uses: ghcr-manager/ghcr-cleanup-manager@v1.0.8
   with:
     command: scan
     token: ${{ github.token }}
@@ -200,17 +200,17 @@ Current naming:
 
 ## Documentation Map
 
-- [GitHub Action usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/action-usage.md): action commands,
-  including `cleanup` and `scan`
-- [Cleanup behavior](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/cleanup-behavior.md): how cleanup
-  protects retained tags and handles shared graphs
-- [ghcr-manager-visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md): local graph
-  inspection and scan-to-scan comparison
-- [Multi-package workflows](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/db-merge-workflows.md): cleaning
-  up multiple packages with one combined DB
-- [SQLite schema guide](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/schema-description.md): practical
-  explanation of the SQLite schema
-- [CLI usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/cli-usage.md): companion CLI usage
+- [GitHub Action usage](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/action-usage.md): action
+  commands, including `cleanup` and `scan`
+- [Cleanup behavior](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/cleanup-behavior.md): how
+  cleanup protects retained tags and handles shared graphs
+- [ghcr-cleanup-manager-visualizer](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/visualizer/README.md):
+  local graph inspection and scan-to-scan comparison
+- [Multi-package workflows](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/db-merge-workflows.md):
+  cleaning up multiple packages with one combined DB
+- [SQLite schema guide](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/schema-description.md):
+  practical explanation of the SQLite schema
+- [CLI usage](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/cli-usage.md): companion CLI usage
 
 ## Explore A Real Scenario DB
 
@@ -218,21 +218,21 @@ The release assets also include one merged SQLite DB from GHCR Cleanup Manager's
 as a quick visualizer demo and as a compact way to inspect dozens of real cleanup and graph cases.
 
 ```sh
-curl -LO https://github.com/ghcr-manager/ghcr-manager/releases/latest/download/ghcr-manager-release-scenarios.sqlite
-npx ghcr-manager-visualizer --db ./ghcr-manager-release-scenarios.sqlite
+curl -LO https://github.com/ghcr-manager/ghcr-cleanup-manager/releases/latest/download/ghcr-cleanup-manager([^/s]*.sqlite)
+npx ghcr-cleanup-manager-visualizer --db ./ghcr-cleanup-manager([^/s]*.sqlite)
 ```
 
 Docker image available:
-[visualizer Docker usage](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md#docker).
+[visualizer Docker usage](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/visualizer/README.md#docker).
 
 For a first look in the visualizer, start with:
 
-- owner: `ghcr-manager-test`
+- owner: `ghcr-cleanup-manager-test`
 - package: select one with `2images` or `2multiarch` in the name
 - tag search: `image` or `multiarch`
 
-For more details, see [visualizer](https://github.com/ghcr-manager/ghcr-manager/blob/main/visualizer/README.md) and
-[test-scenarios](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/test/scenarios.md).
+For more details, see [visualizer](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/visualizer/README.md)
+and [test-scenarios](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/test/scenarios.md).
 
 ## Cleanup Behavior
 
@@ -244,14 +244,14 @@ removed during cleanup. If you pull images by digest, make sure those digests ar
 cleanup rules keep.
 
 For the full explanation and graph examples, see
-[cleanup-behavior](https://github.com/ghcr-manager/ghcr-manager/blob/main/docs/cleanup-behavior.md).
+[cleanup-behavior](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/cleanup-behavior.md).
 
 ## Project
 
 Main project and issue tracker:
 
-- Repository: <https://github.com/ghcr-manager/ghcr-manager>
-- Issues: <https://github.com/ghcr-manager/ghcr-manager/issues>
+- Repository: <https://github.com/ghcr-manager/ghcr-cleanup-manager>
+- Issues: <https://github.com/ghcr-manager/ghcr-cleanup-manager/issues>
 
 ## Similar Tools
 

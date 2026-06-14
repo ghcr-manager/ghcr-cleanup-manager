@@ -1,12 +1,13 @@
 # Matrix Workflow To Visualizer
 
-This document explains how to go from a live workflow run to local graph inspection in `ghcr-manager-visualizer`.
+This document explains how to go from a live workflow run to local graph inspection in
+`ghcr-cleanup-manager-visualizer`.
 
 Related docs:
 
 - [Scenarios](scenarios.md)
 - [Test Package Setup](package-setup.md)
-- [ghcr-manager-visualizer](../../visualizer/README.md)
+- [ghcr-cleanup-manager-visualizer](../../visualizer/README.md)
 
 ## Purpose
 
@@ -67,7 +68,7 @@ Download that `.sqlite` file to your local machine.
 Install the visualizer:
 
 ```sh
-npm install --global ghcr-manager-visualizer
+npm install --global ghcr-cleanup-manager-visualizer
 ```
 
 > Requirement: Node.js `24` or newer.
@@ -75,7 +76,7 @@ npm install --global ghcr-manager-visualizer
 Run it against the downloaded DB:
 
 ```sh
-ghcr-manager-visualizer --db ./downloaded-run.sqlite
+ghcr-cleanup-manager-visualizer --db ./downloaded-run.sqlite
 ```
 
 The command prints a local URL such as:
@@ -127,7 +128,7 @@ If you need a different comparison, change the scan selectors explicitly.
 
 ## Reading The Delta
 
-See [ghcr-manager-visualizer](../../visualizer/README.md) for the exact delta markers used in compare mode.
+See [ghcr-cleanup-manager-visualizer](../../visualizer/README.md) for the exact delta markers used in compare mode.
 
 In practice, search for any of the scenario's tags to load the graph and inspect which manifests or tags disappeared.
 

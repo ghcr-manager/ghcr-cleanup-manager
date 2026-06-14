@@ -16,7 +16,7 @@ test("main throws for an unknown command", async () => {
 });
 
 test("main dispatches the cleanup dry-run command", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);
@@ -53,7 +53,7 @@ test("main dispatches the cleanup dry-run command", async () => {
 });
 
 test("main dispatches the cleanup command", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const database = openDatabase(databasePath);
   const writer = new ScanWriter(database);
@@ -114,7 +114,7 @@ test("main dispatches the cleanup command", async () => {
 });
 
 test("main dispatches the scan command", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const databasePath = join(tempDirectory, "scan.sqlite");
   const originalFetch = globalThis.fetch;
 
@@ -176,7 +176,7 @@ test("main dispatches the scan command", async () => {
 });
 
 test("main dispatches the db-merge command", async () => {
-  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-manager-"));
+  const tempDirectory = mkdtempSync(join(tmpdir(), "ghcr-cleanup-manager-"));
   const targetPath = join(tempDirectory, "merged.sqlite");
   const sourcePath = join(tempDirectory, "source.sqlite");
   const database = openDatabase(sourcePath);

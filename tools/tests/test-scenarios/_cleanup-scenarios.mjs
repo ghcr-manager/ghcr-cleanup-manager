@@ -1,4 +1,4 @@
-function _ghcrManagerScenario(inputs, supportedExecutors = ["ghcr-manager", "ghcr-cleanup-action"]) {
+function _ghcrManagerScenario(inputs, supportedExecutors = ["ghcr-cleanup-manager", "ghcr-cleanup-action"]) {
   return {
     ghcrManager: {
       inputs
@@ -16,7 +16,12 @@ export const cleanupScenarios = {
       {
         "delete-untagged": "true"
       },
-      ["ghcr-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune", "chizkiyahu-delete-untagged-ghcr-action"]
+      [
+        "ghcr-cleanup-manager",
+        "ghcr-cleanup-action",
+        "vlaurin-action-ghcr-prune",
+        "chizkiyahu-delete-untagged-ghcr-action"
+      ]
     ),
     tagNames: {
       keepTag: "keep"
@@ -255,7 +260,12 @@ export const cleanupScenarios = {
       {
         "delete-untagged": "true"
       },
-      ["ghcr-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune", "chizkiyahu-delete-untagged-ghcr-action"]
+      [
+        "ghcr-cleanup-manager",
+        "ghcr-cleanup-action",
+        "vlaurin-action-ghcr-prune",
+        "chizkiyahu-delete-untagged-ghcr-action"
+      ]
     ),
     tagNames: {
       trackedTag: "tracked"
@@ -292,7 +302,7 @@ export const cleanupScenarios = {
       {
         "keep-n-tagged": "1"
       },
-      ["ghcr-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune"]
+      ["ghcr-cleanup-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune"]
     ),
     tagNames: {
       oldestTag: "oldest",
@@ -505,7 +515,7 @@ export const cleanupScenarios = {
       {
         "delete-tags": "*delete-me"
       },
-      ["ghcr-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune"]
+      ["ghcr-cleanup-manager", "ghcr-cleanup-action", "vlaurin-action-ghcr-prune"]
     ),
     tagNames: {
       keepTag: "keep",
