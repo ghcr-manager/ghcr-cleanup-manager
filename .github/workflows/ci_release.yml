@@ -141,10 +141,14 @@ jobs:
           npm run build --workspace visualizer
 
       - name: Publish ghcr-cleanup-manager to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --provenance --access public
 
       - name: Publish ghcr-cleanup-manager-visualizer to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --workspace visualizer --provenance --access public
 
