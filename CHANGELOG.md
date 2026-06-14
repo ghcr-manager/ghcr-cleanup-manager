@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.1] - 2026-06-14
+
+### Changed
+
+- Shortened the root GitHub Action description so it stays under GitHub's marketplace 125-character limit.
+
 ## [v1.1.0] - 2026-06-14
 
 ### Changed
