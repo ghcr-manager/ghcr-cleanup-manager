@@ -9,14 +9,14 @@ GHCR Cleanup Manager is a GHCR cleanup action for GitHub Container Registry pack
 
 GHCR Cleanup Manager is a GitHub Action for:
 
-- clean GHCR packages: including tagged and untagged images
-- preview cleanup: with `dry-run` before making changes
-- scan GHCR packages: into SQLite database artifacts
-- visualize GHCR package graphs: and their changes with the
-  [ghcr-cleanup-manager-visualizer](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/visualizer/README.md)
+- clean GHCR packages including tagged and untagged images
+- preview cleanup with `dry-run` before making changes
+- scan GHCR packages into SQLite database artifacts
+- visualize GHCR package graphs and their changes with the
+  [visualizer](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/visualizer/README.md)
 
-It is built for safe GHCR cleanup on real OCI package graphs, including multi-arch images, attestations, cosign
-signatures, and other referrers that simpler GHCR cleanup actions often mishandle.
+It is built for safe GHCR cleanup on OCI package graphs, including multi-arch images, attestations, cosign signatures,
+and other referrers that simpler GHCR cleanup actions often mishandle.
 
 [![Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.](https://raw.githubusercontent.com/ghcr-manager/ghcr-cleanup-manager/main/docs/images/visualizer/graph-2images-cosign--wide.png "Example compare view: red-bordered manifests are present in the older scan and removed in the newer one.")](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/images/visualizer/graph-2images-cosign--wide.png)
 
@@ -49,7 +49,7 @@ jobs:
           package: PACKAGE
           dry-run: true
           delete-untagged: true
-          keep-n-tagged: "10"
+          keep-n-tagged: 10
           exclude-tags: |
             latest
           upload-artifacts: true
@@ -95,7 +95,7 @@ The action supports two commands:
       pr-.*
     use-regex: true
     older-than: 30 days
-    keep-n-tagged: "5"
+    keep-n-tagged: 5
     exclude-tags: |
       latest
       stable
@@ -112,7 +112,7 @@ The action supports two commands:
     owner: OWNER
     package: PACKAGE
     delete-untagged: true
-    keep-n-tagged: "10"
+    keep-n-tagged: 10
     upload-artifacts: true
     scan-after-cleanup: true
 ```

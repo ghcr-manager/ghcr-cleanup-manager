@@ -4,7 +4,7 @@ Download matching current-run SQLite artifacts, merge them into one database, up
 delete the source artifacts.
 
 Use this helper action when several jobs in the same workflow run each uploaded their own GHCR Cleanup Manager scan or
-cleanup database and you want one merged artifact at the end.
+cleanup database, and you want one merged artifact at the end.
 
 ## Inputs
 
@@ -44,6 +44,6 @@ cleanup database and you want one merged artifact at the end.
 
 - This action only works with artifacts from the current workflow run.
 - It uses [`db-merge`](../db-merge/README.md) internally after downloading matching artifacts.
-- By default it deletes the matched source artifacts after a successful merge. Set `delete-source-artifacts: "false"` if
+- By default, it deletes the matched source artifacts after a successful merge. Set `delete-source-artifacts: false` if
   you want to keep them.
 - For broader multi-package workflow patterns, see [docs/db-merge-workflows.md](../docs/db-merge-workflows.md).
