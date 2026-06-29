@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Ensure workflow actions use immutable refs
-        uses: joshjohanning/ensure-immutable-actions@9467f3db8f5f3c942629468981c4a2a67d0caa64 # v2.6.1
+        uses: joshjohanning/ensure-immutable-actions@9f5dad6bb6148bd29ff0d874de6a8cc70af08fa9 # v2.6.2
         with:
           include-first-party: "true"
           exclude-workflows: ".github/workflows/manual-run_scan.yml,test_scenario-executor.yml,test_scenario-executor-matrix.yml,test_scenario-graph-matrix.yml"
