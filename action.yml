@@ -145,21 +145,12 @@ runs:
       shell: bash
       env:
         INPUT_DB_PATH: ${{ inputs.db-path }}
+        OWNER: ${{ inputs.owner }}
+        PACKAGE: ${{ inputs.package }}
         RUNNER_TEMP: ${{ runner.temp }}
       run: |
         set -euo pipefail
-        db_file="${{ inputs.owner }}__${{ inputs.package }}.sqlite"
-        if [[ -n "$INPUT_DB_PATH" ]]; then
-          db_path="$INPUT_DB_PATH"
-          db_dir="$(dirname "$db_path")"
-          db_file="$(basename "$db_path")"
-        else
-          db_dir="$(mktemp -d -p "$RUNNER_TEMP")"
-          db_path="$db_dir/$db_file"
-        fi
-        mkdir -p "$db_dir"
-        echo "db_file=$db_file" >> "$GITHUB_OUTPUT"
-        echo "db_path=$db_path" >> "$GITHUB_OUTPUT"
+        node tools/prepare-action-args.mjs db
 
     - name: Scan before command
       id: scan-before

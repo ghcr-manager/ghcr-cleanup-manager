@@ -6,6 +6,24 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+export function buildDbPath(env) {
+  const dbFile = _buildDbFileName(_requireEnv(env, "OWNER"), _requireEnv(env, "PACKAGE"));
+  const inputDbPath = env.INPUT_DB_PATH;
+
+  if (inputDbPath) {
+    return {
+      dbFile: path.basename(inputDbPath),
+      dbPath: inputDbPath
+    };
+  }
+
+  const tempDirectory = mkdtempSync(path.join(env.RUNNER_TEMP || tmpdir(), "ghcr-cleanup-manager-db-"));
+  return {
+    dbFile,
+    dbPath: path.join(tempDirectory, dbFile)
+  };
+}
+
 export function buildCleanupArgs(env) {
   const summaryPath = `${_requireEnv(env, "DB_PATH")}--cleanup-summary.json`;
   return {
@@ -58,6 +76,14 @@ export function writeGitHubOutputs(outputPath, outputs) {
   );
 }
 
+function _buildDbFileName(owner, packageName) {
+  return `${_sanitizeFileComponent(owner)}__${_sanitizeFileComponent(packageName)}.sqlite`;
+}
+
+function _sanitizeFileComponent(value) {
+  return value.replaceAll("/", "__");
+}
+
 function _flag(rawValue, flag) {
   return _isTrue(rawValue) ? [flag] : [];
 }
@@ -95,6 +121,15 @@ function _main(argv) {
   const [command] = argv;
   const tempRoot = process.env.RUNNER_TEMP || tmpdir();
 
+  if (command === "db") {
+    const db = buildDbPath(process.env);
+    writeGitHubOutputs(process.env.GITHUB_OUTPUT, {
+      db_file: db.dbFile,
+      db_path: db.dbPath
+    });
+    return;
+  }
+
   if (command === "cleanup") {
     const invocation = buildCleanupArgs(process.env);
     writeGitHubOutputs(process.env.GITHUB_OUTPUT, {
@@ -105,7 +140,7 @@ function _main(argv) {
     return;
   }
 
-  throw new Error("usage: node tools/prepare-action-args.mjs <cleanup>");
+  throw new Error("usage: node tools/prepare-action-args.mjs <db|cleanup>");
 }
 
 const _isDirectExecution =
