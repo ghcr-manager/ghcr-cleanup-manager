@@ -56,6 +56,15 @@ jobs:
             exit 1
           fi
 
+      - name: Verify ghcr-manager image refs use current release
+        run: |
+          set -euo pipefail
+          if grep -RInP "ghcr\.io/ghcr-manager/[^:\s]+:v(?!${GITHUB_REF_NAME#v}\b)\S*" .
+          then
+            echo "Found ghcr-manager image refs not pinned to ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+
       - name: Verify package.json uses current tag version
         run: |
           set -euo pipefail
@@ -199,7 +208,7 @@ jobs:
           upload-artifacts: "true"
           delete-source-artifacts: "true"
 
-      - name: Move major release tag
+      - name: Move short major release tag (the vX tag)
         run: |
           set -euo pipefail
           major_tag="${GITHUB_REF_NAME%%.*}"
