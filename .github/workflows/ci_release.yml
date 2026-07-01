@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           current_release="${GITHUB_REF_NAME#v}"
-          if rg -nP "^\s*-?\s*uses:\s*ghcr-manager/[^@\s]+@v(?!${current_release}\b)\S*" .
+          if grep -RInP "^\s*-?\s*uses:\s*ghcr-manager/[^@\s]+@v(?!${current_release}\b)\S*" .
           then
             echo "Found ghcr-manager action refs not pinned to ${GITHUB_REF_NAME}" >&2
             exit 1
