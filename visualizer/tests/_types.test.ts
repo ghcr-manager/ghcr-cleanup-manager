@@ -14,7 +14,7 @@ test("visualizer graph types describe the expected graph payload shape", () => {
     displayPlatform: null,
     artifactType: null,
     subjectDigest: null,
-    tags: [{ name: "single", changeStatus: "unchanged" }],
+    tags: [{ name: "single", isDigestTag: false, changeStatus: "unchanged" }],
     changeStatus: "unchanged",
     rawJson: '{"kind":"center"}'
   } satisfies ManifestDetails;

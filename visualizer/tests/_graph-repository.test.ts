@@ -33,7 +33,7 @@ test("graph repository resolves the latest scan and manifest by tag", () => {
     const manifest = repository.resolveManifest("acme", "demo", undefined, undefined, { tag: "single" });
     assert.equal(manifest.scanId > 0, true);
     assert.equal(manifest.digest, "sha256:center");
-    assert.deepEqual(manifest.tags, ["single"]);
+    assert.deepEqual(manifest.tags, ["sha256-center", "single"]);
   } finally {
     cleanup();
   }
@@ -108,7 +108,9 @@ test("graph repository returns visible intra-neighborhood edges and omits digest
       graph.nodes
         .map((node) => ({
           digest: node.digest,
-          tags: node.tags.map((tag) => ({ name: tag.name, changeStatus: tag.changeStatus })),
+          tags: node.tags
+            .filter((tag) => !tag.isDigestTag)
+            .map((tag) => ({ name: tag.name, changeStatus: tag.changeStatus })),
           changeStatus: node.changeStatus,
           displayPlatform: node.displayPlatform,
           createdAt: node.createdAt,
@@ -160,7 +162,10 @@ test("graph repository returns manifest details including payload", () => {
     assert.equal(manifest.updatedAt, "2026-05-30T10:00:00.000Z");
     assert.deepEqual(
       manifest.tags.map((tag) => ({ name: tag.name, changeStatus: tag.changeStatus })),
-      [{ name: "single", changeStatus: "unchanged" }]
+      [
+        { name: "sha256-center", changeStatus: "unchanged" },
+        { name: "single", changeStatus: "unchanged" }
+      ]
     );
   } finally {
     cleanup();
@@ -186,7 +191,9 @@ test("graph repository annotates node and tag changes across two unsorted scan i
       graph.nodes.map((node) => ({
         digest: node.digest,
         changeStatus: node.changeStatus,
-        tags: node.tags.map((tag) => ({ name: tag.name, changeStatus: tag.changeStatus }))
+        tags: node.tags
+          .filter((tag) => !tag.isDigestTag)
+          .map((tag) => ({ name: tag.name, changeStatus: tag.changeStatus }))
       })),
       [
         {
@@ -369,6 +376,7 @@ function _seedNewerScan(database: Database.Database, scanId: number): void {
   _insertPackageVersion(database, scanId, 1, "2026-05-30T10:00:00.000Z");
   _insertPackageVersion(database, scanId, 4, "2026-05-30T10:00:00.000Z");
   _insertTag(database, scanId, "single", 1);
+  _insertTag(database, scanId, "sha256-center", 1, 1);
   _insertTag(database, scanId, "single-arm64", 4);
   _insertTag(database, scanId, "moved-tag", 4);
   _insertManifest(

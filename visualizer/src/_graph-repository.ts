@@ -27,6 +27,7 @@ interface _ManifestRow {
   subject_digest: string | null;
   raw_json: string | null;
   tag: string | null;
+  is_digest_tag: number | null;
 }
 
 interface _EdgeRow {
@@ -38,6 +39,11 @@ interface _EdgeRow {
 interface _ScanOrderRow {
   scan_id: number;
   scan_completed_at: string;
+}
+
+interface _TagEntry {
+  isDigestTag: boolean;
+  scanIds: Set<number>;
 }
 
 interface _ResolvedScans {
@@ -448,7 +454,8 @@ export class GraphRepository {
         manifest.artifact_type,
         manifest.subject_digest,
         ${payloadColumn} AS raw_json,
-        tag.tag
+        tag.tag,
+        tag.is_digest_tag
       FROM manifests manifest
       JOIN package_versions package_version
         ON package_version.scan_id = manifest.scan_id
@@ -459,7 +466,6 @@ export class GraphRepository {
       LEFT JOIN tags tag
         ON tag.scan_id = manifest.scan_id
        AND tag.version_id = manifest.version_id
-       AND tag.is_digest_tag = 0
       LEFT JOIN ranked_platforms platform
         ON platform.scan_id = manifest.scan_id
        AND platform.child_digest = manifest.digest
@@ -473,7 +479,7 @@ export class GraphRepository {
       .all(...scanIds, ...digests, ...scanIds, ...digests, preferredManifestScanId) as _ManifestRow[];
     const manifests = new Map<string, ManifestDetails>();
     const scanMemberships = new Map<string, Set<number>>();
-    const tagsByDigest = new Map<string, Map<string, Set<number>>>();
+    const tagsByDigest = new Map<string, Map<string, _TagEntry>>();
 
     for (const row of rows) {
       let scanMembership = scanMemberships.get(row.digest);
@@ -506,31 +512,35 @@ export class GraphRepository {
       if (row.tag) {
         let tags = tagsByDigest.get(row.digest);
         if (!tags) {
-          tags = new Map<string, Set<number>>();
+          tags = new Map<string, _TagEntry>();
           tagsByDigest.set(row.digest, tags);
         }
 
-        let tagScans = tags.get(row.tag);
-        if (!tagScans) {
-          tagScans = new Set<number>();
-          tags.set(row.tag, tagScans);
+        let tagEntry = tags.get(row.tag);
+        if (!tagEntry) {
+          tagEntry = {
+            isDigestTag: row.is_digest_tag === 1,
+            scanIds: new Set<number>()
+          };
+          tags.set(row.tag, tagEntry);
         }
 
-        tagScans.add(row.scan_id);
+        tagEntry.scanIds.add(row.scan_id);
       }
     }
 
     for (const [digest, manifest] of manifests) {
-      const tagMap = tagsByDigest.get(digest) ?? new Map<string, Set<number>>();
+      const tagMap = tagsByDigest.get(digest) ?? new Map<string, _TagEntry>();
       manifest.changeStatus = _resolveChangeStatus(
         scanMemberships.get(digest) ?? new Set<number>(),
         newerScanId,
         olderScanId
       );
       manifest.tags = [...tagMap.entries()]
-        .map(([name, tagScans]) => ({
+        .map(([name, tagEntry]) => ({
           name,
-          changeStatus: _resolveChangeStatus(tagScans, newerScanId, olderScanId)
+          isDigestTag: tagEntry.isDigestTag,
+          changeStatus: _resolveChangeStatus(tagEntry.scanIds, newerScanId, olderScanId)
         }))
         .sort((left, right) => left.name.localeCompare(right.name));
     }

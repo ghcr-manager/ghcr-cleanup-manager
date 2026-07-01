@@ -349,6 +349,9 @@ function buildNodeLabel(node) {
 
   if (node.tags.length > 0) {
     for (const tag of node.tags) {
+      if (tag.isDigestTag) {
+        continue;
+      }
       secondaryLines.push(`tag: ${buildTagDisplayText(tag)}`);
     }
   } else {
@@ -785,7 +788,15 @@ function renderTagList(container, tags) {
   }
 
   container.classList.add("tag-list");
-  for (const tag of tags) {
+  const orderedTags = [...tags].sort((left, right) => {
+    if (left.isDigestTag !== right.isDigestTag) {
+      return left.isDigestTag ? 1 : -1;
+    }
+
+    return left.name.localeCompare(right.name);
+  });
+
+  for (const tag of orderedTags) {
     const tagElement = document.createElement("span");
     tagElement.className = `tag ${tag.changeStatus}`;
     tagElement.textContent = buildTagDisplayText(tag);

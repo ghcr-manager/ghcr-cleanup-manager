@@ -20,6 +20,7 @@ export interface TagOption {
 
 export interface GraphTag {
   name: string;
+  isDigestTag: boolean;
   changeStatus: ChangeStatus;
 }
 
