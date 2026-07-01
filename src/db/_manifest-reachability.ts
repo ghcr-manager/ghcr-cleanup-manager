@@ -179,6 +179,7 @@ function _refreshDigestTagEdges(database: Database.Database, scanId: number): vo
          AND child_manifest.digest = 'sha256:' || SUBSTR(t.tag, 8, 64)
         WHERE t.scan_id = ?
           AND t.is_digest_tag = 1
+          AND m.digest != child_manifest.digest
       `
     )
     .run(scanId);

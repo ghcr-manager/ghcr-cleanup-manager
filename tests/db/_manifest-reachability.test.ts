@@ -358,6 +358,47 @@ test("rebuildManifestReachability stitches digest-tag helper edges into recursiv
   database.close();
 });
 
+test("rebuildManifestReachability does not create self-referential digest-tag helper edges", () => {
+  const database = openDatabase(":memory:");
+  const writer = new ScanWriter(database);
+  const digest = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+  writer.startScan("acme", "example", "2026-04-20T12:00:00.000Z", {
+    rawJson: JSON.stringify({ visibility: "private" })
+  });
+  writer.insertPackageVersion({
+    versionId: 1,
+    createdAt: "2026-04-20T10:00:00.000Z",
+    updatedAt: "2026-04-20T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 1,
+    digest,
+    manifestKind: ManifestKinds.imageManifest,
+    mediaType: "application/vnd.oci.image.manifest.v1+json"
+  });
+  writer.insertTag({
+    tag: "sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    versionId: 1
+  });
+
+  rebuildManifestReachability(database, writer.getActiveScanId());
+
+  const digestTagEdgeRows = database
+    .prepare(
+      `
+        SELECT parent_digest, child_digest, edge_kind
+        FROM manifest_edges
+        WHERE edge_kind = 'digest-tag-referrer'
+      `
+    )
+    .all() as Array<{ parent_digest: string; child_digest: string; edge_kind: string }>;
+
+  assert.deepEqual(digestTagEdgeRows, []);
+
+  database.close();
+});
+
 test("rebuildManifestReachability assigns different graph ids to disconnected manifest graphs", () => {
   const database = openDatabase(":memory:");
   const writer = new ScanWriter(database);

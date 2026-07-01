@@ -208,6 +208,34 @@ test("resolveTagSelectors resolves orphaned sha256 tags with missing parent dige
   });
 });
 
+test("resolveTagSelectors does not treat self digest tags as orphaned", () => {
+  _withTempDatabase(({ database, databasePath, writer }) => {
+    const digest = `sha256:${"a".repeat(64)}`;
+
+    writer.startScan("acme", "example", "2026-05-15T00:00:00.000Z", {
+      rawJson: JSON.stringify({ visibility: "private" })
+    });
+    _insertVersionWithManifest(writer, 201, digest, "2026-05-10T00:00:00.000Z", {
+      mediaType: "application/vnd.oci.image.manifest.v1+json",
+      manifestKind: ManifestKinds.imageManifest,
+      tag: digest.replace("sha256:", "sha256-")
+    });
+    writer.markScanCompleted("2026-05-15T00:00:00.000Z");
+
+    const resolved = resolveTagSelectors(
+      database,
+      _buildInputs({
+        databasePath,
+        deleteTagsRequested: true,
+        deleteOrphanedImages: true
+      })
+    );
+
+    assert.deepEqual(resolved.deleteTags, []);
+    assert.deepEqual(resolved.excludeTags, []);
+  });
+});
+
 test("resolveTagSelectors resolves ghost image tags when all image index children are missing", () => {
   _withTempDatabase(({ database, databasePath, writer }) => {
     writer.startScan("acme", "example", "2026-05-15T00:00:00.000Z", {
