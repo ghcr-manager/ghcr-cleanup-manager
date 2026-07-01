@@ -7,6 +7,7 @@ interface _DigestRow {
 interface _ManifestEdgeRow {
   parent_digest: string;
   child_digest: string;
+  edge_kind: string;
 }
 
 export function rebuildManifestReachability(database: Database.Database, scanId: number): void {
@@ -22,7 +23,8 @@ export function rebuildManifestReachability(database: Database.Database, scanId:
     neighborDigestsByDigest.set(digest, new Set());
   }
 
-  for (const manifestEdge of _loadManifestEdges(database, scanId)) {
+  const manifestEdges = _loadManifestEdges(database, scanId);
+  for (const manifestEdge of manifestEdges) {
     childDigestsByParent.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest);
     parentDigestsByChild.get(manifestEdge.child_digest)?.add(manifestEdge.parent_digest);
     neighborDigestsByDigest.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest);
@@ -78,7 +80,7 @@ export function rebuildManifestReachability(database: Database.Database, scanId:
   }
 
   if (descendantDistancesByDigest.size !== manifestDigests.length) {
-    throw new Error("manifest reachability build detected a cycle in manifest_edges");
+    throw new Error(_buildCycleErrorMessage(manifestDigests, remainingChildrenCount, manifestEdges));
   }
 
   const insertRow = database.prepare(
@@ -193,13 +195,29 @@ function _loadManifestEdges(database: Database.Database, scanId: number): _Manif
   return database
     .prepare(
       `
-        SELECT DISTINCT parent_digest, child_digest
+        SELECT DISTINCT parent_digest, child_digest, edge_kind
         FROM manifest_edges
         WHERE scan_id = ?
-        ORDER BY parent_digest, child_digest
+        ORDER BY parent_digest, child_digest, edge_kind
       `
     )
     .all(scanId) as _ManifestEdgeRow[];
+}
+
+function _buildCycleErrorMessage(
+  manifestDigests: string[],
+  remainingChildrenCount: Map<string, number>,
+  manifestEdges: _ManifestEdgeRow[]
+): string {
+  const unresolvedDigests = new Set(manifestDigests.filter((digest) => (remainingChildrenCount.get(digest) ?? 0) > 0));
+  const unresolvedDigestList = Array.from(unresolvedDigests).join(", ");
+  for (const edge of manifestEdges) {
+    if (unresolvedDigests.has(edge.parent_digest) && unresolvedDigests.has(edge.child_digest)) {
+      return `manifest reachability build detected a cycle in manifest_edges; example unresolved edge: ${edge.parent_digest} --${edge.edge_kind}--> ${edge.child_digest}; unresolved digests: ${unresolvedDigestList}`;
+    }
+  }
+
+  return `manifest reachability build detected a cycle in manifest_edges; unresolved digests: ${unresolvedDigestList}`;
 }
 
 function _setMinDistance(distances: Map<string, number>, digest: string, distance: number): void {

@@ -12,16 +12,6 @@ run-name: Manual Run for ${{ inputs.owner }}/${{ inputs.package }}
         description: GHCR package name.
         required: true
         type: string
-      upload_artifacts:
-        description: Upload scan DB artifact from inside the action.
-        required: false
-        default: true
-        type: boolean
-      db_artifact_retention_days:
-        description: Optional artifact retention-days override.
-        required: false
-        default: ""
-        type: string
 
 jobs:
   scan:
@@ -54,16 +44,26 @@ jobs:
 
       - name: Run ghcr-cleanup-manager action
         id: ghcr-cleanup-manager
+        continue-on-error: true
         uses: ./
         with:
           command: scan
           token: ${{ steps.token.outputs.token }}
           owner: ${{ inputs.owner }}
           package: ${{ inputs.package }}
-          upload-artifacts: ${{ inputs.upload_artifacts }}
-          db-artifact-retention-days: ${{ inputs.db_artifact_retention_days }}
+          upload-artifacts: true
 
-      - name: Print DB path
+      - name: Upload DB artifact
+        if: ${{ always() && steps.ghcr-cleanup-manager.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: DB-after-error.sqlite
+          path: ${{ steps.ghcr-cleanup-manager.outputs.db-path }}
+          if-no-files-found: warn
+
+      - name: Fail if scan failed
+        if: ${{ steps.ghcr-cleanup-manager.outcome == 'failure' }}
         shell: bash
         run: |
-          echo "DB path: ${{ steps.ghcr-cleanup-manager.outputs.db-path }}"
+          echo "Scan failed!" >&2
+          exit 1

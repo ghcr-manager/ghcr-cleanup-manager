@@ -203,7 +203,10 @@ test("rebuildManifestReachability rejects cycles in manifest edges", () => {
     edgeKind: "image-child"
   });
 
-  assert.throws(() => rebuildManifestReachability(database, writer.getActiveScanId()), /detected a cycle/);
+  assert.throws(
+    () => rebuildManifestReachability(database, writer.getActiveScanId()),
+    /detected a cycle in manifest_edges; example unresolved edge: sha256:a --image-child--> sha256:b; unresolved digests: sha256:a, sha256:b/
+  );
 
   database.close();
 });
