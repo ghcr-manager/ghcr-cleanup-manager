@@ -46,6 +46,16 @@ jobs:
             exit 1
           fi
 
+      - name: Verify ghcr-manager action refs use current release
+        run: |
+          set -euo pipefail
+          current_release="${GITHUB_REF_NAME#v}"
+          if rg -nP "^\s*-?\s*uses:\s*ghcr-manager/[^@\s]+@v(?!${current_release}\b)\S*" .
+          then
+            echo "Found ghcr-manager action refs not pinned to ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+
       - name: Verify package.json uses current tag version
         run: |
           set -euo pipefail
