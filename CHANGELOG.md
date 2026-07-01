@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.3] - 2026-07-01
+
+### Changed
+
+- Digest-tag helper edges now ignore self-references from a digest-tagged artifact back to its own manifest.
+- The visualizer details view now shows `sha256-*` tags. These tags are still hidden in the graph itself.
+
+### Fixed
+
+- Visualizer docs and package-name references now consistently use `ghcr-cleanup-manager-visualizer`.
+
 ## [v1.1.2] - 2026-06-14
 
 ### Changed
