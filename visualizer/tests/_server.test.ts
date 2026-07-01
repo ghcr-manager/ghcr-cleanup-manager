@@ -102,9 +102,9 @@ test("visualizer server resolves runtime asset paths for source and built instal
     publicDirectory: "/tmp/ghcr-manager/visualizer/public",
     cytoscapePath: "/tmp/ghcr-manager/visualizer/public/vendor/cytoscape.js"
   });
-  assert.deepEqual(_resolveRuntimePaths("file:///tmp/npm/ghcr-manager-visualizer/dist/src/_server.js"), {
-    publicDirectory: "/tmp/npm/ghcr-manager-visualizer/dist/public",
-    cytoscapePath: "/tmp/npm/ghcr-manager-visualizer/dist/public/vendor/cytoscape.js"
+  assert.deepEqual(_resolveRuntimePaths("file:///tmp/npm/ghcr-cleanup-manager-visualizer/dist/src/_server.js"), {
+    publicDirectory: "/tmp/npm/ghcr-cleanup-manager-visualizer/dist/public",
+    cytoscapePath: "/tmp/npm/ghcr-cleanup-manager-visualizer/dist/public/vendor/cytoscape.js"
   });
 });
 
