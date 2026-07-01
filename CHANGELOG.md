@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.4] - 2026-07-02
+
+### Fixed
+
+- Fixed the visualizer README examples to use the real release SQLite filename instead of a broken placeholder.
+
 ## [v1.1.3] - 2026-07-01
 
 ### Changed
