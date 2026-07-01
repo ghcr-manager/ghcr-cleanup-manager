@@ -218,8 +218,8 @@ The release assets also include one merged SQLite DB from GHCR Cleanup Manager's
 as a quick visualizer demo and as a compact way to inspect dozens of real cleanup and graph cases.
 
 ```sh
-curl -LO https://github.com/ghcr-manager/ghcr-cleanup-manager/releases/latest/download/ghcr-cleanup-manager([^/s]*.sqlite)
-npx ghcr-cleanup-manager-visualizer --db ./ghcr-cleanup-manager([^/s]*.sqlite)
+curl -LO https://github.com/ghcr-manager/ghcr-cleanup-manager/releases/latest/download/ghcr-cleanup-manager-release-scenarios.sqlite
+npx ghcr-cleanup-manager-visualizer --db ./ghcr-cleanup-manager-release-scenarios.sqlite
 ```
 
 Docker image available:

@@ -15,8 +15,8 @@ Download the test scenario DB from the latest release and try the visualizer wit
 The DB contains dozens of scenario packages with different graphs and before/after views of cleanup operations on them.
 
 ```sh
-curl -LO https://github.com/ghcr-manager/ghcr-cleanup-manager/releases/latest/download/ghcr-cleanup-manager([^/s]*.sqlite)
-npx ghcr-cleanup-manager-visualizer --db ./ghcr-cleanup-manager([^/s]*.sqlite)
+curl -LO https://github.com/ghcr-manager/ghcr-cleanup-manager/releases/latest/download/ghcr-cleanup-manager-release-scenarios.sqlite
+npx ghcr-cleanup-manager-visualizer --db ./ghcr-cleanup-manager-release-scenarios.sqlite
 ```
 
 Or run the release image:
@@ -25,7 +25,7 @@ Or run the release image:
 docker run --rm -p 8080:8080 \
   -v "$PWD:/data:ro" \
   ghcr.io/ghcr-manager/ghcr-cleanup-manager-visualizer:latest \
-  --db /data/ghcr-cleanup-manager([^/s]*.sqlite)
+  --db /data/ghcr-cleanup-manager-release-scenarios.sqlite
 ```
 
 Open the local URL printed by the command and select:
