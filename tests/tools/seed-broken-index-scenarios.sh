@@ -7,7 +7,7 @@ registry_username="${3:-}"
 registry_password="${4:-}"
 
 if [[ -z "$scenario_id" || -z "$image_ref" || -z "$registry_username" || -z "$registry_password" ]]; then
-  echo "usage: tools/tests/seed-broken-index-scenarios.sh <scenario-id> <image-ref> <registry-username> <registry-password>" >&2
+  echo "usage: tests/tools/seed-broken-index-scenarios.sh <scenario-id> <image-ref> <registry-username> <registry-password>" >&2
   exit 1
 fi
 
@@ -21,7 +21,7 @@ esac
 
 echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
 
-fixture_dockerfile="$PWD/tools/tests/fixtures/minimal-image/Dockerfile"
+fixture_dockerfile="$PWD/tests/tools/fixtures/minimal-image/Dockerfile"
 base_dir="$(mktemp -d)"
 
 keep_dir="$base_dir/keep"

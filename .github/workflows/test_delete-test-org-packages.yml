@@ -54,7 +54,7 @@ jobs:
           PACKAGE_NAME_CONTAINS: ${{ inputs.package_name_contains }}
         run: |
           set -euo pipefail
-          node tools/tests/delete-ghcr-test-org-packages.mjs \
+          node tests/tools/delete-ghcr-test-org-packages.mjs \
             "$GH_TEST_ORG" \
             "$GH_TEST_PAT" \
             "$PACKAGE_NAME_CONTAINS"

@@ -33,7 +33,7 @@ runs:
       run: |
         set -euo pipefail
         dummy_dir="$(mktemp -d)"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$dummy_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$dummy_dir/Dockerfile"
         printf '%s\n' "${GITHUB_RUN_ID} keep dummy" > "$dummy_dir/payload.txt"
         docker buildx build \
           --platform linux/amd64 \

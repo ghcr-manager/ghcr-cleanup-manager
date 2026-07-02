@@ -10,7 +10,7 @@ const scenarioId = process.argv[2];
 const dbPath = process.argv[3];
 
 if (!scenarioId || !dbPath) {
-  throw new Error("usage: node tools/tests/assert-test-scenario-scan.mjs <scenario> <db-path>");
+  throw new Error("usage: node tests/tools/assert-test-scenario-scan.mjs <scenario> <db-path>");
 }
 
 const scenario = scenarios[scenarioId];

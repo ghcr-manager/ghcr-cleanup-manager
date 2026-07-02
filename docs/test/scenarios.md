@@ -10,8 +10,8 @@ Related docs:
 
 ## Graph Scenarios
 
-Graph scenarios live in `tools/tests/test-scenarios/_graph-scenarios.mjs` and are seeded by
-`tools/tests/seed-graph-matrix-scenario.mjs`.
+Graph scenarios live in `tests/tools/test-scenarios/_graph-scenarios.mjs` and are seeded by
+`tests/tools/seed-graph-matrix-scenario.mjs`.
 
 They are the most regular live scenarios in the repository. The intent is to build graph shapes step by step so the
 effect of each cleanup operation is easier to inspect in the DB and in the visualizer.
@@ -191,7 +191,7 @@ the GitHub Packages URLs differ slightly from the org-owned path.
 The mixed cleanup matrix is driven by:
 
 - `.github/workflows/test_scenario-executor-matrix.yml`
-- `tools/tests/test-scenarios/_cleanup-scenarios.mjs`
+- `tests/tools/test-scenarios/_cleanup-scenarios.mjs`
 
 These scenarios are older and less regular than the graph scenarios. They cover a wider cleanup feature surface and are
 still useful, but they are not organized as a step-by-step graph family.

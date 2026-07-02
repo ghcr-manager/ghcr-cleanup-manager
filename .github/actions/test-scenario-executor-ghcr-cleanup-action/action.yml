@@ -43,7 +43,7 @@ runs:
         use_regex="$(jq -r '.executorConfig.inputs["use-regex"] // ""' "$RESOLUTION_PATH")"
         digest_selector_tag_name_key="$(jq -r '.digestSelectorTagNameKey // ""' "$RESOLUTION_PATH")"
         if [[ -n "$digest_selector_tag_name_key" ]]; then
-          delete_tags="$(node tools/tests/resolve-test-scenario-delete-digests.mjs "$RESOLUTION_PATH" "$DB_PATH")"
+          delete_tags="$(node tests/tools/resolve-test-scenario-delete-digests.mjs "$RESOLUTION_PATH" "$DB_PATH")"
         fi
         echo "delete_untagged=$delete_untagged" >> "$GITHUB_OUTPUT"
         echo "keep_n_tagged=$keep_n_tagged" >> "$GITHUB_OUTPUT"

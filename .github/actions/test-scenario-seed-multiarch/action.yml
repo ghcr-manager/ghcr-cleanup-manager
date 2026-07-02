@@ -36,22 +36,22 @@ runs:
 
         delete_dir="$base_dir/delete-amd64"
         mkdir -p "$delete_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$delete_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$delete_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} delete amd64" > "$delete_dir/payload.txt"
 
         shared_dir="$base_dir/shared-arm64"
         mkdir -p "$shared_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$shared_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$shared_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} shared arm64" > "$shared_dir/payload.txt"
 
         keep_dir="$base_dir/keep-amd64"
         mkdir -p "$keep_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$keep_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} keep amd64" > "$keep_dir/payload.txt"
 
         dummy_dir="$base_dir/dummy-amd64"
         mkdir -p "$dummy_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$dummy_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$dummy_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} keep dummy" > "$dummy_dir/payload.txt"
 
         echo "delete_dir=$delete_dir" >> "$GITHUB_OUTPUT"
@@ -153,12 +153,12 @@ runs:
 
         amd64_dir="$base_dir/amd64"
         mkdir -p "$amd64_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} amd64" > "$amd64_dir/payload.txt"
 
         arm64_dir="$base_dir/arm64"
         mkdir -p "$arm64_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} arm64" > "$arm64_dir/payload.txt"
 
         echo "amd64_dir=$amd64_dir" >> "$GITHUB_OUTPUT"
@@ -233,12 +233,12 @@ runs:
 
         amd64_dir="$base_dir/amd64"
         mkdir -p "$amd64_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$amd64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} amd64" > "$amd64_dir/payload.txt"
 
         arm64_dir="$base_dir/arm64"
         mkdir -p "$arm64_dir"
-        cp "$GITHUB_ACTION_PATH/../../../tools/tests/fixtures/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
+        cp "$GITHUB_ACTION_PATH/../../../tests/tools/fixtures/minimal-image/Dockerfile" "$arm64_dir/Dockerfile"
         printf '%s\n' "${SCENARIO_ID} arm64" > "$arm64_dir/payload.txt"
 
         echo "amd64_dir=$amd64_dir" >> "$GITHUB_OUTPUT"

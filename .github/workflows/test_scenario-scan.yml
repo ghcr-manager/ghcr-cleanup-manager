@@ -83,7 +83,7 @@ jobs:
           work_dir="$RUNNER_TEMP/ghcr-cleanup-manager/scenario-scan-${SCENARIO}"
           mkdir -p "$work_dir"
           resolution_path="$work_dir/scenario.json"
-          node tools/tests/resolve-test-scenario.mjs "$SCENARIO" "ghcr-cleanup-manager" "$REPOSITORY_NAME" > "$resolution_path"
+          node tests/tools/resolve-test-scenario.mjs "$SCENARIO" "ghcr-cleanup-manager" "$REPOSITORY_NAME" > "$resolution_path"
           package_name="$(jq -r '.packageName' "$resolution_path")"
           db_path="$work_dir/${TEST_OWNER}__${package_name}__scan-history.sqlite"
           echo "resolution_path=$resolution_path" >> "$GITHUB_OUTPUT"
@@ -100,7 +100,7 @@ jobs:
           PACKAGE: ${{ steps.scenario.outputs.package_name }}
         run: |
           set -euo pipefail
-          node tools/tests/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
+          node tests/tools/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
 
       - name: Seed scenario package
         uses: ./.github/actions/test-scenario-seed
@@ -126,4 +126,4 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node tools/tests/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
+          node tests/tools/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"

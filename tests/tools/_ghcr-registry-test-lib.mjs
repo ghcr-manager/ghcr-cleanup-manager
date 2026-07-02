@@ -218,16 +218,18 @@ function buildGitHubHeaders(token) {
   return {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${token}`,
-    "User-Agent": "ghcr-cleanup-manager",
     "X-GitHub-Api-Version": "2022-11-28"
   };
 }
 
 async function loadMessage(response) {
-  try {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
     const payload = await response.json();
-    return typeof payload?.message === "string" ? payload.message : "unknown error";
-  } catch {
-    return "unknown error";
+    if (typeof payload?.message === "string") {
+      return payload.message;
+    }
   }
+
+  return response.statusText || "unknown error";
 }

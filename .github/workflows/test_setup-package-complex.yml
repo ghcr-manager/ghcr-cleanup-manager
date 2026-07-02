@@ -51,7 +51,7 @@ jobs:
           OWNER: ${{ vars.GH_TEST_ORG }}
         run: |
           set -euo pipefail
-          node tools/tests/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
+          node tests/tools/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
 
   build_dummy_last_tag:
     name: Build dummy image (last tag must remain)

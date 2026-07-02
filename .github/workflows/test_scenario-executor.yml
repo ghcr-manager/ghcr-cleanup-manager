@@ -169,7 +169,7 @@ jobs:
           work_dir="$RUNNER_TEMP/ghcr-cleanup-manager/scenario-${SCENARIO}-${EXECUTOR}"
           mkdir -p "$work_dir"
           resolution_path="$work_dir/scenario.json"
-          node tools/tests/resolve-test-scenario.mjs "$SCENARIO" "$EXECUTOR" "$REPOSITORY_NAME" > "$resolution_path"
+          node tests/tools/resolve-test-scenario.mjs "$SCENARIO" "$EXECUTOR" "$REPOSITORY_NAME" > "$resolution_path"
           summary_path="$work_dir/executor-summary.txt"
           package_name="$(jq -r '.packageName' "$resolution_path")"
           if [[ -n "$PACKAGE_NAME_SUFFIX" ]]; then
@@ -194,7 +194,7 @@ jobs:
           PACKAGE: ${{ steps.scenario.outputs.package_name }}
         run: |
           set -euo pipefail
-          node tools/tests/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
+          node tests/tools/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
 
       - name: Seed scenario package
         uses: ./.github/actions/test-scenario-seed
@@ -262,11 +262,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node tools/tests/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
+          node tests/tools/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
 
       - name: Assert cleanup audit persistence
         if: ${{ inputs.executor == 'ghcr-cleanup-manager' }}
         shell: bash
         run: |
           set -euo pipefail
-          node tools/tests/assert-test-scenario-cleanup-audit.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
+          node tests/tools/assert-test-scenario-cleanup-audit.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"

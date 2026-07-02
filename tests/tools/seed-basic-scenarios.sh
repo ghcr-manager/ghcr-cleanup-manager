@@ -5,11 +5,11 @@ scenario_id="${1:-}"
 image_ref="${2:-}"
 
 if [[ -z "$scenario_id" || -z "$image_ref" ]]; then
-  echo "usage: tools/tests/seed-basic-scenarios.sh <scenario-id> <image-ref>" >&2
+  echo "usage: tests/tools/seed-basic-scenarios.sh <scenario-id> <image-ref>" >&2
   exit 1
 fi
 
-fixture_dockerfile="$PWD/tools/tests/fixtures/minimal-image/Dockerfile"
+fixture_dockerfile="$PWD/tests/tools/fixtures/minimal-image/Dockerfile"
 
 build_one() {
   local tag="$1"
