@@ -2,7 +2,7 @@
 /* global process */
 
 import { appendFileSync, readFileSync } from "node:fs";
-import { renderCleanupSummaryMarkdown } from "../dist/cleanup-summary/index.js";
+import { renderCleanupSummaryMarkdown } from "../../dist/cleanup-summary/index.js";
 
 const args = process.argv.slice(2);
 const stepSummaryPath = _requireOption(args, "--step-summary-path");

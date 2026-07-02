@@ -1,28 +1,11 @@
 #!/usr/bin/env node
 /* global process */
 
-import { appendFileSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
-export function buildDbPath(env) {
-  const dbFile = _buildDbFileName(_requireEnv(env, "OWNER"), _requireEnv(env, "PACKAGE"));
-  const inputDbPath = env.INPUT_DB_PATH;
-
-  if (inputDbPath) {
-    return {
-      dbFile: path.basename(inputDbPath),
-      dbPath: inputDbPath
-    };
-  }
-
-  const tempDirectory = mkdtempSync(path.join(env.RUNNER_TEMP || tmpdir(), "ghcr-cleanup-manager-db-"));
-  return {
-    dbFile,
-    dbPath: path.join(tempDirectory, dbFile)
-  };
-}
+import { writeGitHubOutputs } from "./_github-output.mjs";
 
 export function buildCleanupArgs(env) {
   const summaryPath = `${_requireEnv(env, "DB_PATH")}--cleanup-summary.json`;
@@ -62,28 +45,6 @@ export function writeArgsFile(args, directory) {
   return argsPath;
 }
 
-export function writeGitHubOutputs(outputPath, outputs) {
-  if (!outputPath) {
-    return;
-  }
-
-  appendFileSync(
-    outputPath,
-    `${Object.entries(outputs)
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n")}\n`,
-    "utf8"
-  );
-}
-
-function _buildDbFileName(owner, packageName) {
-  return `${_sanitizeFileComponent(owner)}__${_sanitizeFileComponent(packageName)}.sqlite`;
-}
-
-function _sanitizeFileComponent(value) {
-  return value.replaceAll("/", "__");
-}
-
 function _flag(rawValue, flag) {
   return _isTrue(rawValue) ? [flag] : [];
 }
@@ -117,35 +78,18 @@ function _requireEnv(env, key) {
   return value;
 }
 
-function _main(argv) {
-  const [command] = argv;
-  const tempRoot = process.env.RUNNER_TEMP || tmpdir();
-
-  if (command === "db") {
-    const db = buildDbPath(process.env);
-    writeGitHubOutputs(process.env.GITHUB_OUTPUT, {
-      db_file: db.dbFile,
-      db_path: db.dbPath
-    });
-    return;
-  }
-
-  if (command === "cleanup") {
-    const invocation = buildCleanupArgs(process.env);
-    writeGitHubOutputs(process.env.GITHUB_OUTPUT, {
-      args_path: writeArgsFile(invocation.args, tempRoot),
-      summary_file: invocation.summaryFile,
-      summary_path: invocation.summaryPath
-    });
-    return;
-  }
-
-  throw new Error("usage: node tools/prepare-action-args.mjs <db|cleanup>");
+function _main() {
+  const invocation = buildCleanupArgs(process.env);
+  writeGitHubOutputs(process.env.GITHUB_OUTPUT, {
+    args_path: writeArgsFile(invocation.args, process.env.RUNNER_TEMP || tmpdir()),
+    summary_file: invocation.summaryFile,
+    summary_path: invocation.summaryPath
+  });
 }
 
 const _isDirectExecution =
   process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
 
 if (_isDirectExecution) {
-  _main(process.argv.slice(2));
+  _main();
 }

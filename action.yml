@@ -150,7 +150,7 @@ runs:
         RUNNER_TEMP: ${{ runner.temp }}
       run: |
         set -euo pipefail
-        node tools/prepare-action-args.mjs db
+        node tools/action/prepare-db-path.mjs
 
     - name: Scan before command
       id: scan-before
@@ -195,7 +195,7 @@ runs:
         USE_REGEX: ${{ inputs.use-regex }}
       run: |
         set -euo pipefail
-        node tools/prepare-action-args.mjs cleanup
+        node tools/action/prepare-cleanup-args.mjs
 
     - name: Run cleanup
       id: run-cleanup
@@ -253,6 +253,6 @@ runs:
       working-directory: ${{ github.action_path }}
       run: |
         set -euo pipefail
-        node tools/write-cleanup-step-summary.mjs \
+        node tools/action/write-cleanup-step-summary.mjs \
           --step-summary-path "$GITHUB_STEP_SUMMARY" \
           --summary-json-path "${{ steps.prepare-cleanup.outputs.summary_path }}"
