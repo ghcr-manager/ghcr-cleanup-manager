@@ -8,7 +8,7 @@ const resolutionPath = process.argv[2];
 const dbPath = process.argv[3];
 
 if (!resolutionPath || !dbPath) {
-  throw new Error("usage: node tools/tests/resolve-test-scenario-delete-digests.mjs <resolution-path> <db-path>");
+  throw new Error("usage: node tests/tools/resolve-test-scenario-delete-digests.mjs <resolution-path> <db-path>");
 }
 
 const resolution = JSON.parse(fs.readFileSync(resolutionPath, "utf8"));

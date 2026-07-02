@@ -5,12 +5,12 @@ import { execFileSync } from "node:child_process";
 import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { inspectDigest, publishSyntheticIndex } from "./visualizer/_ghcr-visual-demo-lib.mjs";
+import { inspectDigest, publishSyntheticIndex } from "./_ghcr-registry-test-lib.mjs";
 
 const [scenarioId, imageRef] = process.argv.slice(2);
 
 if (!scenarioId || !imageRef) {
-  throw new Error("usage: node tools/tests/seed-graph-matrix-scenario.mjs <scenario-id> <image-ref>");
+  throw new Error("usage: node tests/tools/seed-graph-matrix-scenario.mjs <scenario-id> <image-ref>");
 }
 
 const scenario = _resolveScenario(scenarioId);

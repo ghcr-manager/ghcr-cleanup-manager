@@ -7,7 +7,7 @@ import {
   findPackageVersionByTag,
   parseArgs,
   publishSyntheticIndex
-} from "./_ghcr-visual-demo-lib.mjs";
+} from "./_ghcr-registry-test-lib.mjs";
 
 const _helpText = `
 Apply the second-step mutation for the manual GHCR visual compare demo package.

@@ -6,7 +6,7 @@ const token = process.argv[3];
 const nameContains = process.argv[4] ?? "";
 
 if (!owner || !token) {
-  throw new Error("usage: node tools/tests/delete-ghcr-test-org-packages.mjs <owner> <token> [name-contains]");
+  throw new Error("usage: node tests/tools/delete-ghcr-test-org-packages.mjs <owner> <token> [name-contains]");
 }
 
 const packageNames = await listContainerPackageNames(owner, token);

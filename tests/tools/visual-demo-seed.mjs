@@ -6,7 +6,7 @@ import {
   deletePackageIfPresent,
   parseArgs,
   publishSyntheticIndex
-} from "./_ghcr-visual-demo-lib.mjs";
+} from "./_ghcr-registry-test-lib.mjs";
 
 const _helpText = `
 Seed the manual GHCR visual compare demo package.

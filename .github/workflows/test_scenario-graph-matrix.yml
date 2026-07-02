@@ -67,7 +67,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          matrix_json="$(node tools/tests/render-graph-scenario-matrix.mjs)"
+          matrix_json="$(node tests/tools/render-graph-scenario-matrix.mjs)"
           if [[ "$EXECUTORS" != "all" ]]; then
             matrix_json="$(jq -c --arg executor "$EXECUTORS" '.include |= map(select(.executor == $executor))' <<< "$matrix_json")"
           fi

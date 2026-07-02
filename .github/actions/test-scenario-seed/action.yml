@@ -47,7 +47,7 @@ runs:
       run: |
         set -euo pipefail
         echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
-        node tools/tests/seed-graph-matrix-scenario.mjs "$SCENARIO_ID" "$IMAGE_REF"
+        node tests/tools/seed-graph-matrix-scenario.mjs "$SCENARIO_ID" "$IMAGE_REF"
 
     - name: Split image ref for graph untagging
       if: ${{ startsWith(inputs.seed_strategy, 'graph-2multiarch2tags-') }}
@@ -76,7 +76,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        tools/tests/seed-basic-scenarios.sh \
+        tests/tools/seed-basic-scenarios.sh \
           "${{ inputs.seed_strategy }}" \
           "${{ inputs.image_ref }}"
 
@@ -84,7 +84,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        tools/tests/seed-broken-index-scenarios.sh \
+        tests/tools/seed-broken-index-scenarios.sh \
           "${{ inputs.seed_strategy }}" \
           "${{ inputs.image_ref }}" \
           "${{ inputs.registry_username }}" \

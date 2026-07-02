@@ -38,7 +38,7 @@ runs:
         keep_younger_than=""
         prune_tags_regexes=""
         if [[ -n "$delete_tags" ]]; then
-          prune_tags_regexes="$(node tools/tests/resolve-vlaurin-prune-tags-regexes.mjs "$delete_tags" "$use_regex")"
+          prune_tags_regexes="$(node tests/tools/resolve-vlaurin-prune-tags-regexes.mjs "$delete_tags" "$use_regex")"
         elif [[ -n "$keep_last" ]]; then
           prune_tags_regexes="^.*$"
         fi

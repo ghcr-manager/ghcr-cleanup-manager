@@ -10,7 +10,7 @@ const executor = process.argv[3];
 const repositoryName = process.argv[4];
 
 if (!scenarioId || !executor || !repositoryName) {
-  throw new Error("usage: node tools/tests/resolve-test-scenario.mjs <scenario> <executor> <repository-name>");
+  throw new Error("usage: node tests/tools/resolve-test-scenario.mjs <scenario> <executor> <repository-name>");
 }
 
 const scenario = scenarios[scenarioId];

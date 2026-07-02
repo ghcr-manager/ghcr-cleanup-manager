@@ -65,7 +65,7 @@ jobs:
           PACKAGE: ${{ env.PACKAGE_NAME }}
         run: |
           set -euo pipefail
-          node tools/tests/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
+          node tests/tools/delete-ghcr-package.mjs "$OWNER" "$PACKAGE" "$GITHUB_TOKEN"
 
       - name: Log in to GHCR
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
@@ -82,7 +82,7 @@ jobs:
           set -euo pipefail
 
           keep_dir="$(mktemp -d)"
-          cp tools/tests/fixtures/minimal-image/Dockerfile "$keep_dir/Dockerfile"
+          cp tests/tools/fixtures/minimal-image/Dockerfile "$keep_dir/Dockerfile"
           printf '%s\n' "user-owner keep" > "$keep_dir/payload.txt"
           docker buildx build \
             --platform linux/amd64 \
@@ -92,7 +92,7 @@ jobs:
             "$keep_dir"
 
           delete_dir="$(mktemp -d)"
-          cp tools/tests/fixtures/minimal-image/Dockerfile "$delete_dir/Dockerfile"
+          cp tests/tools/fixtures/minimal-image/Dockerfile "$delete_dir/Dockerfile"
           printf '%s\n' "user-owner delete" > "$delete_dir/payload.txt"
           docker buildx build \
             --platform linux/amd64 \
