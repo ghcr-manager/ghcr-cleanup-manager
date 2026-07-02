@@ -143,6 +143,7 @@ runs:
       id: prepare-db
       if: ${{ inputs.command == 'scan' || inputs.command == 'cleanup' }}
       shell: bash
+      working-directory: ${{ github.action_path }}
       env:
         INPUT_DB_PATH: ${{ inputs.db-path }}
         OWNER: ${{ inputs.owner }}
