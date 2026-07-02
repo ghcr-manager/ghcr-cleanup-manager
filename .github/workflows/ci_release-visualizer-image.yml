@@ -91,7 +91,7 @@ jobs:
       - name: Test image
         run: |
           set -euo pipefail
-          ./tools/test-visualizer-image.sh "${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}"
+          ./visualizer/tests/tools/test-image.sh "${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}"
 
       - name: Export digest (amd64)
         id: out-amd64

@@ -5,7 +5,6 @@ import { execFileSync } from "node:child_process";
 import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { inspectDigest, publishSyntheticIndex } from "./_ghcr-registry-test-lib.mjs";
 
 const [scenarioId, imageRef] = process.argv.slice(2);
 
@@ -39,12 +38,8 @@ for (const indexSpec of scenario.indexes) {
       indexSpec.members.map((member) => images[member.imageIndex].taggedDigest)
     );
   } else {
-    await publishSyntheticIndex({
-      owner: _resolveOwner(imageRef),
-      packageName: _resolvePackageName(imageRef),
+    _publishSyntheticIndex({
       imageRef,
-      registryUsername: "",
-      token: "",
       tag: indexSpec.tag,
       members: indexSpec.members.map((member) => ({
         digest: images[member.imageIndex].taggedDigest,
@@ -152,7 +147,7 @@ function _resolveScenario(inputScenarioId) {
 
 function _buildImage(imageRefValue, tag, payload, mode, architecture) {
   const contextDirectory = mkdtempSync(join(tmpdir(), "ghcr-graph-matrix-image-"));
-  const fixtureDirectory = resolve(process.cwd(), "tools", "tests", "fixtures", "minimal-image");
+  const fixtureDirectory = resolve(process.cwd(), "tests", "tools", "fixtures", "minimal-image");
   cpSync(fixtureDirectory, contextDirectory, { recursive: true });
   writeFileSync(join(contextDirectory, "payload.txt"), `${payload}\n`);
   try {
@@ -208,16 +203,6 @@ function _buildImage(imageRefValue, tag, payload, mode, architecture) {
   };
 }
 
-function _resolveOwner(imageRefValue) {
-  const withoutRegistry = imageRefValue.replace(/^ghcr\.io\//, "");
-  return withoutRegistry.split("/")[0];
-}
-
-function _resolvePackageName(imageRefValue) {
-  const withoutRegistry = imageRefValue.replace(/^ghcr\.io\//, "");
-  return withoutRegistry.split("/").slice(1).join("/");
-}
-
 function _cosignSign(reference) {
   execFileSync("cosign", ["sign", "--yes", reference], { stdio: "inherit" });
 }
@@ -253,4 +238,47 @@ function _resolvePlatformDigest(reference, os, architecture) {
   }
 
   throw new Error(`failed to resolve platform digest for ${reference} (${os}/${architecture})`);
+}
+
+function inspectDigest(reference) {
+  const output = execFileSync("docker", ["buildx", "imagetools", "inspect", reference], {
+    encoding: "utf8"
+  });
+  const digestLine = output.split("\n").find((line) => line.trim().startsWith("Digest:"));
+  const digest = digestLine?.split(/\s+/)[1];
+  if (!digest || !digest.startsWith("sha256:")) {
+    throw new Error(`failed to inspect digest for ${reference}`);
+  }
+
+  return digest;
+}
+
+function _publishSyntheticIndex(options) {
+  const targetReference = `${options.imageRef}:${options.tag}`;
+  const memberReferences = options.members.map((member) => `${options.imageRef}@${member.digest}`);
+
+  execFileSync("docker", ["manifest", "create", targetReference, ...memberReferences], {
+    stdio: "inherit"
+  });
+
+  for (const [index, member] of options.members.entries()) {
+    execFileSync(
+      "docker",
+      [
+        "manifest",
+        "annotate",
+        targetReference,
+        memberReferences[index],
+        "--os",
+        member.os,
+        "--arch",
+        member.architecture
+      ],
+      { stdio: "inherit" }
+    );
+  }
+
+  execFileSync("docker", ["manifest", "push", "--purge", targetReference], {
+    stdio: "inherit"
+  });
 }

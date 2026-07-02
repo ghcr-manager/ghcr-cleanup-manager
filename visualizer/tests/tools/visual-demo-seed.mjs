@@ -6,7 +6,7 @@ import {
   deletePackageIfPresent,
   parseArgs,
   publishSyntheticIndex
-} from "./_ghcr-registry-test-lib.mjs";
+} from "./_ghcr-visualizer-test-lib.mjs";
 
 const _helpText = `
 Seed the manual GHCR visual compare demo package.
@@ -18,7 +18,7 @@ This resets the target package and creates the initial graph:
 - removed-later multi-arch tag: visual-demo--drop-multiarch
 
 Usage:
-  node tools/tests/visualizer/visual-demo-seed.mjs <owner> <package-name> <registry-username> <token>
+  node visualizer/tests/tools/visual-demo-seed.mjs <owner> <package-name> <registry-username> <token>
 
 Token with gh:
   gh auth refresh -h github.com -s read:packages -s write:packages -s delete:packages
@@ -29,12 +29,12 @@ Example:
   gh auth refresh -h github.com -s read:packages -s write:packages -s delete:packages
   TOKEN="$(gh auth token)"
   echo "$TOKEN" | docker login ghcr.io -u my-username --password-stdin
-  node tools/tests/visualizer/visual-demo-seed.mjs ghcr-cleanup-manager-test my-visual-demo my-username "$TOKEN"
+  node visualizer/tests/tools/visual-demo-seed.mjs ghcr-cleanup-manager-test my-visual-demo my-username "$TOKEN"
 
 How to use:
   1. Run this seed script.
   2. Run a scan and note the scan id.
-  3. Run tools/tests/visualizer/visual-demo-update.mjs.
+  3. Run visualizer/tests/tools/visual-demo-update.mjs.
   4. Run a second scan.
   5. Compare the two scans in the visualizer.
 `.trim();

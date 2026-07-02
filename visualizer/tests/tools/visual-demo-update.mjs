@@ -7,7 +7,7 @@ import {
   findPackageVersionByTag,
   parseArgs,
   publishSyntheticIndex
-} from "./_ghcr-registry-test-lib.mjs";
+} from "./_ghcr-visualizer-test-lib.mjs";
 
 const _helpText = `
 Apply the second-step mutation for the manual GHCR visual compare demo package.
@@ -18,7 +18,7 @@ This updates the seeded graph to create visible compare changes:
 - adds visual-demo--added-multiarch
 
 Usage:
-  node tools/tests/visualizer/visual-demo-update.mjs <owner> <package-name> <registry-username> <token>
+  node visualizer/tests/tools/visual-demo-update.mjs <owner> <package-name> <registry-username> <token>
 
 Token with gh:
   gh auth refresh -h github.com -s read:packages -s write:packages -s delete:packages
@@ -29,10 +29,10 @@ Example:
   gh auth refresh -h github.com -s read:packages -s write:packages -s delete:packages
   TOKEN="$(gh auth token)"
   echo "$TOKEN" | docker login ghcr.io -u my-username --password-stdin
-  node tools/tests/visualizer/visual-demo-update.mjs ghcr-cleanup-manager-test my-visual-demo my-username "$TOKEN"
+  node visualizer/tests/tools/visual-demo-update.mjs ghcr-cleanup-manager-test my-visual-demo my-username "$TOKEN"
 
 How to use:
-  1. Run tools/tests/visualizer/visual-demo-seed.mjs and scan once.
+  1. Run visualizer/tests/tools/visual-demo-seed.mjs and scan once.
   2. Run this update script.
   3. Run a second scan.
   4. Compare both scans in the visualizer.

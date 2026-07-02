@@ -9,7 +9,7 @@ fi
 
 DB_PATH="$1"
 DB_DIR="$(dirname "$DB_PATH")"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 mkdir -p "$DB_DIR"
 rm -f "$DB_PATH"

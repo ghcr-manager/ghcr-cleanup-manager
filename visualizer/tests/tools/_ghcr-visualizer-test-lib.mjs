@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /* global fetch, process, URL */
 
-import { mkdtempSync, rmSync, cpSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { execFileSync } from "node:child_process";
 
 const _githubApiBaseUrl = "https://api.github.com";
 
@@ -30,14 +30,14 @@ export function parseArgs(helpText) {
 }
 
 export async function deletePackageIfPresent(owner, packageName, token) {
-  const ownerPathSegment = await loadOwnerPathSegment(owner, token);
+  const ownerPathSegment = await _loadOwnerPathSegment(owner, token);
   const url = new URL(
     `/${ownerPathSegment}/${encodeURIComponent(owner)}/packages/container/${encodeURIComponent(packageName)}`,
     _githubApiBaseUrl
   ).toString();
   const response = await fetch(url, {
     method: "DELETE",
-    headers: buildGitHubHeaders(token)
+    headers: _buildGitHubHeaders(token)
   });
 
   if (response.status === 404) {
@@ -47,7 +47,7 @@ export async function deletePackageIfPresent(owner, packageName, token) {
 
   if (!response.ok) {
     throw new Error(
-      `failed to delete package ${owner}/${packageName}: status ${response.status} - ${await loadMessage(response)}`
+      `failed to delete package ${owner}/${packageName}: status ${response.status} - ${await _loadMessage(response)}`
     );
   }
 
@@ -55,24 +55,24 @@ export async function deletePackageIfPresent(owner, packageName, token) {
 }
 
 export async function deletePackageVersion(owner, packageName, token, versionId) {
-  const ownerPathSegment = await loadOwnerPathSegment(owner, token);
+  const ownerPathSegment = await _loadOwnerPathSegment(owner, token);
   const url = new URL(
     `/${ownerPathSegment}/${encodeURIComponent(owner)}/packages/container/${encodeURIComponent(packageName)}/versions/${versionId}`,
     _githubApiBaseUrl
   ).toString();
   const response = await fetch(url, {
     method: "DELETE",
-    headers: buildGitHubHeaders(token)
+    headers: _buildGitHubHeaders(token)
   });
   if (!response.ok) {
     throw new Error(
-      `failed to delete package version ${versionId}: status ${response.status} - ${await loadMessage(response)}`
+      `failed to delete package version ${versionId}: status ${response.status} - ${await _loadMessage(response)}`
     );
   }
 }
 
 export async function findPackageVersionByTag(owner, packageName, token, tag) {
-  const ownerPathSegment = await loadOwnerPathSegment(owner, token);
+  const ownerPathSegment = await _loadOwnerPathSegment(owner, token);
   let page = 1;
   while (true) {
     const url = new URL(
@@ -83,11 +83,11 @@ export async function findPackageVersionByTag(owner, packageName, token, tag) {
     url.searchParams.set("page", String(page));
 
     const response = await fetch(url, {
-      headers: buildGitHubHeaders(token)
+      headers: _buildGitHubHeaders(token)
     });
     if (!response.ok) {
       throw new Error(
-        `failed to list package versions for ${owner}/${packageName}: status ${response.status} - ${await loadMessage(response)}`
+        `failed to list package versions for ${owner}/${packageName}: status ${response.status} - ${await _loadMessage(response)}`
       );
     }
 
@@ -117,7 +117,7 @@ export async function findPackageVersionByTag(owner, packageName, token, tag) {
 }
 
 export function buildAndPushImage(imageRef, tag, payloadLabel) {
-  const contextDirectory = createImageContext(payloadLabel);
+  const contextDirectory = _createImageContext(payloadLabel);
   try {
     execFileSync(
       "docker",
@@ -138,7 +138,7 @@ export function buildAndPushImage(imageRef, tag, payloadLabel) {
     rmSync(contextDirectory, { recursive: true, force: true });
   }
 
-  return inspectDigest(`${imageRef}:${tag}`);
+  return _inspectDigest(`${imageRef}:${tag}`);
 }
 
 export async function publishSyntheticIndex(options) {
@@ -173,7 +173,15 @@ export async function publishSyntheticIndex(options) {
   });
 }
 
-export function inspectDigest(reference) {
+function _createImageContext(payloadLabel) {
+  const contextDirectory = mkdtempSync(join(tmpdir(), "ghcr-visual-demo-image-"));
+  const fixtureDirectory = resolve(process.cwd(), "tests", "tools", "fixtures", "minimal-image");
+  cpSync(fixtureDirectory, contextDirectory, { recursive: true });
+  writeFileSync(join(contextDirectory, "payload.txt"), `${payloadLabel}\n`);
+  return contextDirectory;
+}
+
+function _inspectDigest(reference) {
   const output = execFileSync("docker", ["buildx", "imagetools", "inspect", reference], {
     encoding: "utf8"
   });
@@ -186,21 +194,13 @@ export function inspectDigest(reference) {
   return digest;
 }
 
-function createImageContext(payloadLabel) {
-  const contextDirectory = mkdtempSync(join(tmpdir(), "ghcr-visual-demo-image-"));
-  const fixtureDirectory = resolve(process.cwd(), "tools", "tests", "fixtures", "minimal-image");
-  cpSync(fixtureDirectory, contextDirectory, { recursive: true });
-  writeFileSync(join(contextDirectory, "payload.txt"), `${payloadLabel}\n`);
-  return contextDirectory;
-}
-
-async function loadOwnerPathSegment(owner, token) {
+async function _loadOwnerPathSegment(owner, token) {
   const url = new URL(`/users/${encodeURIComponent(owner)}`, _githubApiBaseUrl).toString();
   const response = await fetch(url, {
-    headers: buildGitHubHeaders(token)
+    headers: _buildGitHubHeaders(token)
   });
   if (!response.ok) {
-    throw new Error(`failed to load owner ${owner}: status ${response.status} - ${await loadMessage(response)}`);
+    throw new Error(`failed to load owner ${owner}: status ${response.status} - ${await _loadMessage(response)}`);
   }
 
   const payload = await response.json();
@@ -214,7 +214,7 @@ async function loadOwnerPathSegment(owner, token) {
   throw new Error(`unsupported owner type for ${owner}: ${payload?.type ?? "unknown"}`);
 }
 
-function buildGitHubHeaders(token) {
+function _buildGitHubHeaders(token) {
   return {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${token}`,
@@ -222,7 +222,7 @@ function buildGitHubHeaders(token) {
   };
 }
 
-async function loadMessage(response) {
+async function _loadMessage(response) {
   const contentType = response.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
     const payload = await response.json();

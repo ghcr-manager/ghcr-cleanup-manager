@@ -8,7 +8,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 IMAGE_REF="$1"
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 TMP_DIR="$(mktemp -d)"
 DB_PATH="${TMP_DIR}/smoke.sqlite"
 PORT=18080
@@ -21,7 +21,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"${REPO_ROOT}/tools/create-visualizer-smoke-db.sh" "$DB_PATH"
+"${REPO_ROOT}/visualizer/tests/tools/create-smoke-db.sh" "$DB_PATH"
 
 docker run -d \
   --rm \
