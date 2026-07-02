@@ -80,9 +80,8 @@ runs:
         RUNNER_TEMP: ${{ runner.temp }}
       run: |
         set -euo pipefail
-        action_repo_root="$(cd "$GITHUB_ACTION_PATH/.." && pwd)"
         artifact_list_path="$(mktemp -p "$RUNNER_TEMP")"
-        "$action_repo_root/tools/list-run-artifacts.sh" > "$artifact_list_path"
+        "$GITHUB_ACTION_PATH/tools/list-run-artifacts.sh" > "$artifact_list_path"
 
         if [[ ! -s "$artifact_list_path" ]]; then
           echo "No matching run artifacts found for pattern '$ARTIFACT_NAME_GLOB'." >&2
@@ -160,5 +159,4 @@ runs:
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
         set -euo pipefail
-        action_repo_root="$(cd "$GITHUB_ACTION_PATH/.." && pwd)"
-        "$action_repo_root/tools/delete-run-artifacts.sh"
+        "$GITHUB_ACTION_PATH/tools/delete-run-artifacts.sh"
