@@ -2,7 +2,7 @@
   "name": "ghcr-cleanup-manager",
   "description": "GHCR Cleanup Manager: GitHub Action and CLI for safe GitHub Container Registry cleanup and inspection.",
   "homepage": "https://github.com/ghcr-manager/ghcr-cleanup-manager#readme",
-  "version": "v1.1.4",
+  "version": "v1.1.5",
   "license": "MIT",
   "type": "module",
   "keywords": [

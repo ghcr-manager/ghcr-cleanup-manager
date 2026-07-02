@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.5] - 2026-07-02
+
+### Fixed
+
+- Fixed the root GitHub Action so action-local helper files resolve correctly in other repositories.
+
 ## [v1.1.4] - 2026-07-02
 
 ### Fixed

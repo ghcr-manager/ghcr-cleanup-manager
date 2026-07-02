@@ -12,7 +12,7 @@ Previous handoff material was archived to
 - Main npm package: `ghcr-cleanup-manager`
 - Visualizer npm package: `ghcr-cleanup-manager-visualizer`
 - Current repo: `ghcr-manager/ghcr-cleanup-manager`
-- Current release prep: `v1.1.3`
+- Current release prep: `v1.1.5`
 
 ## Current Decisions
 
@@ -30,6 +30,16 @@ Previous handoff material was archived to
 - Visualizer details now show `sha256-*` tags while the graph view continues to hide them from node labels.
 - Release validation now fails if repo examples pin `uses: ghcr-manager/...@v...` action references to a version other
   than the current release tag.
+- Root action helper prep now runs from `${{ github.action_path }}`, so action-local helper scripts resolve correctly
+  when the action is consumed from another repository.
+
+## Checklist
+
+- [x] Reviewed commits after `ca337815` for user-facing impact.
+- [x] Classified `1705cb42` as the user-facing fix and the remaining commits as internal cleanup/chore work.
+- [x] Updated `CHANGELOG.md` for `v1.1.5`.
+- [x] Updated release prep notes for `v1.1.5`.
+- [x] Publish `v1.1.5` release artifacts.
 
 ## Session Decisions
 
