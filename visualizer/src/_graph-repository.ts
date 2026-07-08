@@ -370,8 +370,7 @@ export class GraphRepository {
         `
       )
       .get(...scanIds, tag, preferredScanId, fallbackScanId ?? null, fallbackScanId ?? -1) as
-      | { digest: string }
-      | undefined;
+      { digest: string } | undefined;
     if (!row) {
       throw new Error(`tag ${tag} was not found in selected scan context`);
     }

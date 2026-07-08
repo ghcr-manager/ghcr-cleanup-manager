@@ -56,9 +56,15 @@ export class PlannerPlanArtifacts {
 
   #listClosureManifests(scanId: number) {
     return this.#sql
-      .all<
-        Parameters<typeof mapClosureManifestRow>[0]
-      >(_LIST_CLOSURE_MANIFESTS_SQL, [scanId, scanId, scanId, scanId, scanId, scanId, scanId])
+      .all<Parameters<typeof mapClosureManifestRow>[0]>(_LIST_CLOSURE_MANIFESTS_SQL, [
+        scanId,
+        scanId,
+        scanId,
+        scanId,
+        scanId,
+        scanId,
+        scanId
+      ])
       .map(mapClosureManifestRow);
   }
 
