@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildHttpErrorMessage, type PackageSnapshot } from "../../src/core/index.js";
+import { buildHttpErrorMessage, isRetryableGitHubApiStatus, type PackageSnapshot } from "../../src/core/index.js";
 
 test("core index re-exports public types", () => {
   const snapshot: PackageSnapshot = {
@@ -31,4 +31,8 @@ test("core index re-exports http error formatting", async () => {
   );
 
   assert.equal(message, "fallback - status 404 - Not Found - https://docs.example.test");
+});
+
+test("core index re-exports GitHub REST retry helpers", () => {
+  assert.equal(isRetryableGitHubApiStatus(429), true);
 });

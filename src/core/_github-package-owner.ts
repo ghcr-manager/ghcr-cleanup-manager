@@ -5,6 +5,7 @@ import {
   ingestRequestRetryDelayMs
 } from "../config/index.js";
 import { buildHttpErrorMessage } from "./_http-error.js";
+import { runGitHubApiWithRetry, throwIfRetryableGitHubApiResponse } from "./_github-rest.js";
 
 interface _FetchLikeResponse {
   ok: boolean;
@@ -32,45 +33,39 @@ export async function getOwnerURIComponent(
 
   const url = new URL(`/users/${encodeURIComponent(owner)}`, githubApiBaseUrl).toString();
 
-  for (let attempt = 1; ; attempt += 1) {
-    const response = await fetchImpl(url, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${token}`,
-        "User-Agent": "ghcr-cleanup-manager",
-        "X-GitHub-Api-Version": githubApiVersion
-      }
-    });
-    if (response.ok) {
-      const payload = (await response.json()) as { type?: unknown };
-      if (payload.type === "Organization") {
-        const ownerURIComponent = `orgs/${encodeURIComponent(owner)}`;
-        _ownerUriComponentByOwner.set(owner, ownerURIComponent);
-        return ownerURIComponent;
-      }
-      if (payload.type === "User") {
-        const ownerURIComponent = `users/${encodeURIComponent(owner)}`;
-        _ownerUriComponentByOwner.set(owner, ownerURIComponent);
-        return ownerURIComponent;
-      }
-      throw new Error(`GitHub owner lookup did not include a supported type`);
+  const response = await runGitHubApiWithRetry(
+    "GitHub owner lookup",
+    logger,
+    ingestRequestRetryCount,
+    ingestRequestRetryDelayMs,
+    async () => {
+      const ownerResponse = await fetchImpl(url, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${token}`,
+          "User-Agent": "ghcr-cleanup-manager",
+          "X-GitHub-Api-Version": githubApiVersion
+        }
+      });
+      await throwIfRetryableGitHubApiResponse(ownerResponse, "GitHub owner lookup failed", ingestRequestRetryDelayMs);
+      return ownerResponse;
     }
+  );
 
-    if (!_isRetryableStatus(response.status) || attempt > ingestRequestRetryCount) {
-      throw new Error(await buildHttpErrorMessage(response, "GitHub owner lookup failed"));
-    }
-
-    logger.warn(
-      `GitHub owner lookup failed on attempt ${attempt}/${ingestRequestRetryCount + 1}; retrying in ${ingestRequestRetryDelayMs}ms - ${await buildHttpErrorMessage(response, "GitHub owner lookup failed")}`
-    );
-    await _sleep(ingestRequestRetryDelayMs);
+  if (!response.ok) {
+    throw new Error(await buildHttpErrorMessage(response, "GitHub owner lookup failed"));
   }
-}
 
-function _isRetryableStatus(status: number): boolean {
-  return status === 429 || status === 502 || status === 503 || status === 504;
-}
-
-function _sleep(delayMs: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, delayMs));
+  const payload = (await response.json()) as { type?: unknown };
+  if (payload.type === "Organization") {
+    const ownerURIComponent = `orgs/${encodeURIComponent(owner)}`;
+    _ownerUriComponentByOwner.set(owner, ownerURIComponent);
+    return ownerURIComponent;
+  }
+  if (payload.type === "User") {
+    const ownerURIComponent = `users/${encodeURIComponent(owner)}`;
+    _ownerUriComponentByOwner.set(owner, ownerURIComponent);
+    return ownerURIComponent;
+  }
+  throw new Error(`GitHub owner lookup did not include a supported type`);
 }

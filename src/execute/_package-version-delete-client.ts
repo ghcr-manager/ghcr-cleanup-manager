@@ -1,12 +1,11 @@
 import { githubApiBaseUrl, githubApiVersion } from "../config/index.js";
-import { getOwnerURIComponent } from "../core/index.js";
 import {
   buildHttpErrorMessage,
   buildTransportErrorMessage,
-  isRetryableStatus,
-  resolveFetch,
-  runWithRetry
-} from "./_http.js";
+  getOwnerURIComponent,
+  throwIfRetryableGitHubApiResponse
+} from "../core/index.js";
+import { resolveFetch, runWithRetry } from "./_http.js";
 import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
 
 export async function deletePackageVersion(
@@ -38,11 +37,11 @@ export async function deletePackageVersion(
           "X-GitHub-Api-Version": githubApiVersion
         }
       });
-      if (!deleteResponse.ok && isRetryableStatus(deleteResponse.status)) {
-        throw new Error(
-          await buildHttpErrorMessage(deleteResponse, `GitHub package delete request failed for version ${versionId}`)
-        );
-      }
+      await throwIfRetryableGitHubApiResponse(
+        deleteResponse,
+        `GitHub package delete request failed for version ${versionId}`,
+        1000
+      );
       return deleteResponse;
     });
   } catch (error) {

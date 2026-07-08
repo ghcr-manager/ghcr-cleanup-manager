@@ -291,3 +291,81 @@ test("deletePackageVersion retries retryable HTTP failures", async () => {
     globalThis.setTimeout = originalSetTimeout;
   }
 });
+
+test("deletePackageVersion retries rate-limited 403 responses until reset", async () => {
+  const originalDateNow = Date.now;
+  const originalSetTimeout = globalThis.setTimeout;
+  const warnings: string[] = [];
+  let attempts = 0;
+  let nowMs = 1_000;
+
+  Date.now = () => nowMs;
+  globalThis.setTimeout = ((callback: (...args: unknown[]) => void, delay?: number) => {
+    nowMs += Number(delay ?? 0);
+    callback();
+    return 0;
+  }) as unknown as typeof setTimeout;
+
+  try {
+    await deletePackageVersion(
+      "acme",
+      "example",
+      42,
+      "token",
+      {
+        debug() {},
+        info() {},
+        warn(message) {
+          warnings.push(message);
+        },
+        error() {}
+      },
+      {
+        fetchImpl: async (input) => {
+          if (input === "https://api.github.com/users/acme") {
+            return {
+              ok: true,
+              status: 200,
+              headers: new Headers(),
+              async json() {
+                return { type: "Organization" };
+              }
+            };
+          }
+          attempts += 1;
+          if (attempts === 1) {
+            return {
+              ok: false,
+              status: 403,
+              headers: new Headers({
+                "content-type": "application/json",
+                "x-ratelimit-remaining": "0",
+                "x-ratelimit-reset": "3"
+              }),
+              async json() {
+                return { message: "API rate limit exceeded for installation" };
+              }
+            };
+          }
+          return {
+            ok: true,
+            status: 204,
+            headers: new Headers(),
+            async json() {
+              return {};
+            }
+          };
+        }
+      }
+    );
+
+    assert.equal(attempts, 2);
+    assert.match(
+      warnings[0] ?? "",
+      /GitHub package delete request for version 42 failed on attempt 1\/4; retrying in 2000ms - GitHub package delete request failed for version 42 - status 403 - API rate limit exceeded for installation/
+    );
+  } finally {
+    Date.now = originalDateNow;
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});

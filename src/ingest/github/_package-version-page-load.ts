@@ -1,12 +1,16 @@
-import { githubApiBaseUrl, githubApiVersion } from "../../config/index.js";
-import { getOwnerURIComponent } from "../../core/index.js";
 import {
-  buildFetchTransportErrorMessage,
+  githubApiBaseUrl,
+  githubApiVersion,
+  ingestRequestRetryCount,
+  ingestRequestRetryDelayMs
+} from "../../config/index.js";
+import {
   buildHttpErrorMessage,
-  type FetchLike,
-  type GitHubScanOptions,
-  withFetchRetry
-} from "./_shared.js";
+  getOwnerURIComponent,
+  runGitHubApiWithRetry,
+  throwIfRetryableGitHubApiResponse
+} from "../../core/index.js";
+import { buildFetchTransportErrorMessage, type FetchLike, type GitHubScanOptions } from "./_shared.js";
 
 export interface GitHubPackageVersionPageItem {
   id: number;
@@ -29,7 +33,11 @@ export async function loadPackageVersionPage(
   const url = await buildPackageVersionPageUrl(fetchImpl, options, page);
   let response;
   try {
-    response = await withFetchRetry(
+    response = await runGitHubApiWithRetry(
+      `GitHub Packages request for page ${page}`,
+      options.logger,
+      ingestRequestRetryCount,
+      ingestRequestRetryDelayMs,
       async () => {
         const pageResponse = await fetchImpl(url, {
           headers: {
@@ -39,15 +47,12 @@ export async function loadPackageVersionPage(
             "X-GitHub-Api-Version": githubApiVersion
           }
         });
-        if (!pageResponse.ok && _shouldRetryStatus(pageResponse.status)) {
-          throw new Error(await buildHttpErrorMessage(pageResponse, `GitHub Packages request for page ${page} failed`));
-        }
+        await throwIfRetryableGitHubApiResponse(
+          pageResponse,
+          `GitHub Packages request for page ${page} failed`,
+          ingestRequestRetryDelayMs
+        );
         return pageResponse;
-      },
-      {
-        logger: options.logger,
-        label: `GitHub Packages request for page ${page}`,
-        shouldRetry: (error) => _shouldRetryError(error)
       }
     );
   } catch (error) {
@@ -80,16 +85,4 @@ async function buildPackageVersionPageUrl(
   url.searchParams.set("per_page", "100");
   url.searchParams.set("page", String(page));
   return url.toString();
-}
-
-function _shouldRetryStatus(status: number): boolean {
-  return status === 429 || status === 502 || status === 503 || status === 504;
-}
-
-function _shouldRetryError(error: unknown): boolean {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-
-  return /fetch failed|status 429|status 502|status 503|status 504/.test(error.message);
 }

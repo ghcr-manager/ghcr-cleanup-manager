@@ -48,3 +48,8 @@ Previous handoff material was archived to
 - For cycle failures, a single representative unresolved edge plus the preserved DB is sufficient debugging context.
 - Treat `sha256-<digest>`-style tags, including suffix variants such as `.sig`, as digest-derived helper tags; the
   reachability fix only excludes self-edges, not the broader helper-tag model.
+- Cleanup deletes should honor `Retry-After` or `X-RateLimit-Reset` when GitHub returns a rate-limit response; do not
+  add unconditional per-delete pacing because it inflates very large cleanup runs without increasing the primary rate
+  limit budget.
+- GitHub REST rate-limit handling should live in one shared internal transport layer used by the app's GitHub API
+  clients rather than being reimplemented in individual endpoint wrappers.

@@ -1,4 +1,5 @@
 import { ingestRequestRetryCount, ingestRequestRetryDelayMs } from "../../config/index.js";
+import { buildTransportErrorMessage } from "../../core/index.js";
 export { buildHttpErrorMessage } from "../../core/index.js";
 
 export interface GitHubScanOptions {
@@ -37,9 +38,7 @@ export async function defaultFetch(input: string, init?: RequestInit): Promise<F
 }
 
 export function buildFetchTransportErrorMessage(error: unknown, fallback: string): string {
-  const details = [fallback];
-  details.push(..._collectErrorDetails(error));
-  return details.join(" - ");
+  return buildTransportErrorMessage(error, fallback);
 }
 
 export async function withFetchRetry<T>(
@@ -72,42 +71,4 @@ export async function withFetchRetry<T>(
 
 function _sleep(delayMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, delayMs));
-}
-
-function _collectErrorDetails(error: unknown): string[] {
-  if (!(error instanceof Error)) {
-    return [String(error)];
-  }
-
-  const details: string[] = [];
-  const seen = new Set<unknown>();
-  let current: unknown = error;
-  while (current instanceof Error && !seen.has(current)) {
-    seen.add(current);
-    const message = _formatErrorMessage(current);
-    if (message && !details.includes(message)) {
-      details.push(message);
-    }
-    current = current.cause;
-  }
-
-  return details.length > 0 ? details : [String(error)];
-}
-
-function _formatErrorMessage(error: Error): string | undefined {
-  const code =
-    "code" in error && typeof (error as { code?: unknown }).code === "string"
-      ? (error as { code: string }).code
-      : undefined;
-  if (error.message && code) {
-    return `${error.message} (${code})`;
-  }
-  if (error.message) {
-    return error.message;
-  }
-  if (code) {
-    return code;
-  }
-
-  return undefined;
 }
