@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cleanup old images
-        uses: ghcr-manager/ghcr-cleanup-manager@cf1cb8d94b1e28f8c9777bc37e7132453c7a90ae # v1.1.2
+        uses: ghcr-manager/ghcr-cleanup-manager@1d5ec814fd3012b21396a7a43ce0fcb5b54486c3 # v1.1.5
         with:
           command: cleanup
           token: ${{ github.token }}
