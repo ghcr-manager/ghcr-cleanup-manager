@@ -224,7 +224,6 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
-          name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           target_commitish: ${{ github.sha }}
           generate_release_notes: true
