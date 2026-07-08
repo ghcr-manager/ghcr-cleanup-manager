@@ -34,7 +34,7 @@ cleanup database, and you want one merged artifact at the end.
 
 ```yaml
 - name: Merge current-run DB artifacts
-  uses: ghcr-manager/ghcr-cleanup-manager/merge-run-artifacts@v1.1.5
+  uses: ghcr-manager/ghcr-cleanup-manager/merge-run-artifacts@v1.1.6
   with:
     artifact-name-glob: "*.sqlite"
     db-file: ghcr-cleanup-manager-merged.sqlite

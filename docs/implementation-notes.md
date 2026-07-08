@@ -12,7 +12,7 @@ Previous handoff material was archived to
 - Main npm package: `ghcr-cleanup-manager`
 - Visualizer npm package: `ghcr-cleanup-manager-visualizer`
 - Current repo: `ghcr-manager/ghcr-cleanup-manager`
-- Current release prep: `v1.1.5`
+- Current release prep: `v1.1.6`
 
 ## Current Decisions
 
