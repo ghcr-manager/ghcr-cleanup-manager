@@ -64,9 +64,7 @@ function _insertVersionWithManifest(
   options: {
     mediaType: string;
     manifestKind:
-      | typeof ManifestKinds.indexManifest
-      | typeof ManifestKinds.imageManifest
-      | typeof ManifestKinds.signatureManifest;
+      typeof ManifestKinds.indexManifest | typeof ManifestKinds.imageManifest | typeof ManifestKinds.signatureManifest;
     tag?: string;
   }
 ) {
