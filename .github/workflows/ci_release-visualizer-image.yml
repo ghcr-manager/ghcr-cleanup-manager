@@ -81,7 +81,7 @@ jobs:
           tags: ${{ env.IMAGE_REF }}:${{ github.run_id }}-${{ matrix.arch }}-test
 
       - name: Remove temporary tag on image (optional)
-        uses: ghcr-manager/ghcr-untag-action@ab3e570fdd6d67415ed325bedf29f3ec0777add1 # v1.0.6
+        uses: ghcr-manager/ghcr-untag-action@6691a653f421749a921a1ce0e63fec76bf2748a9 # v1.0.7
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}

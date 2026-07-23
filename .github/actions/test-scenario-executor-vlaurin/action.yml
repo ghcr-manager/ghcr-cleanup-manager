@@ -59,7 +59,7 @@ runs:
         } >> "$GITHUB_OUTPUT"
 
     - name: Execute with vlaurin/action-ghcr-prune
-      uses: vlaurin/action-ghcr-prune@45006c484f4e7d98c6f6f4c5ba738dd2a441f9c7
+      uses: vlaurin/action-ghcr-prune@45006c484f4e7d98c6f6f4c5ba738dd2a441f9c7 # main
       with:
         token: ${{ inputs.token }}
         organization: ${{ inputs.owner }}

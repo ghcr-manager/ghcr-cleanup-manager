@@ -28,7 +28,7 @@ runs:
       uses: ./.github/actions/test-setup-buildx
 
     - name: Log in to GHCR
-      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+      uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
       with:
         registry: ghcr.io
         username: ${{ inputs.registry_username }}
@@ -62,7 +62,7 @@ runs:
 
     - name: Remove extra graph tags for 2multiarch2tags
       if: ${{ startsWith(inputs.seed_strategy, 'graph-2multiarch2tags-') }}
-      uses: ghcr-manager/ghcr-untag-action@0c32d681a3f68580cbcfebfcf126cbab8df872f8 # v1.0.4
+      uses: ghcr-manager/ghcr-untag-action@6691a653f421749a921a1ce0e63fec76bf2748a9 # v1.0.7
       with:
         token: ${{ inputs.registry_password }}
         owner: ${{ env.OWNER }}

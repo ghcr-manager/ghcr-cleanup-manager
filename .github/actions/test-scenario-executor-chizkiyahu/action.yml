@@ -37,7 +37,7 @@ runs:
         echo "except_untagged_multiplatform=true" >> "$GITHUB_OUTPUT"
 
     - name: Execute with Chizkiyahu/delete-untagged-ghcr-action
-      uses: Chizkiyahu/delete-untagged-ghcr-action@707cf4f1445ec3e3f5c7bfc83a023fb868cd1174
+      uses: Chizkiyahu/delete-untagged-ghcr-action@707cf4f1445ec3e3f5c7bfc83a023fb868cd1174 # v6.1.1
       with:
         token: ${{ inputs.token }}
         repository_owner: ${{ inputs.owner }}
