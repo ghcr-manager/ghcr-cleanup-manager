@@ -146,7 +146,10 @@ export const cleanupScenarios = {
       {
         tagNameKey: "keepTag",
         expectedManifestKind: "multi_arch_manifest",
-        expectedManifestMediaType: "application/vnd.docker.distribution.manifest.list.v2+json",
+        acceptedManifestMediaTypes: [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.oci.image.index.v1+json"
+        ],
         requireRoot: true
       }
     ]

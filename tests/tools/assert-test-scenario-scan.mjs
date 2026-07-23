@@ -146,6 +146,14 @@ for (const scanAssertion of scanAssertions) {
       `tag '${tag}' resolved to unexpected manifest payload media type`
     );
   }
+
+  if (scanAssertion.acceptedManifestMediaTypes) {
+    const payload = JSON.parse(row.raw_json);
+    assert.ok(
+      scanAssertion.acceptedManifestMediaTypes.includes(payload.mediaType),
+      `tag '${tag}' resolved to unexpected manifest payload media type`
+    );
+  }
 }
 
 for (const signatureAssertion of signatureSubjectAssertions) {
