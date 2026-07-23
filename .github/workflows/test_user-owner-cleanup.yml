@@ -22,6 +22,7 @@ permissions:
 
 jobs:
   cleanup:
+    name: Clean up user-owned package
     runs-on: ubuntu-latest
     concurrency:
       group: ghcr-cleanup-manager__user-owner-cleanup

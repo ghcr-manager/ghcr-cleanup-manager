@@ -17,6 +17,7 @@ permissions:
 
 jobs:
   test-suite:
+    name: Unit tests and lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

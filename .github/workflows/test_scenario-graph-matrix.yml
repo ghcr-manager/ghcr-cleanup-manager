@@ -75,6 +75,7 @@ jobs:
 
   execute:
     needs: prepare
+    name: ${{ matrix.scenario }} / ${{ matrix.executor }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}

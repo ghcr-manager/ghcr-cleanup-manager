@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   change-validation:
+    name: Change validation
     uses: ./.github/workflows/ci_change-validation.yml
 
   verify-release-refs:
@@ -85,6 +86,7 @@ jobs:
           fi
 
   test-user-owner-cleanup:
+    name: Test user-owner cleanup
     needs:
       - change-validation
       - verify-release-refs
@@ -95,6 +97,7 @@ jobs:
     secrets: inherit
 
   test-scenario-graph-matrix:
+    name: Test scenario graph matrix
     needs:
       - change-validation
       - verify-release-refs
@@ -110,6 +113,7 @@ jobs:
       executors: ghcr-cleanup-manager
 
   test-scenario-executor-matrix:
+    name: Test scenario executor matrix
     needs:
       - change-validation
       - verify-release-refs
@@ -172,6 +176,7 @@ jobs:
           npm publish --workspace visualizer --provenance --access public
 
   publish-visualizer-image:
+    name: Publish visualizer image
     needs:
       - change-validation
       - verify-release-refs
