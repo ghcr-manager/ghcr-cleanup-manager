@@ -35,7 +35,7 @@ jobs:
 
       - name: Cleanup package one
         id: first-package
-        uses: ghcr-manager/ghcr-cleanup-manager@v1.1.6
+        uses: ghcr-manager/ghcr-cleanup-manager@v1.1.7
         with:
           command: cleanup
           token: ${{ github.token }}
@@ -45,7 +45,7 @@ jobs:
           delete-untagged: true
 
       - name: Cleanup package two
-        uses: ghcr-manager/ghcr-cleanup-manager@v1.1.6
+        uses: ghcr-manager/ghcr-cleanup-manager@v1.1.7
         with:
           command: cleanup
           token: ${{ github.token }}
@@ -80,7 +80,7 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@v6
-      - uses: ghcr-manager/ghcr-cleanup-manager@v1.1.6
+      - uses: ghcr-manager/ghcr-cleanup-manager@v1.1.7
         with:
           command: cleanup
           token: ${{ github.token }}
@@ -98,7 +98,7 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@v6
-      - uses: ghcr-manager/ghcr-cleanup-manager@v1.1.6
+      - uses: ghcr-manager/ghcr-cleanup-manager@v1.1.7
         with:
           command: cleanup
           token: ${{ github.token }}
@@ -118,7 +118,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Merge current-run DB artifacts
-        uses: ghcr-manager/ghcr-cleanup-manager/merge-run-artifacts@v1.1.6
+        uses: ghcr-manager/ghcr-cleanup-manager/merge-run-artifacts@v1.1.7
         with:
           artifact-name-glob: "*.sqlite" #default
           db-file: ghcr-cleanup-manager-merged.sqlite #default

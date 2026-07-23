@@ -31,7 +31,7 @@ Use this helper action when you already have several `.sqlite` files on the runn
 
 ```yaml
 - name: Merge local scan DBs
-  uses: ghcr-manager/ghcr-cleanup-manager/db-merge@v1.1.6
+  uses: ghcr-manager/ghcr-cleanup-manager/db-merge@v1.1.7
   with:
     source-db-dir: ./artifacts/sqlite
     db-file: ghcr-cleanup-manager-merged.sqlite

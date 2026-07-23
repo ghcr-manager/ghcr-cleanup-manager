@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.7] - 2026-07-23
+
+### Changed
+
+- Bump the npm build and development toolchain dependencies.
+- Keep `typescript` pinned to `6.0.3` until `typescript-eslint` supports TypeScript 7.
+- Bump used GitHub actions.
+
 ## [v1.1.6] - 2026-07-08
 
 ### Fixed
