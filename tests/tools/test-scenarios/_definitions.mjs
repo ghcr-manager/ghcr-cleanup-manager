@@ -16,7 +16,8 @@ export const scenarioMatrix = scenarioIds.flatMap((scenarioId) =>
     ? []
     : getSupportedExecutors(scenarios[scenarioId]).map((executor) => ({
         scenario: scenarioId,
-        executor
+        executor,
+        jobName: `${executor} / ${scenarioId}`
       }))
 );
 
@@ -24,7 +25,8 @@ export const graphScenarioMatrix = scenarioIds.flatMap((scenarioId) =>
   scenarios[scenarioId].includeInGraphMatrix === true
     ? getSupportedExecutors(scenarios[scenarioId]).map((executor) => ({
         scenario: scenarioId,
-        executor
+        executor,
+        jobName: `${executor} / ${scenarioId}`
       }))
     : []
 );

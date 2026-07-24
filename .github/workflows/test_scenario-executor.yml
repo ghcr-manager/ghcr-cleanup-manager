@@ -135,7 +135,7 @@ permissions:
 
 jobs:
   execute:
-    name: ${{ inputs.scenario }} / ${{ inputs.executor }}
+    name: ${{ inputs.executor }} / ${{ inputs.scenario }}
     runs-on: ubuntu-latest
     concurrency:
       group: ghcr-cleanup-manager__scenario__${{ inputs.scenario }}__${{ inputs.executor }}
