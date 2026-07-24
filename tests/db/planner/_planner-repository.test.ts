@@ -117,6 +117,65 @@ test("planner repository preserves keep planner inputs across combined and wrapp
   database.close();
 });
 
+test("planner repository counts excluded newer tagged roots in the keep-n-tagged window", () => {
+  const database = openDatabase(":memory:");
+  const writer = new ScanWriter(database);
+  const repository = new PlannerRepository(database);
+
+  writer.startScan("acme", "example", "2026-07-24T10:00:00.000Z", {
+    rawJson: JSON.stringify({ visibility: "private" })
+  });
+
+  writer.insertPackageVersion({
+    versionId: 101,
+    createdAt: "2026-07-23T10:00:00.000Z",
+    updatedAt: "2026-07-23T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 101,
+    digest: "sha256:newer-excluded",
+    mediaType: "application/vnd.oci.image.manifest.v1+json",
+    manifestKind: ManifestKinds.imageManifest
+  });
+  writer.insertTag({ versionId: 101, tag: "keep-me" });
+
+  writer.insertPackageVersion({
+    versionId: 102,
+    createdAt: "2026-07-22T10:00:00.000Z",
+    updatedAt: "2026-07-22T10:00:00.000Z"
+  });
+  writer.insertManifest({
+    versionId: 102,
+    digest: "sha256:older-match",
+    mediaType: "application/vnd.oci.image.manifest.v1+json",
+    manifestKind: ManifestKinds.imageManifest
+  });
+  writer.insertTag({ versionId: 102, tag: "delete-me" });
+
+  writer.markScanCompleted("2026-07-24T10:00:00.000Z");
+
+  const plan = repository.getCleanupPlanWithCutoff("acme", "example", {
+    deleteTags: [".*"],
+    deleteTagsRequested: true,
+    excludeTags: ["^keep-me$"],
+    keepNTagged: 1,
+    useRegex: true
+  });
+
+  assert.deepEqual(plan.directTargetTags, ["delete-me"]);
+  assert.deepEqual(plan.directTargetRoots, [
+    {
+      versionId: 102,
+      digest: "sha256:older-match",
+      manifestKind: ManifestKinds.imageManifest,
+      reason: "keep-n-tagged-overflow",
+      selectionMode: "delete-root"
+    }
+  ]);
+
+  database.close();
+});
+
 test("planner repository omits empty and unset planner inputs from cleanup plans", async () => {
   const database = openDatabase(":memory:");
   const writer = new ScanWriter(database);

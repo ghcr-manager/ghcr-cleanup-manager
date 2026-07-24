@@ -32,6 +32,8 @@ Previous handoff material was archived to
   than the current release tag.
 - Root action helper prep now runs from `${{ github.action_path }}`, so action-local helper scripts resolve correctly
   when the action is consumed from another repository.
+- `exclude-tags` now protects tagged roots from `keep-n-tagged` overflow deletion and still counts excluded newer roots
+  toward the keep window, so excluded semver/latest tags cannot be deleted indirectly by keep-window planning.
 
 ## Checklist
 
@@ -53,3 +55,5 @@ Previous handoff material was archived to
   limit budget.
 - GitHub REST rate-limit handling should live in one shared internal transport layer used by the app's GitHub API
   clients rather than being reimplemented in individual endpoint wrappers.
+- Treat `exclude-tags` as a run-wide protection signal for tagged-root planning, not only as a filter on explicit
+  `delete-tags` matches.

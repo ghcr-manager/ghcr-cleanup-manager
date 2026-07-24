@@ -5,6 +5,8 @@ import type { PlannerSql } from "./_planner-sql.js";
 export interface DirectTargetRootTagFilters {
   selectedTagsSql: string;
   selectedParams: Array<number | string>;
+  excludedTagsSql: string;
+  excludedParams: Array<number | string>;
 }
 
 export function buildDirectTargetRootTagFilters(
@@ -51,9 +53,24 @@ export function buildDirectTargetRootTagFilters(
   const selectedParams = selectedTagPredicate
     ? [scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? [])]
     : [];
+  const excludedTagsSql = excludedTagPredicate
+    ? `
+        SELECT DISTINCT xt.version_id, xt.tag
+        FROM tags xt
+        WHERE xt.scan_id = ?
+          AND xt.is_digest_tag = 0
+          AND (${excludedTagPredicate.sql})
+      `
+    : `
+        SELECT NULL AS version_id, NULL AS tag
+        WHERE 1 = 0
+      `;
+  const excludedParams = excludedTagPredicate ? [scanId, ...excludedTagPredicate.params] : [];
 
   return {
     selectedTagsSql,
-    selectedParams
+    selectedParams,
+    excludedTagsSql,
+    excludedParams
   };
 }

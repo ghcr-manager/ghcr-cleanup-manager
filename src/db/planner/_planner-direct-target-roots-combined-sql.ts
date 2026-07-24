@@ -9,7 +9,8 @@ export interface CombinedDirectTargetRootsQuery {
 export function buildCombinedDirectTargetRootsQuery(
   scanId: number,
   options: DirectTargetRootOptions,
-  selectedTagsSql: string
+  selectedTagsSql: string,
+  excludedTagsSql: string
 ): CombinedDirectTargetRootsQuery {
   const baseParams: Array<number | string> = [scanId];
   const cutoffSql = options.cutoffTimestamp ? "AND created_at < ?" : "";
@@ -28,9 +29,11 @@ export function buildCombinedDirectTargetRootsQuery(
     deleteOrphanedImages,
     deleteOrphanedImages,
     taggedBranchEnabled,
+    keepNTaggedActive,
     deleteTagsRequested,
     deleteTagsRequested,
     keepNTaggedActive,
+    deleteTagsRequested,
     deleteTagsRequested,
     keepNTaggedActive,
     options.keepNTagged ?? 0,
@@ -85,12 +88,22 @@ export function buildCombinedDirectTargetRootsQuery(
     selected_tags AS (
       ${selectedTagsSql}
     ),
+    excluded_tags AS (
+      ${excludedTagsSql}
+    ),
     matched_tag_counts AS (
       SELECT
         st.version_id,
         COUNT(DISTINCT st.tag) AS matched_tag_count
       FROM selected_tags st
       GROUP BY st.version_id
+    ),
+    excluded_tag_counts AS (
+      SELECT
+        et.version_id,
+        COUNT(DISTINCT et.tag) AS excluded_tag_count
+      FROM excluded_tags et
+      GROUP BY et.version_id
     ),
     eligible_tagged_roots AS (
       SELECT
@@ -103,10 +116,13 @@ export function buildCombinedDirectTargetRootsQuery(
             THEN COALESCE(mtc.matched_tag_count, 0)
           ELSE rc.tag_count
         END AS total_tag_count,
-        COALESCE(mtc.matched_tag_count, 0) AS matched_tag_count
+        COALESCE(mtc.matched_tag_count, 0) AS matched_tag_count,
+        COALESCE(etc.excluded_tag_count, 0) AS excluded_tag_count
       FROM root_candidates rc
       LEFT JOIN matched_tag_counts mtc
         ON mtc.version_id = rc.version_id
+      LEFT JOIN excluded_tag_counts etc
+        ON etc.version_id = rc.version_id
       WHERE (
           rc.tag_count > 0
           OR (? = 1 AND COALESCE(mtc.matched_tag_count, 0) > 0)
@@ -120,12 +136,13 @@ export function buildCombinedDirectTargetRootsQuery(
         root_manifest_kind,
         total_tag_count,
         matched_tag_count,
+        excluded_tag_count,
         ROW_NUMBER() OVER (
           ORDER BY created_at DESC, version_id DESC, root_digest DESC
         ) AS recency_rank
       FROM eligible_tagged_roots
-      WHERE ? = 0
-         OR matched_tag_count > 0
+      WHERE (? = 1)
+         OR (? = 1 AND matched_tag_count > 0)
     ),
     final_tagged_targets AS (
       SELECT
@@ -149,8 +166,11 @@ export function buildCombinedDirectTargetRootsQuery(
           ELSE 'untag-only'
         END AS selection_mode
       FROM ranked_tagged_roots
-      WHERE ? = 0
+      WHERE excluded_tag_count = 0
+        AND (? = 0 OR matched_tag_count > 0)
+        AND (? = 0
          OR recency_rank > ?
+        )
     ),
     ranked_untagged_roots AS (
       SELECT
