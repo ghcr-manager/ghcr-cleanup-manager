@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.8] - 2026-07-24
+
+### Fixed
+
+- Fixed `exclude-tags` handling during `keep-n-tagged` cleanup planning so excluded tags protect their roots from
+  keep-window deletion and still count toward the retained tagged set.
+
 ## [v1.1.7] - 2026-07-23
 
 ### Changed
