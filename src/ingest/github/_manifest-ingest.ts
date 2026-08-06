@@ -134,11 +134,11 @@ async function _getRegistryPullToken(
   options: GitHubScanOptions,
   registryPullTokenState: _RegistryPullTokenState
 ): Promise<RegistryPullToken> {
-  if (registryPullTokenState.token && Date.now() < registryPullTokenState.token.expiresAt - 5000) {
+  if (registryPullTokenState.token != null && Date.now() < registryPullTokenState.token.expiresAt - 5000) {
     return registryPullTokenState.token;
   }
 
-  if (!registryPullTokenState.load) {
+  if (registryPullTokenState.load == null) {
     registryPullTokenState.load = loadRegistryPullToken(fetchImpl, registryBaseUrl, options).finally(() => {
       registryPullTokenState.load = undefined;
     });

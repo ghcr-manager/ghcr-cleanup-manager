@@ -1,3 +1,4 @@
+import type { ManifestKind } from "../../core/index.js";
 interface _PlanRootRow {
   version_id: number;
   root_digest: string;
@@ -31,9 +32,9 @@ interface _BlockedRootRow {
 }
 
 export interface PlannerLogger {
-  trace(message: string): void;
-  debug(message: string): void;
-  warn?(message: string): void;
+  trace: (message: string) => void;
+  debug: (message: string) => void;
+  warn?: (message: string) => void;
 }
 
 export interface ScanRow {
@@ -204,4 +205,3 @@ export function mapBlockedRootRow(row: _BlockedRootRow): DeletePlanBlockedRoot {
     reason: row.block_reason
   };
 }
-import type { ManifestKind } from "../../core/index.js";

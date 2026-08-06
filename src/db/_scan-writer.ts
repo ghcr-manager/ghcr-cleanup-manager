@@ -169,7 +169,7 @@ export class ScanWriter {
       artifactType: manifest.artifactType ?? null,
       configMediaType: manifest.configMediaType ?? null,
       subjectDigest: manifest.subjectDigest ?? null,
-      annotationsJson: manifest.annotations ? JSON.stringify(manifest.annotations) : null,
+      annotationsJson: manifest.annotations != null ? JSON.stringify(manifest.annotations) : null,
       manifestKind: manifest.manifestKind ?? null
     });
   }

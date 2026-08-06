@@ -33,7 +33,7 @@ export function buildTags(packageVersions: PackageVersionRecord[]): TagRecord[] 
   for (const version of packageVersions) {
     const metadata = version.metadata?.container;
     const tagNames = Array.isArray((metadata as { tags?: unknown } | undefined)?.tags)
-      ? ((metadata as { tags: unknown[] }).tags.filter((tag): tag is string => typeof tag === "string") as string[])
+      ? (metadata as { tags: unknown[] }).tags.filter((tag): tag is string => typeof tag === "string")
       : [];
 
     for (const tagName of tagNames) {

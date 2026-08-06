@@ -83,7 +83,7 @@ export class DbMergeRepository {
         )
         .get(sourceScan.scan_uuid) as TargetScanRow | undefined;
 
-      if (!targetScan) {
+      if (targetScan == null) {
         const targetScanId = this.#scanCopy.insertScan(sourceScan);
         this.#scanCopy.copyScanRows(attachName, sourceScan.scan_id, targetScanId);
         summary.importedScanCount += 1;

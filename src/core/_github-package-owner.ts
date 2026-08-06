@@ -11,11 +11,11 @@ interface _FetchLikeResponse {
   ok: boolean;
   status: number;
   headers: Headers;
-  json(): Promise<unknown>;
+  json: () => Promise<unknown>;
 }
 
 interface _Logger {
-  warn(message: string): void;
+  warn: (message: string) => void;
 }
 
 const _ownerUriComponentByOwner = new Map<string, string>();
@@ -67,5 +67,5 @@ export async function getOwnerURIComponent(
     _ownerUriComponentByOwner.set(owner, ownerURIComponent);
     return ownerURIComponent;
   }
-  throw new Error(`GitHub owner lookup did not include a supported type`);
+  throw new Error("GitHub owner lookup did not include a supported type");
 }

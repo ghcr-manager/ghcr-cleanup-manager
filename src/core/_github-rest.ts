@@ -4,7 +4,7 @@ const _RETRYABLE_STATUS_CODES = new Set([429, 502, 503, 504]);
 const _MINUTE_MS = 60_000;
 
 export interface GitHubApiLogger {
-  warn(message: string): void;
+  warn: (message: string) => void;
 }
 
 export interface GitHubApiResponse extends HttpErrorResponse {

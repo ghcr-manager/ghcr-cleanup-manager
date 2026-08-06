@@ -115,7 +115,7 @@ async function _findPackageVersionByDigestAndTagOnce(
     }
 
     const match = items.find((item) => item.name === digest && item.metadata?.container?.tags?.includes(tag));
-    if (match) {
+    if (match != null) {
       return match.id;
     }
 

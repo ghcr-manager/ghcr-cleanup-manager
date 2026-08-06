@@ -21,15 +21,16 @@ export function listTaggedOnlyDirectTargetRoots(
   const cutoffSql = options.cutoffTimestamp ? "AND pv.created_at < ?" : "";
 
   const selectedTagDigestFlag = options.deleteOrphanedImages ? 1 : 0;
-  const selectedTagsSql = selectedTagPredicate
-    ? `
+  const selectedTagsSql =
+    selectedTagPredicate != null
+      ? `
         SELECT DISTINCT t.version_id, t.tag
         FROM tags t
         WHERE t.scan_id = ?
           AND t.is_digest_tag = ?
           AND (${selectedTagPredicate.sql})
           ${
-            excludedTagPredicate
+            excludedTagPredicate != null
               ? `
           AND NOT EXISTS (
             SELECT 1
@@ -43,11 +44,11 @@ export function listTaggedOnlyDirectTargetRoots(
               : ""
           }
       `
-    : `
+      : `
         SELECT NULL AS version_id, NULL AS tag
         WHERE 1 = 0
       `;
-  if (selectedTagPredicate) {
+  if (selectedTagPredicate != null) {
     params.push(scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? []));
   }
   params.push(scanId);

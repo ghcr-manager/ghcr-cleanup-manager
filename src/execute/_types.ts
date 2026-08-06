@@ -18,17 +18,17 @@ export interface DeleteExecutionOptions {
 }
 
 export interface DeleteExecutionLogger {
-  debug(message: string): void;
-  info(message: string): void;
-  warn(message: string): void;
-  error(message: string): void;
+  debug: (message: string) => void;
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
 }
 
 export interface GitHubPackageFetchResponse {
   ok: boolean;
   status: number;
   headers: Headers;
-  json(): Promise<unknown>;
+  json: () => Promise<unknown>;
 }
 
 export type GitHubPackageFetch = (input: string, init?: RequestInit) => Promise<GitHubPackageFetchResponse>;

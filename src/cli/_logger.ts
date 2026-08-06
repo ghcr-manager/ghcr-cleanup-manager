@@ -1,11 +1,11 @@
 export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "silent";
 
 export interface Logger {
-  trace(message: string): void;
-  debug(message: string): void;
-  info(message: string): void;
-  warn(message: string): void;
-  error(message: string): void;
+  trace: (message: string) => void;
+  debug: (message: string) => void;
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
 }
 
 const _logLevelPriority: Record<LogLevel, number> = {

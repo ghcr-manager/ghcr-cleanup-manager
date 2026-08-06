@@ -38,7 +38,7 @@ export class SnapshotRepository {
         `
       )
       .get(scanId) as Pick<_ScanRow, "owner" | "package_name" | "scan_completed_at"> | undefined;
-    if (!row) {
+    if (row == null) {
       throw new Error(`database does not contain package scan for scan_id=${scanId}`);
     }
     if (!row.scan_completed_at) {
@@ -123,7 +123,7 @@ export class SnapshotRepository {
 
 function _count(database: Database.Database, sql: string, field: string, ...params: unknown[]): number {
   const row = database.prepare(sql).get(...params) as Record<string, number>;
-  return row[field] as number;
+  return row[field];
 }
 
 function _parsePackageVersionDigest(versionId: number, rawJson: string): string {

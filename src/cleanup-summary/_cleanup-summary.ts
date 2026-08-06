@@ -141,7 +141,7 @@ function _listAffectedManifests(
 
     manifestsByDigest.set(manifest.memberDigest, {
       digest: manifest.memberDigest,
-      manifestKind: manifest.memberManifestKind as ManifestKind | undefined
+      manifestKind: manifest.memberManifestKind
     });
   }
 

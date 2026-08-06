@@ -140,7 +140,7 @@ export function buildProtectedRoots(blockedRoots: DeletePlanBlockedRoot[]): Dele
 }
 
 export function buildBlockedValidationReason(blockedRoot?: DeletePlanBlockedRoot): string {
-  if (!blockedRoot) {
+  if (blockedRoot == null) {
     return "root closure overlaps manifest members still required by a retained root";
   }
 
