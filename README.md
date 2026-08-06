@@ -142,7 +142,7 @@ off `dry-run`.
 <!-- markdownlint-disable MD013 MD060 -->
 
 | Input                        | Description                         | Cmds | Required | Default                        |
-|------------------------------|-------------------------------------|------|----------|--------------------------------|
+| ---------------------------- | ----------------------------------- | ---- | -------- | ------------------------------ |
 | `command`                    | `scan` or `cleanup`                 | all  | Yes      |                                |
 | `token`                      | GitHub token for API calls          | all  | Yes      | `${{ github.token }}`          |
 | `owner`                      | Package owner                       | all  | Yes      |                                |
@@ -180,7 +180,7 @@ Cleanup command notes:
 ## Outputs
 
 | Output              | Description                          |
-|---------------------|--------------------------------------|
+| ------------------- | ------------------------------------ |
 | `db-path`           | SQLite DB path on the runner         |
 | `summary-json-path` | Summary JSON file path for `cleanup` |
 
@@ -194,7 +194,7 @@ When artifacts are enabled:
 Current naming:
 
 | Artifact type        | Filename pattern                                    |
-|----------------------|-----------------------------------------------------|
+| -------------------- | --------------------------------------------------- |
 | scan or cleanup DB   | `${OWNER}__${PACKAGE}.sqlite`                       |
 | cleanup summary JSON | `${OWNER}__${PACKAGE}.sqlite--cleanup-summary.json` |
 
