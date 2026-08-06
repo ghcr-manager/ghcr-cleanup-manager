@@ -138,7 +138,7 @@ button {
   background: rgb(16 32 23 / 45%);
 }
 
-.raw-json-dialog__header {
+.raw-json-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -147,11 +147,11 @@ button {
   border-bottom: 1px solid #d1ddd6;
 }
 
-.raw-json-dialog__header h2 {
+.raw-json-dialog-header h2 {
   margin: 0;
 }
 
-.raw-json-dialog__header button {
+.raw-json-dialog-header button {
   background: #325745;
   border-color: #325745;
   color: #fff;
