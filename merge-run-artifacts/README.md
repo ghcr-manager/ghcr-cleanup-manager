@@ -11,7 +11,7 @@ cleanup database, and you want one merged artifact at the end.
 <!-- markdownlint-disable MD013 -->
 
 | Input                        | Required | Description                                              | Default                              |
-| ---------------------------- | -------- | -------------------------------------------------------- | ------------------------------------ |
+|------------------------------|----------|----------------------------------------------------------|--------------------------------------|
 | `artifact-name-glob`         | no       | Glob used to select current-run artifacts                | `"*.sqlite"`                         |
 | `db-file`                    | no       | Local filename and artifact name for the merged DB       | `ghcr-cleanup-manager-merged.sqlite` |
 | `upload-artifacts`           | no       | Whether to upload the merged DB artifact                 | `true`                               |
@@ -24,7 +24,7 @@ cleanup database, and you want one merged artifact at the end.
 ## Outputs
 
 | Output            | Description                                     |
-| ----------------- | ----------------------------------------------- |
+|-------------------|-------------------------------------------------|
 | `db-path`         | Path to the merged SQLite DB on the runner      |
 | `artifact-id`     | Uploaded artifact ID when upload is enabled     |
 | `artifact-url`    | Uploaded artifact URL when upload is enabled    |

@@ -49,7 +49,7 @@ This is a categorization of the 56 graph-matrix execution jobs (28 scenarios x 2
 <!-- markdownlint-disable MD013 -->
 
 | Scenario                                                               | `ghcr-cleanup-manager`          | `ghcr-cleanup-action`           |
-| ---------------------------------------------------------------------- | ------------------------------- | ------------------------------- |
+|------------------------------------------------------------------------|---------------------------------|---------------------------------|
 | `graph-1image-base--delete-image-a`                                    | pass                            | pass                            |
 | `graph-1image-attestations--delete-image-a`                            | pass                            | pass                            |
 | `graph-1image-cosign--delete-image-a`                                  | fail: `manifest-count-mismatch` | pass                            |

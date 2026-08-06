@@ -9,7 +9,7 @@ Use this helper action when you already have several `.sqlite` files on the runn
 <!-- markdownlint-disable MD013 -->
 
 | Input                        | Required | Description                                       | Default                        |
-| ---------------------------- | -------- | ------------------------------------------------- | ------------------------------ |
+|------------------------------|----------|---------------------------------------------------|--------------------------------|
 | `source-db-dir`              | yes      | Local directory containing SQLite DB files        |                                |
 | `db-file`                    | yes      | Local filename and artifact name for merged DB    |                                |
 | `upload-artifacts`           | no       | Whether to upload the merged DB artifact          | `true`                         |
@@ -21,7 +21,7 @@ Use this helper action when you already have several `.sqlite` files on the runn
 ## Outputs
 
 | Output            | Description                                     |
-| ----------------- | ----------------------------------------------- |
+|-------------------|-------------------------------------------------|
 | `db-path`         | Path to the merged SQLite DB on the runner      |
 | `artifact-id`     | Uploaded artifact ID when upload is enabled     |
 | `artifact-url`    | Uploaded artifact URL when upload is enabled    |
