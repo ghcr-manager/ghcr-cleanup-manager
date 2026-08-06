@@ -14,6 +14,7 @@ DB_PATH="${TMP_DIR}/smoke.sqlite"
 PORT=18080
 CONTAINER_NAME="ghcr-cleanup-manager-visualizer-smoke-${RANDOM}"
 
+# shellcheck disable=SC2329 # Invoked indirectly via `trap cleanup EXIT`.
 cleanup() {
   docker logs "$CONTAINER_NAME" >/dev/null 2>&1 && docker logs "$CONTAINER_NAME" || true
   docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
