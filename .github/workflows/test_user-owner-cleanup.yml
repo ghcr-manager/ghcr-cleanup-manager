@@ -15,10 +15,12 @@ run-name: Test User Owner Cleanup
         required: false
         default: true
         type: boolean
+    secrets:
+      GH_TEST_PAT:
+        required: true
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   cleanup:
@@ -30,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require user-owner test configuration
         shell: bash
@@ -45,10 +49,11 @@ jobs:
         shell: bash
         env:
           GH_TEST_PAT_USERNAME: ${{ vars.GH_TEST_PAT_USERNAME }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
           RUNNER_TEMP: ${{ runner.temp }}
         run: |
           set -euo pipefail
-          PACKAGE_NAME="${{ github.event.repository.name }}-user-owner-test"
+          PACKAGE_NAME="${REPOSITORY_NAME}-user-owner-test"
           PACKAGE_NAME="${PACKAGE_NAME,,}"
           IMAGE_REF="ghcr.io/${GH_TEST_PAT_USERNAME,,}/${PACKAGE_NAME}"
           DB_PATH="$RUNNER_TEMP/${GH_TEST_PAT_USERNAME,,}__${PACKAGE_NAME}__user-owner.sqlite"

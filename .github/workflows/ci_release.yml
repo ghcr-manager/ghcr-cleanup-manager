@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify release tag points to main
         run: |
@@ -94,7 +95,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-    secrets: inherit
+    secrets:
+      GH_TEST_PAT: ${{ secrets.GH_TEST_PAT }}
 
   test-scenario-graph-matrix:
     name: Test scenario graph matrix
@@ -108,7 +110,8 @@ jobs:
       packages: write
       actions: write
       id-token: write
-    secrets: inherit
+    secrets:
+      GH_TEST_PAT: ${{ secrets.GH_TEST_PAT }}
     with:
       executors: ghcr-cleanup-manager
 
@@ -125,7 +128,8 @@ jobs:
       packages: write
       actions: write
       id-token: write
-    secrets: inherit
+    secrets:
+      GH_TEST_PAT: ${{ secrets.GH_TEST_PAT }}
     with:
       executors: ghcr-cleanup-manager
 
@@ -145,12 +149,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
-          cache: npm
           registry-url: https://registry.npmjs.org
           package-manager-cache: false
 
@@ -209,6 +214,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Build release scenario DB
         id: release-scenario-db
@@ -220,17 +226,29 @@ jobs:
           delete-source-artifacts: "true"
 
       - name: Move short major release tag (the vX tag)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          TARGET_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          major_tag="${GITHUB_REF_NAME%%.*}"
-          git tag -f "$major_tag" "$GITHUB_SHA"
-          git push origin "refs/tags/$major_tag" --force
+          major_tag="${RELEASE_TAG%%.*}"
+          gh api \
+            --method PATCH \
+            "repos/${GITHUB_REPOSITORY}/git/refs/tags/${major_tag}" \
+            -f sha="${TARGET_SHA}" \
+            -F force=true
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-        with:
-          tag_name: ${{ github.ref_name }}
-          target_commitish: ${{ github.sha }}
-          generate_release_notes: true
-          files: |
-            ${{ steps.release-scenario-db.outputs.db-path }}
+        env:
+          DB_PATH: ${{ steps.release-scenario-db.outputs.db-path }}
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" \
+            "$DB_PATH" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$TARGET_SHA" \
+            --generate-notes

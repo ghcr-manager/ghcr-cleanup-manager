@@ -126,22 +126,28 @@ run-name: Test Scenario Executor (${{ inputs.scenario }} / ${{ inputs.executor }
         required: false
         default: ""
         type: string
+    secrets:
+      GH_TEST_PAT:
+        required: true
 
 permissions:
   contents: read
-  packages: write
-  actions: write
-  id-token: write
 
 jobs:
   execute:
     name: ${{ inputs.executor }} / ${{ inputs.scenario }}
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
     concurrency:
       group: ghcr-cleanup-manager__scenario__${{ inputs.scenario }}__${{ inputs.executor }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require test org configuration
         shell: bash
@@ -228,13 +234,18 @@ jobs:
         if:
           ${{ inputs.executor != 'ghcr-cleanup-manager' || steps.scenario.outputs.digest_selector_tag_name_key != '' }}
         shell: bash
+        env:
+          DB_PATH: ${{ steps.scenario.outputs.db_path }}
+          OWNER: ${{ vars.GH_TEST_ORG }}
+          PACKAGE_NAME: ${{ steps.scenario.outputs.package_name }}
+          TOKEN: ${{ secrets.GH_TEST_PAT }}
         run: |
           set -euo pipefail
           npm run ghcr-cleanup-manager:dist -- scan \
-            --db "${{ steps.scenario.outputs.db_path }}" \
-            --owner "${{ vars.GH_TEST_ORG }}" \
-            --package "${{ steps.scenario.outputs.package_name }}" \
-            --token "${{ secrets.GH_TEST_PAT }}"
+            --db "$DB_PATH" \
+            --owner "$OWNER" \
+            --package "$PACKAGE_NAME" \
+            --token "$TOKEN"
 
       - name: Dispatch executor action
         uses: ./.github/actions/test-scenario-executor-dispatch
@@ -263,13 +274,19 @@ jobs:
 
       - name: Assert scenario scan
         shell: bash
+        env:
+          DB_PATH: ${{ steps.scenario.outputs.db_path }}
+          SCENARIO: ${{ inputs.scenario }}
         run: |
           set -euo pipefail
-          node tests/tools/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
+          node tests/tools/assert-test-scenario-scan.mjs "$SCENARIO" "$DB_PATH"
 
       - name: Assert cleanup audit persistence
         if: ${{ inputs.executor == 'ghcr-cleanup-manager' }}
         shell: bash
+        env:
+          DB_PATH: ${{ steps.scenario.outputs.db_path }}
+          SCENARIO: ${{ inputs.scenario }}
         run: |
           set -euo pipefail
-          node tests/tools/assert-test-scenario-cleanup-audit.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
+          node tests/tools/assert-test-scenario-cleanup-audit.mjs "$SCENARIO" "$DB_PATH"

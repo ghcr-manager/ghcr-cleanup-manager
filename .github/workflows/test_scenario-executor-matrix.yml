@@ -43,12 +43,12 @@ run-name: "Test Scenario Executor Matrix (executors: ${{ inputs.executors }})"
         required: false
         default: ghcr-cleanup-manager-merged--scenario-matrix-cleanup.sqlite
         type: string
+    secrets:
+      GH_TEST_PAT:
+        required: true
 
 permissions:
   contents: read
-  packages: write
-  actions: write
-  id-token: write
 
 jobs:
   prepare:
@@ -58,6 +58,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Render scenario matrix
         id: matrix
@@ -79,7 +81,12 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
     uses: ./.github/workflows/test_scenario-executor.yml
-    secrets: inherit
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    secrets:
+      GH_TEST_PAT: ${{ secrets.GH_TEST_PAT }}
     with:
       scenario: ${{ matrix.scenario }}
       executor: ${{ matrix.executor }}
@@ -92,11 +99,13 @@ jobs:
     needs: execute
     runs-on: ubuntu-latest
     permissions:
-      actions: write
       contents: read
+      actions: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Merge current-run scenario DB artifacts
         id: merge
@@ -110,9 +119,14 @@ jobs:
 
       - name: Print merged artifact outputs
         shell: bash
+        env:
+          MERGED_ARTIFACT_DIGEST: ${{ steps.merge.outputs.artifact-digest }}
+          MERGED_ARTIFACT_ID: ${{ steps.merge.outputs.artifact-id }}
+          MERGED_ARTIFACT_URL: ${{ steps.merge.outputs.artifact-url }}
+          MERGED_DB_PATH: ${{ steps.merge.outputs.db-path }}
         run: |
           set -euo pipefail
-          echo "db-path: ${{ steps.merge.outputs.db-path }}"
-          echo "artifact-id: ${{ steps.merge.outputs.artifact-id }}"
-          echo "artifact-url: ${{ steps.merge.outputs.artifact-url }}"
-          echo "artifact-digest: ${{ steps.merge.outputs.artifact-digest }}"
+          echo "db-path: $MERGED_DB_PATH"
+          echo "artifact-id: $MERGED_ARTIFACT_ID"
+          echo "artifact-url: $MERGED_ARTIFACT_URL"
+          echo "artifact-digest: $MERGED_ARTIFACT_DIGEST"

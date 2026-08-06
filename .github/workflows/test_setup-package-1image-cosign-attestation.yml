@@ -9,8 +9,6 @@ name: "Test: Setup Package Single Cosign Attestation"
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 env:
   PACKAGE: ${{ github.event.repository.name }}-test--1image-cosign-attestation
@@ -23,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require test org configuration
         shell: bash
@@ -52,6 +52,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build keep-dummy image
         uses: ./.github/actions/test-registry-build-last-tag
@@ -63,6 +65,8 @@ jobs:
   build_arm64:
     name: Build image (arm64)
     runs-on: ubuntu-24.04-arm
+    permissions:
+      id-token: write
     needs:
       - prepare-environment
       - build_dummy_last_tag
@@ -71,6 +75,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build and test image
         id: build
@@ -87,10 +93,15 @@ jobs:
 
       - name: Sign arm64 image only
         shell: bash
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
           set -euo pipefail
-          cosign sign --yes "${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}"
+          cosign sign --yes "$IMAGE_REF@$DIGEST"
 
       - name: Print result
+        env:
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
-          echo "Created package ${{ env.IMAGE_REF }}"
+          echo "Created package $IMAGE_REF"

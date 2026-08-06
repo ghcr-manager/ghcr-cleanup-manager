@@ -13,6 +13,9 @@ run-name: Manual Run for ${{ inputs.owner }}/${{ inputs.package }}
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   scan:
     runs-on: ubuntu-latest
@@ -25,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Resolve GitHub token
         id: token
@@ -32,10 +37,11 @@ jobs:
         env:
           GH_TEST_ORG: ${{ vars.GH_TEST_ORG }}
           GH_TEST_PAT: ${{ secrets.GH_TEST_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
           INPUT_OWNER: ${{ inputs.owner }}
         run: |
           set -euo pipefail
-          token="${{ github.token }}"
+          token="$GITHUB_TOKEN"
           if [[ -n "$GH_TEST_ORG" && "$INPUT_OWNER" == "$GH_TEST_ORG" ]]; then
             [[ -n "$GH_TEST_PAT" ]] || { echo "Missing repo secret GH_TEST_PAT for private test-org scan" >&2; exit 1; }
             token="$GH_TEST_PAT"

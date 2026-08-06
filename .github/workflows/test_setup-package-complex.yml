@@ -17,8 +17,6 @@ name: "Test: Setup Package Complex"
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 env:
   PACKAGE: ${{ github.event.repository.name }}-test--complex
@@ -31,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require test org configuration
         shell: bash
@@ -60,6 +60,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build keep-dummy image
         uses: ./.github/actions/test-registry-build-last-tag
@@ -71,6 +73,8 @@ jobs:
   build_alpha_amd64:
     name: Build image (alpha-amd64)
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs:
       - prepare-environment
       - build_dummy_last_tag
@@ -79,6 +83,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build and test image
         id: build
@@ -93,6 +99,8 @@ jobs:
   build_alpha_arm64:
     name: Build image (alpha-arm64)
     runs-on: ubuntu-24.04-arm
+    permissions:
+      id-token: write
     needs:
       - prepare-environment
       - build_dummy_last_tag
@@ -101,6 +109,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build and test image
         id: build
@@ -143,8 +153,10 @@ jobs:
           publish_platform_tags: "true"
 
       - name: Print result
+        env:
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
-          echo "Published ${{ env.IMAGE_REF }}:alpha"
+          echo "Published $IMAGE_REF:alpha"
 
   build_beta_amd64:
     name: Build image (beta-amd64)
@@ -153,6 +165,8 @@ jobs:
       - build_dummy_last_tag
       - publish_alpha
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
@@ -161,6 +175,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Build and test image
         id: build
@@ -204,8 +220,10 @@ jobs:
           publish_platform_tags: "true"
 
       - name: Print result
+        env:
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
-          echo "Published ${{ env.IMAGE_REF }}:beta"
+          echo "Published $IMAGE_REF:beta"
 
   publish_gamma:
     name: Publish gamma multi-arch image
@@ -242,5 +260,7 @@ jobs:
           publish_platform_tags: "true"
 
       - name: Print result
+        env:
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
-          echo "Published ${{ env.IMAGE_REF }}:gamma"
+          echo "Published $IMAGE_REF:gamma"

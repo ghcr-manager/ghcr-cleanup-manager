@@ -8,12 +8,14 @@ name: "CI: Visualizer Image Cleanup"
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   ghcr-cleanup:
     name: GHCR cleanup
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Cleanup old images
         uses: ghcr-manager/ghcr-cleanup-manager@4f9383ec3f79750a9085b05eea317c666bda183e # v1.1.8

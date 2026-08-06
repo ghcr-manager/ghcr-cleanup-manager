@@ -6,8 +6,6 @@ name: "CI: Release Visualizer Image"
 
 permissions:
   contents: read
-  packages: write
-  id-token: write
 
 env:
   # Publishes to GHCR in the current repository owner/project name.
@@ -41,6 +39,10 @@ jobs:
   build:
     name: Build image (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     needs: prepare
     strategy:
       matrix:
@@ -57,6 +59,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
@@ -89,19 +93,26 @@ jobs:
           tags: ${{ github.run_id }}-${{ matrix.arch }}-test
 
       - name: Test image
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_REF: ${{ env.IMAGE_REF }}
         run: |
           set -euo pipefail
-          ./visualizer/tests/tools/test-image.sh "${{ env.IMAGE_REF }}@${{ steps.build.outputs.digest }}"
+          ./visualizer/tests/tools/test-image.sh "$IMAGE_REF@$DIGEST"
 
       - name: Export digest (amd64)
         id: out-amd64
         if: matrix.arch == 'amd64'
-        run: echo "digest=${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Export digest (arm64)
         id: out-arm64
         if: matrix.arch == 'arm64'
-        run: echo "digest=${{ steps.build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
   publish:
     name: Publish multi-arch image
@@ -109,6 +120,10 @@ jobs:
       - prepare
       - build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     steps:
       - name: Log in to GHCR
         uses: docker/login-action@abd2ef45e78c5afb21d64d4ca52ee8550d9572c7 # v4.5.1
@@ -133,8 +148,13 @@ jobs:
             org.opencontainers.image.version=${{ github.ref_name }}
 
       - name: Print result
+        env:
+          IMAGE_REF: ${{ env.IMAGE_REF }}
+          LATEST_TAG: ${{ needs.prepare.outputs.latest_tag }}
+          MAJOR_TAG: ${{ needs.prepare.outputs.major_tag }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          echo "Published ${{ env.IMAGE_REF }}:${{ github.ref_name }}"
-          echo "Published ${{ env.IMAGE_REF }}:${{ needs.prepare.outputs.major_tag }}"
-          echo "Published ${{ env.IMAGE_REF }}:${{ needs.prepare.outputs.latest_tag }}"
+          echo "Published $IMAGE_REF:$REF_NAME"
+          echo "Published $IMAGE_REF:$MAJOR_TAG"
+          echo "Published $IMAGE_REF:$LATEST_TAG"

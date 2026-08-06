@@ -45,18 +45,20 @@ run-name: Test Scenario Scan (${{ inputs.scenario }})
 
 permissions:
   contents: read
-  packages: write
-  actions: write
-  id-token: write
 
 jobs:
   scan:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
     concurrency:
       group: ghcr-cleanup-manager__scenario-scan__${{ inputs.scenario }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Require test org configuration
         shell: bash
@@ -126,6 +128,9 @@ jobs:
 
       - name: Assert scenario scan
         shell: bash
+        env:
+          DB_PATH: ${{ steps.scenario.outputs.db_path }}
+          SCENARIO: ${{ inputs.scenario }}
         run: |
           set -euo pipefail
-          node tests/tools/assert-test-scenario-scan.mjs "${{ inputs.scenario }}" "${{ steps.scenario.outputs.db_path }}"
+          node tests/tools/assert-test-scenario-scan.mjs "$SCENARIO" "$DB_PATH"
