@@ -22,6 +22,8 @@ Previous handoff material was archived to
 
 ## Session Summary
 
+- Action-generated scan DB filenames now lowercase the owner segment so GHCR-oriented artifact names stay aligned with
+  lowercase image-owner conventions even when GitHub owner input casing is mixed.
 - Manual scan/action DB paths now encode slash-bearing package names into filesystem-safe local filenames while keeping
   the real package name unchanged for API and database behavior.
 - Manifest reachability diagnostics now report one concrete unresolved edge when cycle detection fails.
@@ -37,6 +39,7 @@ Previous handoff material was archived to
 
 ## Checklist
 
+- [x] Lowercase the owner segment in action-generated SQLite filenames.
 - [x] Reviewed commits after `ca337815` for user-facing impact.
 - [x] Classified `1705cb42` as the user-facing fix and the remaining commits as internal cleanup/chore work.
 - [x] Updated `CHANGELOG.md` for `v1.1.5`.
@@ -45,6 +48,8 @@ Previous handoff material was archived to
 
 ## Session Decisions
 
+- Keep GitHub owner input casing unchanged for API calls and workflow display, but normalize the owner to lowercase when
+  deriving GHCR scan database artifact filenames.
 - Keep debug-oriented manual scan workflow behavior simple; it exists to preserve the DB on scan failures for local
   inspection.
 - For cycle failures, a single representative unresolved edge plus the preserved DB is sufficient debugging context.

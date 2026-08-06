@@ -3,9 +3,9 @@ import test from "node:test";
 
 const { buildDbPath } = await import(new URL("../../../tools/action/prepare-db-path.mjs", import.meta.url).href);
 
-test("buildDbPath maps slash-bearing package names to a readable DB filename", () => {
+test("buildDbPath lowercases the owner and maps slash-bearing package names to a readable DB filename", () => {
   const invocation = buildDbPath({
-    OWNER: "sigstore",
+    OWNER: "SigStore",
     PACKAGE: "cosign/cosign",
     RUNNER_TEMP: "/tmp"
   });

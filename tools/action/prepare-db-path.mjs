@@ -26,7 +26,11 @@ export function buildDbPath(env) {
 }
 
 function _buildDbFileName(owner, packageName) {
-  return `${_sanitizeFileComponent(owner)}__${_sanitizeFileComponent(packageName)}.sqlite`;
+  return `${_sanitizeOwnerFileComponent(owner)}__${_sanitizeFileComponent(packageName)}.sqlite`;
+}
+
+function _sanitizeOwnerFileComponent(value) {
+  return _sanitizeFileComponent(value).toLowerCase();
 }
 
 function _sanitizeFileComponent(value) {

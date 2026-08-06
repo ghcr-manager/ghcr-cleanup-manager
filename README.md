@@ -198,6 +198,8 @@ Current naming:
 | scan or cleanup DB   | `${OWNER}__${PACKAGE}.sqlite`                       |
 | cleanup summary JSON | `${OWNER}__${PACKAGE}.sqlite--cleanup-summary.json` |
 
+> `${OWNER}` is lowercase as in GHCR image naming.
+
 ## Documentation Map
 
 - [GitHub Action usage](https://github.com/ghcr-manager/ghcr-cleanup-manager/blob/main/docs/action-usage.md): action
