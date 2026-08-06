@@ -1,0 +1,3 @@
+skip-check:
+  # Allow inputs to workflows
+  - CKV_GHA_7
