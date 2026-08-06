@@ -43,13 +43,6 @@ body {
   z-index: 2;
 }
 
-.graph-toolbar button {
-  min-width: 3rem;
-  background: rgb(29 79 58 / 92%);
-  border-color: #1d4f3a;
-  box-shadow: 0 0.2rem 0.8rem rgb(16 32 23 / 18%);
-}
-
 #graph {
   width: 100%;
   height: 100vh;
@@ -100,6 +93,31 @@ button {
   border: 1px solid #94a99d;
 }
 
+button {
+  cursor: pointer;
+  background: #1d4f3a;
+  color: #fff;
+  border-color: #1d4f3a;
+}
+
+.graph-toolbar button {
+  min-width: 3rem;
+  background: rgb(29 79 58 / 92%);
+  border-color: #1d4f3a;
+  box-shadow: 0 0.2rem 0.8rem rgb(16 32 23 / 18%);
+}
+
+.detail-actions button {
+  background: #325745;
+  border-color: #325745;
+}
+
+.raw-json-dialog-header button {
+  background: #325745;
+  border-color: #325745;
+  color: #fff;
+}
+
 .controls input,
 .controls select,
 .controls form > button {
@@ -108,22 +126,10 @@ button {
   box-sizing: border-box;
 }
 
-button {
-  cursor: pointer;
-  background: #1d4f3a;
-  color: #fff;
-  border-color: #1d4f3a;
-}
-
 .detail-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-}
-
-.detail-actions button {
-  background: #325745;
-  border-color: #325745;
 }
 
 .raw-json-dialog {
@@ -149,12 +155,6 @@ button {
 
 .raw-json-dialog-header h2 {
   margin: 0;
-}
-
-.raw-json-dialog-header button {
-  background: #325745;
-  border-color: #325745;
-  color: #fff;
 }
 
 #raw-json-content {
@@ -203,7 +203,8 @@ dt {
 
 dd {
   margin: 0.2rem 0 0;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 .tag-list {
@@ -232,7 +233,8 @@ dd {
 pre {
   margin: 0;
   white-space: pre-wrap;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
   font-size: 0.85rem;
 }
 
