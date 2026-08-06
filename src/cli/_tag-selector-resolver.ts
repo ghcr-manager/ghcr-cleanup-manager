@@ -1,16 +1,16 @@
-import type Database from "better-sqlite3";
-import type { PlanCommandInputs } from "./_planner-options.js";
+import type Database from 'better-sqlite3'
+import type { PlanCommandInputs } from './_planner-options.js'
 
 const BrokenIndexModes = {
-  allMissing: "all-missing",
-  someMissing: "some-missing"
-} as const;
+  allMissing: 'all-missing',
+  someMissing: 'some-missing'
+} as const
 
-type BrokenIndexMode = (typeof BrokenIndexModes)[keyof typeof BrokenIndexModes];
+type BrokenIndexMode = (typeof BrokenIndexModes)[keyof typeof BrokenIndexModes]
 
-export function resolveTagSelectors(database: Database.Database, inputs: PlanCommandInputs): PlanCommandInputs {
+export function resolveTagSelectors (database: Database.Database, inputs: PlanCommandInputs): PlanCommandInputs {
   if (!inputs.deleteGhostImages && !inputs.deletePartialImages && !inputs.deleteOrphanedImages) {
-    return inputs;
+    return inputs
   }
 
   return {
@@ -22,28 +22,28 @@ export function resolveTagSelectors(database: Database.Database, inputs: PlanCom
         : inputs.deleteOrphanedImages
           ? _listLatestOrphanedTags(database, inputs.owner, inputs.packageName, inputs.cutoffTimestamp)
           : inputs.deleteTags
-  };
+  }
 }
 
-function _listLatestGhostTags(
+function _listLatestGhostTags (
   database: Database.Database,
   owner: string,
   packageName: string,
   cutoffTimestamp?: string
 ): string[] {
-  return _listLatestBrokenIndexTags(database, owner, packageName, cutoffTimestamp, BrokenIndexModes.allMissing);
+  return _listLatestBrokenIndexTags(database, owner, packageName, cutoffTimestamp, BrokenIndexModes.allMissing)
 }
 
-function _listLatestPartialTags(
+function _listLatestPartialTags (
   database: Database.Database,
   owner: string,
   packageName: string,
   cutoffTimestamp?: string
 ): string[] {
-  return _listLatestBrokenIndexTags(database, owner, packageName, cutoffTimestamp, BrokenIndexModes.someMissing);
+  return _listLatestBrokenIndexTags(database, owner, packageName, cutoffTimestamp, BrokenIndexModes.someMissing)
 }
 
-function _listLatestBrokenIndexTags(
+function _listLatestBrokenIndexTags (
   database: Database.Database,
   owner: string,
   packageName: string,
@@ -52,8 +52,8 @@ function _listLatestBrokenIndexTags(
 ): string[] {
   const havingClause =
     mode === BrokenIndexModes.allMissing
-      ? "COUNT(*) > 0 AND COUNT(child.digest) = 0"
-      : "COUNT(child.digest) > 0 AND COUNT(child.digest) < COUNT(*)";
+      ? 'COUNT(*) > 0 AND COUNT(child.digest) = 0'
+      : 'COUNT(child.digest) > 0 AND COUNT(child.digest) < COUNT(*)'
   const rows = database
     .prepare(
       `
@@ -105,8 +105,8 @@ function _listLatestBrokenIndexTags(
         ORDER BY t.tag
       `
     )
-    .all(owner, packageName, cutoffTimestamp ?? null, cutoffTimestamp ?? null) as Array<{ tag: string }>;
-  return rows.map((row) => row.tag);
+    .all(owner, packageName, cutoffTimestamp ?? null, cutoffTimestamp ?? null) as Array<{ tag: string }>
+  return rows.map((row) => row.tag)
 }
 
 // Some OCI tooling publishes companion artifacts such as signatures or attestations under
@@ -123,7 +123,7 @@ function _listLatestBrokenIndexTags(
 // `dataaxiom/ghcr-cleanup-action`, but keeps the check narrow and local to the current package
 // scan: derive the parent digest from the tag, then treat the tag as orphaned only when that
 // digest is absent from the scanned manifests for the same package.
-function _listLatestOrphanedTags(
+function _listLatestOrphanedTags (
   database: Database.Database,
   owner: string,
   packageName: string,
@@ -164,6 +164,6 @@ function _listLatestOrphanedTags(
         ORDER BY dta.tag
       `
     )
-    .all(owner, packageName, cutoffTimestamp ?? null, cutoffTimestamp ?? null) as Array<{ tag: string }>;
-  return rows.map((row) => row.tag);
+    .all(owner, packageName, cutoffTimestamp ?? null, cutoffTimestamp ?? null) as Array<{ tag: string }>
+  return rows.map((row) => row.tag)
 }

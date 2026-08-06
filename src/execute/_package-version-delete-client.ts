@@ -1,61 +1,61 @@
-import { githubApiBaseUrl, githubApiVersion } from "../config/index.js";
+import { githubApiBaseUrl, githubApiVersion } from '../config/index.js'
 import {
   buildHttpErrorMessage,
   buildTransportErrorMessage,
   getOwnerURIComponent,
   throwIfRetryableGitHubApiResponse
-} from "../core/index.js";
-import { resolveFetch, runWithRetry } from "./_http.js";
-import type { DeleteExecutionLogger, GitHubPackageFetch } from "./_types.js";
+} from '../core/index.js'
+import { resolveFetch, runWithRetry } from './_http.js'
+import type { DeleteExecutionLogger, GitHubPackageFetch } from './_types.js'
 
-export async function deletePackageVersion(
+export async function deletePackageVersion (
   owner: string,
   packageName: string,
   versionId: number,
   token: string,
   logger: DeleteExecutionLogger,
   runtime?: {
-    fetchImpl?: GitHubPackageFetch;
+    fetchImpl?: GitHubPackageFetch
   }
 ): Promise<void> {
-  const fetchImpl = resolveFetch(runtime?.fetchImpl);
-  const ownerURIComponent = await getOwnerURIComponent(fetchImpl, owner, token, logger);
+  const fetchImpl = resolveFetch(runtime?.fetchImpl)
+  const ownerURIComponent = await getOwnerURIComponent(fetchImpl, owner, token, logger)
   const url = new URL(
     `/${ownerURIComponent}/packages/container/${encodeURIComponent(packageName)}/versions/${versionId}`,
     githubApiBaseUrl
-  ).toString();
+  ).toString()
 
-  let response;
+  let response
   try {
     response = await runWithRetry(`GitHub package delete request for version ${versionId}`, logger, async () => {
       const deleteResponse = await fetchImpl(url, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: {
-          Accept: "application/vnd.github+json",
+          Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${token}`,
-          "User-Agent": "ghcr-cleanup-manager",
-          "X-GitHub-Api-Version": githubApiVersion
+          'User-Agent': 'ghcr-cleanup-manager',
+          'X-GitHub-Api-Version': githubApiVersion
         }
-      });
+      })
       await throwIfRetryableGitHubApiResponse(
         deleteResponse,
         `GitHub package delete request failed for version ${versionId}`,
         1000
-      );
-      return deleteResponse;
-    });
+      )
+      return deleteResponse
+    })
   } catch (error) {
     throw new Error(
       buildTransportErrorMessage(error, `GitHub package delete request failed for version ${versionId}`),
       {
         cause: error
       }
-    );
+    )
   }
 
   if (!response.ok) {
     throw new Error(
       await buildHttpErrorMessage(response, `GitHub package delete request failed for version ${versionId}`)
-    );
+    )
   }
 }

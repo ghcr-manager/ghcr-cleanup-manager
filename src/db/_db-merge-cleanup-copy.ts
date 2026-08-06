@@ -1,16 +1,16 @@
-import type Database from "better-sqlite3";
-import type { CleanupRunRow } from "./_db-merge-types.js";
+import type Database from 'better-sqlite3'
+import type { CleanupRunRow } from './_db-merge-types.js'
 
 export class DbMergeCleanupCopy {
-  readonly #database: Database.Database;
-  readonly #insertCleanupRunStatement: Database.Statement;
-  readonly #copyRootDecisionsStatementByAttachName = new Map<string, Database.Statement>();
-  readonly #copySelectedTagsStatementByAttachName = new Map<string, Database.Statement>();
-  readonly #copyProtectedRootBlocksStatementByAttachName = new Map<string, Database.Statement>();
-  readonly #listCleanupUuidsStatementByTableName = new Map<string, Database.Statement>();
+  readonly #database: Database.Database
+  readonly #insertCleanupRunStatement: Database.Statement
+  readonly #copyRootDecisionsStatementByAttachName = new Map<string, Database.Statement>()
+  readonly #copySelectedTagsStatementByAttachName = new Map<string, Database.Statement>()
+  readonly #copyProtectedRootBlocksStatementByAttachName = new Map<string, Database.Statement>()
+  readonly #listCleanupUuidsStatementByTableName = new Map<string, Database.Statement>()
 
-  constructor(database: Database.Database) {
-    this.#database = database;
+  constructor (database: Database.Database) {
+    this.#database = database
     this.#insertCleanupRunStatement = this.#database.prepare(`
       INSERT INTO cleanup_runs(
         scan_id,
@@ -28,10 +28,10 @@ export class DbMergeCleanupCopy {
         protected_root_count
       )
       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    `)
   }
 
-  copyCleanupRuns(
+  copyCleanupRuns (
     attachName: string,
     sourceScanId: number,
     targetScanId: number,
@@ -59,13 +59,13 @@ export class DbMergeCleanupCopy {
           ORDER BY cleanup_run_id
         `
       )
-      .all(sourceScanId) as CleanupRunRow[];
-    const knownCleanupUuids = new Set(existingCleanupUuids);
-    let importedCleanupRunCount = 0;
+      .all(sourceScanId) as CleanupRunRow[]
+    const knownCleanupUuids = new Set(existingCleanupUuids)
+    let importedCleanupRunCount = 0
 
     for (const row of rows) {
       if (knownCleanupUuids.has(row.cleanup_uuid)) {
-        continue;
+        continue
       }
 
       const cleanupRunId = Number(
@@ -84,33 +84,33 @@ export class DbMergeCleanupCopy {
           row.blocked_delete_root_count,
           row.protected_root_count
         ).lastInsertRowid
-      );
+      )
 
-      this.#copyRootDecisionsStatement(attachName).run(cleanupRunId, targetScanId, row.cleanup_run_id, sourceScanId);
-      this.#copySelectedTagsStatement(attachName).run(cleanupRunId, targetScanId, row.cleanup_run_id, sourceScanId);
+      this.#copyRootDecisionsStatement(attachName).run(cleanupRunId, targetScanId, row.cleanup_run_id, sourceScanId)
+      this.#copySelectedTagsStatement(attachName).run(cleanupRunId, targetScanId, row.cleanup_run_id, sourceScanId)
       this.#copyProtectedRootBlocksStatement(attachName).run(
         cleanupRunId,
         targetScanId,
         row.cleanup_run_id,
         sourceScanId
-      );
-      knownCleanupUuids.add(row.cleanup_uuid);
-      importedCleanupRunCount += 1;
+      )
+      knownCleanupUuids.add(row.cleanup_uuid)
+      importedCleanupRunCount += 1
     }
 
-    return importedCleanupRunCount;
+    return importedCleanupRunCount
   }
 
-  listCleanupUuids(tableName: string, scanId: number): string[] {
-    const rows = this.#listCleanupUuidsStatement(tableName).all(scanId) as Array<{ cleanup_uuid: string }>;
+  listCleanupUuids (tableName: string, scanId: number): string[] {
+    const rows = this.#listCleanupUuidsStatement(tableName).all(scanId) as Array<{ cleanup_uuid: string }>
 
-    return rows.map((row) => row.cleanup_uuid);
+    return rows.map((row) => row.cleanup_uuid)
   }
 
-  #copyRootDecisionsStatement(attachName: string): Database.Statement {
-    const cached = this.#copyRootDecisionsStatementByAttachName.get(attachName);
+  #copyRootDecisionsStatement (attachName: string): Database.Statement {
+    const cached = this.#copyRootDecisionsStatementByAttachName.get(attachName)
     if (cached) {
-      return cached;
+      return cached
     }
 
     const statement = this.#database.prepare(`
@@ -140,15 +140,15 @@ export class DbMergeCleanupCopy {
       FROM ${attachName}.cleanup_root_decisions
       WHERE cleanup_run_id = ?
         AND scan_id = ?
-    `);
-    this.#copyRootDecisionsStatementByAttachName.set(attachName, statement);
-    return statement;
+    `)
+    this.#copyRootDecisionsStatementByAttachName.set(attachName, statement)
+    return statement
   }
 
-  #copySelectedTagsStatement(attachName: string): Database.Statement {
-    const cached = this.#copySelectedTagsStatementByAttachName.get(attachName);
+  #copySelectedTagsStatement (attachName: string): Database.Statement {
+    const cached = this.#copySelectedTagsStatementByAttachName.get(attachName)
     if (cached) {
-      return cached;
+      return cached
     }
 
     const statement = this.#database.prepare(`
@@ -166,15 +166,15 @@ export class DbMergeCleanupCopy {
       FROM ${attachName}.cleanup_selected_tags
       WHERE cleanup_run_id = ?
         AND scan_id = ?
-    `);
-    this.#copySelectedTagsStatementByAttachName.set(attachName, statement);
-    return statement;
+    `)
+    this.#copySelectedTagsStatementByAttachName.set(attachName, statement)
+    return statement
   }
 
-  #copyProtectedRootBlocksStatement(attachName: string): Database.Statement {
-    const cached = this.#copyProtectedRootBlocksStatementByAttachName.get(attachName);
+  #copyProtectedRootBlocksStatement (attachName: string): Database.Statement {
+    const cached = this.#copyProtectedRootBlocksStatementByAttachName.get(attachName)
     if (cached) {
-      return cached;
+      return cached
     }
 
     const statement = this.#database.prepare(`
@@ -196,15 +196,15 @@ export class DbMergeCleanupCopy {
       FROM ${attachName}.cleanup_protected_root_blocks
       WHERE cleanup_run_id = ?
         AND scan_id = ?
-    `);
-    this.#copyProtectedRootBlocksStatementByAttachName.set(attachName, statement);
-    return statement;
+    `)
+    this.#copyProtectedRootBlocksStatementByAttachName.set(attachName, statement)
+    return statement
   }
 
-  #listCleanupUuidsStatement(tableName: string): Database.Statement {
-    const cached = this.#listCleanupUuidsStatementByTableName.get(tableName);
+  #listCleanupUuidsStatement (tableName: string): Database.Statement {
+    const cached = this.#listCleanupUuidsStatementByTableName.get(tableName)
     if (cached) {
-      return cached;
+      return cached
     }
 
     const statement = this.#database.prepare(`
@@ -212,8 +212,8 @@ export class DbMergeCleanupCopy {
       FROM ${tableName}
       WHERE scan_id = ?
       ORDER BY cleanup_run_id
-    `);
-    this.#listCleanupUuidsStatementByTableName.set(tableName, statement);
-    return statement;
+    `)
+    this.#listCleanupUuidsStatementByTableName.set(tableName, statement)
+    return statement
   }
 }

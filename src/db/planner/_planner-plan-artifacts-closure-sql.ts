@@ -185,4 +185,4 @@ export const _LIST_CLOSURE_MANIFESTS_SQL = `
     descendant_hops.min_hops_from_root,
     source_seed_hops.max_seed_hops
   ORDER BY walk.source_digest, hops_from_root, walk.member_digest
-`;
+`

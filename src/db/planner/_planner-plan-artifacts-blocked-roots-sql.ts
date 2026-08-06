@@ -107,4 +107,4 @@ export const _LIST_BLOCKED_ROOTS_SQL = `
   FROM ranked_blocks
   WHERE rn = 1
   ORDER BY blocked_digest, blocking_digest, overlap_digest
-`;
+`

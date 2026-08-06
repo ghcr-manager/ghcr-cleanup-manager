@@ -1,26 +1,26 @@
-import { buildTagSelectorPredicate } from "./_planner-tag-selectors.js";
-import { PlannerSql } from "./_planner-sql.js";
-import { mapPlanRootRow, type DeletePlanRoot } from "./_planner-types.js";
-import type { DirectTargetRootOptions } from "./_planner-direct-target-root-options.js";
+import { buildTagSelectorPredicate } from './_planner-tag-selectors.js'
+import { PlannerSql } from './_planner-sql.js'
+import { mapPlanRootRow, type DeletePlanRoot } from './_planner-types.js'
+import type { DirectTargetRootOptions } from './_planner-direct-target-root-options.js'
 
-export function listTaggedOnlyDirectTargetRoots(
+export function listTaggedOnlyDirectTargetRoots (
   sql: PlannerSql,
   scanId: number,
   options: DirectTargetRootOptions
 ): DeletePlanRoot[] {
   const selectedTagPredicate =
     options.deleteTags.length > 0
-      ? buildTagSelectorPredicate(sql.database, "t.tag", options.deleteTags, options.useRegex ?? false)
-      : undefined;
+      ? buildTagSelectorPredicate(sql.database, 't.tag', options.deleteTags, options.useRegex ?? false)
+      : undefined
   const excludedTagPredicate =
     options.excludeTags.length > 0
-      ? buildTagSelectorPredicate(sql.database, "xt.tag", options.excludeTags, options.useRegex ?? false)
-      : undefined;
+      ? buildTagSelectorPredicate(sql.database, 'xt.tag', options.excludeTags, options.useRegex ?? false)
+      : undefined
 
-  const params: Array<number | string> = [];
-  const cutoffSql = options.cutoffTimestamp ? "AND pv.created_at < ?" : "";
+  const params: Array<number | string> = []
+  const cutoffSql = options.cutoffTimestamp ? 'AND pv.created_at < ?' : ''
 
-  const selectedTagDigestFlag = options.deleteOrphanedImages ? 1 : 0;
+  const selectedTagDigestFlag = options.deleteOrphanedImages ? 1 : 0
   const selectedTagsSql =
     selectedTagPredicate != null
       ? `
@@ -41,22 +41,22 @@ export function listTaggedOnlyDirectTargetRoots(
               AND (${excludedTagPredicate.sql})
           )
         `
-              : ""
+              : ''
           }
       `
       : `
         SELECT NULL AS version_id, NULL AS tag
         WHERE 1 = 0
-      `;
+      `
   if (selectedTagPredicate != null) {
-    params.push(scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? []));
+    params.push(scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? []))
   }
-  params.push(scanId);
+  params.push(scanId)
   if (options.cutoffTimestamp) {
-    params.push(options.cutoffTimestamp);
+    params.push(options.cutoffTimestamp)
   }
 
-  const deleteOrphanedImages = options.deleteOrphanedImages ? 1 : 0;
+  const deleteOrphanedImages = options.deleteOrphanedImages ? 1 : 0
   const query = `
     WITH selected_tags AS (
       ${selectedTagsSql}
@@ -125,9 +125,9 @@ export function listTaggedOnlyDirectTargetRoots(
       END AS selection_mode
     FROM eligible_tagged_roots
     ORDER BY root_digest
-  `;
+  `
 
   return sql
     .all<Parameters<typeof mapPlanRootRow>[0]>(query, [...params, deleteOrphanedImages, deleteOrphanedImages])
-    .map(mapPlanRootRow);
+    .map(mapPlanRootRow)
 }

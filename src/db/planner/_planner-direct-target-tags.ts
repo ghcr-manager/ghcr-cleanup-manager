@@ -1,15 +1,15 @@
-import { buildTagSelectorPredicate } from "./_planner-tag-selectors.js";
-import { PlannerSql } from "./_planner-sql.js";
-import { mapPlanTagRows } from "./_planner-types.js";
+import { buildTagSelectorPredicate } from './_planner-tag-selectors.js'
+import { PlannerSql } from './_planner-sql.js'
+import { mapPlanTagRows } from './_planner-types.js'
 
 export class PlannerDirectTargetTags {
-  readonly #sql: PlannerSql;
+  readonly #sql: PlannerSql
 
-  constructor(sql: PlannerSql) {
-    this.#sql = sql;
+  constructor (sql: PlannerSql) {
+    this.#sql = sql
   }
 
-  listDeleteTagDirectTargetTags(
+  listDeleteTagDirectTargetTags (
     scanId: number,
     deleteTags: string[],
     excludeTags: string[],
@@ -18,15 +18,15 @@ export class PlannerDirectTargetTags {
     cutoffTimestamp?: string
   ): string[] {
     if (deleteTags.length === 0) {
-      return [];
+      return []
     }
 
-    const selectedTagPredicate = buildTagSelectorPredicate(this.#sql.database, "t.tag", deleteTags, useRegex);
-    const params: Array<number | string> = [scanId, ...selectedTagPredicate.params];
-    let excludedTagSql = "";
-    let olderThanSql = "";
+    const selectedTagPredicate = buildTagSelectorPredicate(this.#sql.database, 't.tag', deleteTags, useRegex)
+    const params: Array<number | string> = [scanId, ...selectedTagPredicate.params]
+    let excludedTagSql = ''
+    let olderThanSql = ''
     if (excludeTags.length > 0) {
-      const excludedTagPredicate = buildTagSelectorPredicate(this.#sql.database, "xt.tag", excludeTags, useRegex);
+      const excludedTagPredicate = buildTagSelectorPredicate(this.#sql.database, 'xt.tag', excludeTags, useRegex)
       excludedTagSql = `
         AND NOT EXISTS (
           SELECT 1
@@ -36,16 +36,16 @@ export class PlannerDirectTargetTags {
             AND xt.tag = t.tag
             AND (${excludedTagPredicate.sql})
         )
-      `;
-      params.push(...excludedTagPredicate.params);
+      `
+      params.push(...excludedTagPredicate.params)
     }
     if (cutoffTimestamp) {
-      olderThanSql = "AND pv.created_at < ?";
-      params.push(cutoffTimestamp);
+      olderThanSql = 'AND pv.created_at < ?'
+      params.push(cutoffTimestamp)
     }
 
-    const digestTagFlag = deleteOrphanedImages ? 1 : 0;
-    params.splice(1, 0, digestTagFlag);
+    const digestTagFlag = deleteOrphanedImages ? 1 : 0
+    params.splice(1, 0, digestTagFlag)
 
     const sql = `
       SELECT DISTINCT tag AS target_tag
@@ -62,7 +62,7 @@ export class PlannerDirectTargetTags {
         ${excludedTagSql}
         ${olderThanSql}
       ORDER BY tag
-    `;
-    return mapPlanTagRows(this.#sql.all<Parameters<typeof mapPlanTagRows>[0][number]>(sql, params));
+    `
+    return mapPlanTagRows(this.#sql.all<Parameters<typeof mapPlanTagRows>[0][number]>(sql, params))
   }
 }

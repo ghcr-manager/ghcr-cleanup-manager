@@ -1,30 +1,30 @@
-import type { DirectTargetRootOptions } from "./_planner-direct-target-root-options.js";
+import type { DirectTargetRootOptions } from './_planner-direct-target-root-options.js'
 
 export interface CombinedDirectTargetRootsQuery {
-  query: string;
-  baseParams: Array<number | string>;
-  tailParams: Array<number | string>;
+  query: string
+  baseParams: Array<number | string>
+  tailParams: Array<number | string>
 }
 
-export function buildCombinedDirectTargetRootsQuery(
+export function buildCombinedDirectTargetRootsQuery (
   scanId: number,
   options: DirectTargetRootOptions,
   selectedTagsSql: string,
   excludedTagsSql: string
 ): CombinedDirectTargetRootsQuery {
-  const baseParams: Array<number | string> = [scanId];
-  const cutoffSql = options.cutoffTimestamp ? "AND created_at < ?" : "";
+  const baseParams: Array<number | string> = [scanId]
+  const cutoffSql = options.cutoffTimestamp ? 'AND created_at < ?' : ''
   if (options.cutoffTimestamp) {
-    baseParams.push(options.cutoffTimestamp);
+    baseParams.push(options.cutoffTimestamp)
   }
-  baseParams.push(scanId, scanId);
+  baseParams.push(scanId, scanId)
 
-  const taggedBranchEnabled = options.deleteTagsRequested || options.keepNTagged !== undefined ? 1 : 0;
-  const deleteTagsRequested = options.deleteTagsRequested ? 1 : 0;
-  const deleteOrphanedImages = options.deleteOrphanedImages ? 1 : 0;
-  const keepNTaggedActive = options.keepNTagged !== undefined ? 1 : 0;
-  const deleteUntagged = options.deleteUntagged ? 1 : 0;
-  const keepNUntaggedActive = options.keepNUntagged !== undefined ? 1 : 0;
+  const taggedBranchEnabled = options.deleteTagsRequested || options.keepNTagged !== undefined ? 1 : 0
+  const deleteTagsRequested = options.deleteTagsRequested ? 1 : 0
+  const deleteOrphanedImages = options.deleteOrphanedImages ? 1 : 0
+  const keepNTaggedActive = options.keepNTagged !== undefined ? 1 : 0
+  const deleteUntagged = options.deleteUntagged ? 1 : 0
+  const keepNUntaggedActive = options.keepNUntagged !== undefined ? 1 : 0
   const tailParams: Array<number | string> = [
     deleteOrphanedImages,
     deleteOrphanedImages,
@@ -43,7 +43,7 @@ export function buildCombinedDirectTargetRootsQuery(
     deleteUntagged,
     keepNUntaggedActive,
     options.keepNUntagged ?? 0
-  ];
+  ]
 
   const query = `
     WITH base_manifests AS (
@@ -218,7 +218,7 @@ export function buildCombinedDirectTargetRootsQuery(
       selection_mode
     FROM final_untagged_targets
     ORDER BY root_digest
-  `;
+  `
 
-  return { query, baseParams, tailParams };
+  return { query, baseParams, tailParams }
 }

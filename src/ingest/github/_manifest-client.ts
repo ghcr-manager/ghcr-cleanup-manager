@@ -1,5 +1,5 @@
-import type { ManifestDescriptorRecord, ManifestEdgeRecord, ManifestRecord } from "../../core/index.js";
-import { classifyManifestKind } from "./_manifest-kind.js";
+import type { ManifestDescriptorRecord, ManifestEdgeRecord, ManifestRecord } from '../../core/index.js'
+import { classifyManifestKind } from './_manifest-kind.js'
 import {
   acceptedManifestMediaTypes,
   buildFetchTransportErrorMessage,
@@ -7,55 +7,55 @@ import {
   type FetchLike,
   type GitHubScanOptions,
   withFetchRetry
-} from "./_shared.js";
+} from './_shared.js'
 
 interface _RegistryPlatform {
-  architecture?: string;
-  os?: string;
-  variant?: string;
+  architecture?: string
+  os?: string
+  variant?: string
 }
 
 interface _RegistryDescriptor {
-  mediaType?: string;
-  digest?: string;
-  artifactType?: string;
-  platform?: _RegistryPlatform;
+  mediaType?: string
+  digest?: string
+  artifactType?: string
+  platform?: _RegistryPlatform
 }
 
 interface _RegistryManifestDocument {
-  mediaType?: string;
-  artifactType?: string;
-  annotations?: Record<string, unknown>;
+  mediaType?: string
+  artifactType?: string
+  annotations?: Record<string, unknown>
   config?: {
-    mediaType?: string;
-  };
+    mediaType?: string
+  }
   layers?: Array<{
-    mediaType?: string;
-    annotations?: Record<string, unknown>;
-  }>;
-  manifests?: _RegistryDescriptor[];
+    mediaType?: string
+    annotations?: Record<string, unknown>
+  }>
+  manifests?: _RegistryDescriptor[]
   subject?: {
-    digest?: string;
-  };
+    digest?: string
+  }
 }
 
-type _LoadedManifestRecord = Omit<ManifestRecord, "versionId">;
+type _LoadedManifestRecord = Omit<ManifestRecord, 'versionId'>
 
-export async function loadManifestGraph(
+export async function loadManifestGraph (
   fetchImpl: FetchLike,
   registryBaseUrl: string,
   digest: string,
   registryToken: string,
   options: GitHubScanOptions
 ): Promise<{
-  record: _LoadedManifestRecord;
-  descriptorRecords: ManifestDescriptorRecord[];
-  edgeRecords: ManifestEdgeRecord[];
-  rawJson: string;
-}> {
-  const startTime = Date.now();
-  const url = new URL(`/v2/${options.owner}/${options.packageName}/manifests/${digest}`, registryBaseUrl);
-  let response;
+    record: _LoadedManifestRecord
+    descriptorRecords: ManifestDescriptorRecord[]
+    edgeRecords: ManifestEdgeRecord[]
+    rawJson: string
+  }> {
+  const startTime = Date.now()
+  const url = new URL(`/v2/${options.owner}/${options.packageName}/manifests/${digest}`, registryBaseUrl)
+  let response
   try {
     response = await withFetchRetry(
       async () => {
@@ -63,38 +63,38 @@ export async function loadManifestGraph(
           headers: {
             Accept: acceptedManifestMediaTypes,
             Authorization: `Bearer ${registryToken}`,
-            "User-Agent": "ghcr-cleanup-manager"
+            'User-Agent': 'ghcr-cleanup-manager'
           }
-        });
+        })
         if (!manifestResponse.ok && _shouldRetryStatus(manifestResponse.status)) {
-          throw new Error(await buildHttpErrorMessage(manifestResponse, `GHCR manifest request for ${digest} failed`));
+          throw new Error(await buildHttpErrorMessage(manifestResponse, `GHCR manifest request for ${digest} failed`))
         }
-        return manifestResponse;
+        return manifestResponse
       },
       {
         logger: options.logger,
         label: `GHCR manifest request for ${digest}`,
         shouldRetry: (error) => _shouldRetryError(error)
       }
-    );
+    )
   } catch (error) {
     throw new Error(buildFetchTransportErrorMessage(error, `GHCR manifest request for ${digest} failed`), {
       cause: error
-    });
+    })
   }
 
   if (!response.ok) {
-    throw new Error(await buildHttpErrorMessage(response, `GHCR manifest request for ${digest} failed`));
+    throw new Error(await buildHttpErrorMessage(response, `GHCR manifest request for ${digest} failed`))
   }
 
-  const mediaTypeHeader = response.headers.get("content-type")?.split(";")[0];
-  const document = (await response.json()) as _RegistryManifestDocument;
-  const rawJson = JSON.stringify(document);
-  const mediaType = document.mediaType ?? mediaTypeHeader;
+  const mediaTypeHeader = response.headers.get('content-type')?.split(';')[0]
+  const document = (await response.json()) as _RegistryManifestDocument
+  const rawJson = JSON.stringify(document)
+  const mediaType = document.mediaType ?? mediaTypeHeader
   if (!mediaType) {
-    throw new Error(`manifest response for ${digest} did not include a media type`);
+    throw new Error(`manifest response for ${digest} did not include a media type`)
   }
-  options.logger.debug(`Loaded GHCR manifest ${digest} in ${Date.now() - startTime}ms (${mediaType})`);
+  options.logger.debug(`Loaded GHCR manifest ${digest} in ${Date.now() - startTime}ms (${mediaType})`)
 
   return {
     rawJson,
@@ -108,32 +108,32 @@ export async function loadManifestGraph(
       annotations: document.annotations
     },
     ...buildManifestRelations(digest, rawJson)
-  };
+  }
 }
 
-export function buildManifestRelations(
+export function buildManifestRelations (
   digest: string,
   rawJson: string
 ): {
-  descriptorRecords: ManifestDescriptorRecord[];
-  edgeRecords: ManifestEdgeRecord[];
-} {
-  const document = JSON.parse(rawJson) as _RegistryManifestDocument;
+    descriptorRecords: ManifestDescriptorRecord[]
+    edgeRecords: ManifestEdgeRecord[]
+  } {
+  const document = JSON.parse(rawJson) as _RegistryManifestDocument
 
   return {
     descriptorRecords: _buildDescriptorRecords(digest, document),
     edgeRecords: _buildEdges(digest, document)
-  };
+  }
 }
 
-function _buildDescriptorRecords(
+function _buildDescriptorRecords (
   parentDigest: string,
   document: _RegistryManifestDocument
 ): ManifestDescriptorRecord[] {
-  const records: ManifestDescriptorRecord[] = [];
+  const records: ManifestDescriptorRecord[] = []
   for (const child of document.manifests ?? []) {
     if (!child.digest || !child.mediaType) {
-      continue;
+      continue
     }
 
     records.push({
@@ -142,45 +142,45 @@ function _buildDescriptorRecords(
       mediaType: child.mediaType,
       artifactType: child.artifactType,
       platform: child.platform
-    });
+    })
   }
-  return records;
+  return records
 }
 
-function _buildEdges(parentDigest: string, document: _RegistryManifestDocument): ManifestEdgeRecord[] {
-  const edges: ManifestEdgeRecord[] = [];
+function _buildEdges (parentDigest: string, document: _RegistryManifestDocument): ManifestEdgeRecord[] {
+  const edges: ManifestEdgeRecord[] = []
 
   for (const child of document.manifests ?? []) {
     if (!child.digest || !child.mediaType) {
-      continue;
+      continue
     }
 
     edges.push({
       parentDigest,
       childDigest: child.digest,
-      edgeKind: "image-child"
-    });
+      edgeKind: 'image-child'
+    })
   }
 
   if (document.subject?.digest) {
     edges.push({
       parentDigest: document.subject.digest,
       childDigest: parentDigest,
-      edgeKind: "referrer"
-    });
+      edgeKind: 'referrer'
+    })
   }
 
-  return edges;
+  return edges
 }
 
-function _shouldRetryStatus(status: number): boolean {
-  return status === 429 || status === 502 || status === 503 || status === 504;
+function _shouldRetryStatus (status: number): boolean {
+  return status === 429 || status === 502 || status === 503 || status === 504
 }
 
-function _shouldRetryError(error: unknown): boolean {
+function _shouldRetryError (error: unknown): boolean {
   if (!(error instanceof Error)) {
-    return false;
+    return false
   }
 
-  return /fetch failed|status 429|status 502|status 503|status 504/.test(error.message);
+  return /fetch failed|status 429|status 502|status 503|status 504/.test(error.message)
 }

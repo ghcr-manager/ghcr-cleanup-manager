@@ -1,86 +1,86 @@
-import type Database from "better-sqlite3";
+import type Database from 'better-sqlite3'
 
 interface _DigestRow {
-  digest: string;
+  digest: string
 }
 
 interface _ManifestEdgeRow {
-  parent_digest: string;
-  child_digest: string;
-  edge_kind: string;
+  parent_digest: string
+  child_digest: string
+  edge_kind: string
 }
 
-export function rebuildManifestReachability(database: Database.Database, scanId: number): void {
-  _refreshDigestTagEdges(database, scanId);
-  const manifestDigests = _loadManifestDigests(database, scanId);
-  const childDigestsByParent = new Map<string, Set<string>>();
-  const parentDigestsByChild = new Map<string, Set<string>>();
-  const neighborDigestsByDigest = new Map<string, Set<string>>();
+export function rebuildManifestReachability (database: Database.Database, scanId: number): void {
+  _refreshDigestTagEdges(database, scanId)
+  const manifestDigests = _loadManifestDigests(database, scanId)
+  const childDigestsByParent = new Map<string, Set<string>>()
+  const parentDigestsByChild = new Map<string, Set<string>>()
+  const neighborDigestsByDigest = new Map<string, Set<string>>()
 
   for (const digest of manifestDigests) {
-    childDigestsByParent.set(digest, new Set());
-    parentDigestsByChild.set(digest, new Set());
-    neighborDigestsByDigest.set(digest, new Set());
+    childDigestsByParent.set(digest, new Set())
+    parentDigestsByChild.set(digest, new Set())
+    neighborDigestsByDigest.set(digest, new Set())
   }
 
-  const manifestEdges = _loadManifestEdges(database, scanId);
+  const manifestEdges = _loadManifestEdges(database, scanId)
   for (const manifestEdge of manifestEdges) {
-    childDigestsByParent.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest);
-    parentDigestsByChild.get(manifestEdge.child_digest)?.add(manifestEdge.parent_digest);
-    neighborDigestsByDigest.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest);
-    neighborDigestsByDigest.get(manifestEdge.child_digest)?.add(manifestEdge.parent_digest);
+    childDigestsByParent.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest)
+    parentDigestsByChild.get(manifestEdge.child_digest)?.add(manifestEdge.parent_digest)
+    neighborDigestsByDigest.get(manifestEdge.parent_digest)?.add(manifestEdge.child_digest)
+    neighborDigestsByDigest.get(manifestEdge.child_digest)?.add(manifestEdge.parent_digest)
   }
 
-  const graphIdsByDigest = _buildGraphIdsByDigest(manifestDigests, neighborDigestsByDigest);
+  const graphIdsByDigest = _buildGraphIdsByDigest(manifestDigests, neighborDigestsByDigest)
 
-  const remainingChildrenCount = new Map<string, number>();
-  const descendantDistancesByDigest = new Map<string, Map<string, number>>();
-  const readyDigests: string[] = [];
+  const remainingChildrenCount = new Map<string, number>()
+  const descendantDistancesByDigest = new Map<string, Map<string, number>>()
+  const readyDigests: string[] = []
 
   for (const digest of manifestDigests) {
-    const childCount = childDigestsByParent.get(digest)?.size ?? 0;
-    remainingChildrenCount.set(digest, childCount);
+    const childCount = childDigestsByParent.get(digest)?.size ?? 0
+    remainingChildrenCount.set(digest, childCount)
     if (childCount === 0) {
-      readyDigests.push(digest);
+      readyDigests.push(digest)
     }
   }
 
   while (readyDigests.length > 0) {
-    const digest = readyDigests.shift();
+    const digest = readyDigests.shift()
     if (!digest) {
-      continue;
+      continue
     }
 
-    const distances = new Map<string, number>([[digest, 0]]);
+    const distances = new Map<string, number>([[digest, 0]])
     for (const childDigest of childDigestsByParent.get(digest) ?? []) {
-      _setMinDistance(distances, childDigest, 1);
+      _setMinDistance(distances, childDigest, 1)
 
-      const childDistances = descendantDistancesByDigest.get(childDigest);
+      const childDistances = descendantDistancesByDigest.get(childDigest)
       if (childDistances == null) {
-        throw new Error(`manifest reachability build missing child results for ${childDigest}`);
+        throw new Error(`manifest reachability build missing child results for ${childDigest}`)
       }
 
       for (const [descendantDigest, childDistance] of childDistances) {
         if (descendantDigest === childDigest) {
-          continue;
+          continue
         }
 
-        _setMinDistance(distances, descendantDigest, childDistance + 1);
+        _setMinDistance(distances, descendantDigest, childDistance + 1)
       }
     }
 
-    descendantDistancesByDigest.set(digest, distances);
+    descendantDistancesByDigest.set(digest, distances)
     for (const parentDigest of parentDigestsByChild.get(digest) ?? []) {
-      const nextCount = (remainingChildrenCount.get(parentDigest) ?? 0) - 1;
-      remainingChildrenCount.set(parentDigest, nextCount);
+      const nextCount = (remainingChildrenCount.get(parentDigest) ?? 0) - 1
+      remainingChildrenCount.set(parentDigest, nextCount)
       if (nextCount === 0) {
-        readyDigests.push(parentDigest);
+        readyDigests.push(parentDigest)
       }
     }
   }
 
   if (descendantDistancesByDigest.size !== manifestDigests.length) {
-    throw new Error(_buildCycleErrorMessage(manifestDigests, remainingChildrenCount, manifestEdges));
+    throw new Error(_buildCycleErrorMessage(manifestDigests, remainingChildrenCount, manifestEdges))
   }
 
   const insertRow = database.prepare(
@@ -93,7 +93,7 @@ export function rebuildManifestReachability(database: Database.Database, scanId:
       )
       VALUES(?, ?, ?, ?)
     `
-  );
+  )
   const insertGraphRow = database.prepare(
     `
       INSERT OR REPLACE INTO manifest_graphs(
@@ -103,63 +103,63 @@ export function rebuildManifestReachability(database: Database.Database, scanId:
       )
       VALUES(?, ?, ?)
     `
-  );
+  )
 
   const rebuild = database.transaction(() => {
-    database.prepare("DELETE FROM manifest_reachability WHERE scan_id = ?").run(scanId);
-    database.prepare("DELETE FROM manifest_graphs WHERE scan_id = ?").run(scanId);
+    database.prepare('DELETE FROM manifest_reachability WHERE scan_id = ?').run(scanId)
+    database.prepare('DELETE FROM manifest_graphs WHERE scan_id = ?').run(scanId)
 
     for (const digest of manifestDigests) {
-      insertGraphRow.run(scanId, digest, graphIdsByDigest.get(digest));
+      insertGraphRow.run(scanId, digest, graphIdsByDigest.get(digest))
 
       for (const [descendantDigest, distance] of descendantDistancesByDigest.get(digest) ?? []) {
-        insertRow.run(scanId, digest, descendantDigest, distance);
+        insertRow.run(scanId, digest, descendantDigest, distance)
       }
     }
-  });
+  })
 
-  rebuild();
+  rebuild()
 }
 
-function _buildGraphIdsByDigest(
+function _buildGraphIdsByDigest (
   manifestDigests: string[],
   neighborDigestsByDigest: Map<string, Set<string>>
 ): Map<string, number> {
-  const graphIdsByDigest = new Map<string, number>();
-  let nextGraphId = 1;
+  const graphIdsByDigest = new Map<string, number>()
+  let nextGraphId = 1
 
   for (const rootDigest of manifestDigests) {
     if (graphIdsByDigest.has(rootDigest)) {
-      continue;
+      continue
     }
 
-    const pendingDigests = [rootDigest];
-    graphIdsByDigest.set(rootDigest, nextGraphId);
+    const pendingDigests = [rootDigest]
+    graphIdsByDigest.set(rootDigest, nextGraphId)
 
     while (pendingDigests.length > 0) {
-      const digest = pendingDigests.pop();
+      const digest = pendingDigests.pop()
       if (!digest) {
-        continue;
+        continue
       }
 
       for (const neighborDigest of neighborDigestsByDigest.get(digest) ?? []) {
         if (graphIdsByDigest.has(neighborDigest)) {
-          continue;
+          continue
         }
 
-        graphIdsByDigest.set(neighborDigest, nextGraphId);
-        pendingDigests.push(neighborDigest);
+        graphIdsByDigest.set(neighborDigest, nextGraphId)
+        pendingDigests.push(neighborDigest)
       }
     }
 
-    nextGraphId += 1;
+    nextGraphId += 1
   }
 
-  return graphIdsByDigest;
+  return graphIdsByDigest
 }
 
-function _refreshDigestTagEdges(database: Database.Database, scanId: number): void {
-  database.prepare("DELETE FROM manifest_edges WHERE scan_id = ? AND edge_kind = 'digest-tag-referrer'").run(scanId);
+function _refreshDigestTagEdges (database: Database.Database, scanId: number): void {
+  database.prepare("DELETE FROM manifest_edges WHERE scan_id = ? AND edge_kind = 'digest-tag-referrer'").run(scanId)
 
   database
     .prepare(
@@ -182,17 +182,17 @@ function _refreshDigestTagEdges(database: Database.Database, scanId: number): vo
           AND m.digest != child_manifest.digest
       `
     )
-    .run(scanId);
+    .run(scanId)
 }
 
-function _loadManifestDigests(database: Database.Database, scanId: number): string[] {
+function _loadManifestDigests (database: Database.Database, scanId: number): string[] {
   const rows = database
-    .prepare("SELECT digest FROM manifests WHERE scan_id = ? ORDER BY digest")
-    .all(scanId) as _DigestRow[];
-  return rows.map((row) => row.digest);
+    .prepare('SELECT digest FROM manifests WHERE scan_id = ? ORDER BY digest')
+    .all(scanId) as _DigestRow[]
+  return rows.map((row) => row.digest)
 }
 
-function _loadManifestEdges(database: Database.Database, scanId: number): _ManifestEdgeRow[] {
+function _loadManifestEdges (database: Database.Database, scanId: number): _ManifestEdgeRow[] {
   return database
     .prepare(
       `
@@ -202,28 +202,28 @@ function _loadManifestEdges(database: Database.Database, scanId: number): _Manif
         ORDER BY parent_digest, child_digest, edge_kind
       `
     )
-    .all(scanId) as _ManifestEdgeRow[];
+    .all(scanId) as _ManifestEdgeRow[]
 }
 
-function _buildCycleErrorMessage(
+function _buildCycleErrorMessage (
   manifestDigests: string[],
   remainingChildrenCount: Map<string, number>,
   manifestEdges: _ManifestEdgeRow[]
 ): string {
-  const unresolvedDigests = new Set(manifestDigests.filter((digest) => (remainingChildrenCount.get(digest) ?? 0) > 0));
-  const unresolvedDigestList = Array.from(unresolvedDigests).join(", ");
+  const unresolvedDigests = new Set(manifestDigests.filter((digest) => (remainingChildrenCount.get(digest) ?? 0) > 0))
+  const unresolvedDigestList = Array.from(unresolvedDigests).join(', ')
   for (const edge of manifestEdges) {
     if (unresolvedDigests.has(edge.parent_digest) && unresolvedDigests.has(edge.child_digest)) {
-      return `manifest reachability build detected a cycle in manifest_edges; example unresolved edge: ${edge.parent_digest} --${edge.edge_kind}--> ${edge.child_digest}; unresolved digests: ${unresolvedDigestList}`;
+      return `manifest reachability build detected a cycle in manifest_edges; example unresolved edge: ${edge.parent_digest} --${edge.edge_kind}--> ${edge.child_digest}; unresolved digests: ${unresolvedDigestList}`
     }
   }
 
-  return `manifest reachability build detected a cycle in manifest_edges; unresolved digests: ${unresolvedDigestList}`;
+  return `manifest reachability build detected a cycle in manifest_edges; unresolved digests: ${unresolvedDigestList}`
 }
 
-function _setMinDistance(distances: Map<string, number>, digest: string, distance: number): void {
-  const currentDistance = distances.get(digest);
+function _setMinDistance (distances: Map<string, number>, digest: string, distance: number): void {
+  const currentDistance = distances.get(digest)
   if (currentDistance === undefined || distance < currentDistance) {
-    distances.set(digest, distance);
+    distances.set(digest, distance)
   }
 }

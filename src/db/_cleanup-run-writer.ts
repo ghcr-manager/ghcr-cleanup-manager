@@ -1,18 +1,18 @@
-import type Database from "better-sqlite3";
-import { randomUUID } from "node:crypto";
-import { resolveGitHubActionsRunUrl } from "./_github-actions-run-url.js";
-import { DeletePlanValidationStatuses, type DeletePlan } from "./planner/index.js";
+import type Database from 'better-sqlite3'
+import { randomUUID } from 'node:crypto'
+import { resolveGitHubActionsRunUrl } from './_github-actions-run-url.js'
+import { DeletePlanValidationStatuses, type DeletePlan } from './planner/index.js'
 
 export class CleanupRunWriter {
-  readonly #database: Database.Database;
-  readonly #insertSelectedTagStatement: Database.Statement;
-  readonly #updateSelectedTagsDeletedStatement: Database.Statement;
-  readonly #insertRootDecisionStatement: Database.Statement;
-  readonly #insertProtectedRootBlockStatement: Database.Statement;
-  readonly #insertCleanupRunStatement: Database.Statement;
+  readonly #database: Database.Database
+  readonly #insertSelectedTagStatement: Database.Statement
+  readonly #updateSelectedTagsDeletedStatement: Database.Statement
+  readonly #insertRootDecisionStatement: Database.Statement
+  readonly #insertProtectedRootBlockStatement: Database.Statement
+  readonly #insertCleanupRunStatement: Database.Statement
 
-  constructor(database: Database.Database) {
-    this.#database = database;
+  constructor (database: Database.Database) {
+    this.#database = database
     this.#insertSelectedTagStatement = this.#database.prepare(`
       INSERT INTO cleanup_selected_tags(
         cleanup_run_id,
@@ -21,7 +21,7 @@ export class CleanupRunWriter {
         is_deleted
       )
       VALUES(?, ?, ?, 0)
-    `);
+    `)
     this.#updateSelectedTagsDeletedStatement = this.#database.prepare(`
       UPDATE cleanup_selected_tags
       SET is_deleted = 1
@@ -38,7 +38,7 @@ export class CleanupRunWriter {
         AND decision.scan_id = cleanup_selected_tags.scan_id
         AND decision.validation_status != 'blocked'
         AND tags.tag = cleanup_selected_tags.tag
-    `);
+    `)
     this.#insertRootDecisionStatement = this.#database.prepare(`
       INSERT INTO cleanup_root_decisions(
         cleanup_run_id,
@@ -53,7 +53,7 @@ export class CleanupRunWriter {
         overlap_digest
       )
       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    `)
     this.#insertProtectedRootBlockStatement = this.#database.prepare(`
       INSERT INTO cleanup_protected_root_blocks(
         cleanup_run_id,
@@ -64,7 +64,7 @@ export class CleanupRunWriter {
         overlap_digest
       )
       VALUES(?, ?, ?, ?, ?, ?)
-    `);
+    `)
     this.#insertCleanupRunStatement = this.#database.prepare(`
       INSERT INTO cleanup_runs(
         scan_id,
@@ -82,12 +82,12 @@ export class CleanupRunWriter {
         protected_root_count
       )
       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
+    `)
   }
 
-  persistCleanupRun(scanId: number, plan: DeletePlan, options: { dryRun: boolean; cleanupStartedAt: string }): number {
+  persistCleanupRun (scanId: number, plan: DeletePlan, options: { dryRun: boolean, cleanupStartedAt: string }): number {
     return this.#database.transaction(() => {
-      const cleanupRunId = this.#insertCleanupRun(scanId, plan, options);
+      const cleanupRunId = this.#insertCleanupRun(scanId, plan, options)
       for (const rootDecision of plan.rootDecisions) {
         this.#insertRootDecisionStatement.run(
           cleanupRunId,
@@ -100,7 +100,7 @@ export class CleanupRunWriter {
           rootDecision.validationReason,
           rootDecision.blockingDigest ?? null,
           rootDecision.overlapDigest ?? null
-        );
+        )
       }
 
       for (const protectedRoot of plan.protectedRoots) {
@@ -112,33 +112,33 @@ export class CleanupRunWriter {
             block.blockedDigest,
             block.blockReasonCode,
             block.overlapDigest
-          );
+          )
         }
       }
 
       for (const tag of plan.directTargetTags) {
-        this.#insertSelectedTagStatement.run(cleanupRunId, scanId, tag);
+        this.#insertSelectedTagStatement.run(cleanupRunId, scanId, tag)
       }
-      this.#updateSelectedTagsDeletedStatement.run(cleanupRunId, scanId);
+      this.#updateSelectedTagsDeletedStatement.run(cleanupRunId, scanId)
 
-      return cleanupRunId;
-    })();
+      return cleanupRunId
+    })()
   }
 
-  #insertCleanupRun(scanId: number, plan: DeletePlan, options: { dryRun: boolean; cleanupStartedAt: string }): number {
-    const directTargetTagCount = plan.directTargetTags.length;
-    const directTargetRootCount = plan.directTargetRoots.length;
+  #insertCleanupRun (scanId: number, plan: DeletePlan, options: { dryRun: boolean, cleanupStartedAt: string }): number {
+    const directTargetTagCount = plan.directTargetTags.length
+    const directTargetRootCount = plan.directTargetRoots.length
     const deleteRootCandidateCount = plan.directTargetRoots.filter(
-      (root) => root.selectionMode === "delete-root"
-    ).length;
+      (root) => root.selectionMode === 'delete-root'
+    ).length
     const untagOnlyRootCount = plan.rootDecisions.filter(
       (decision) => decision.validationStatus === DeletePlanValidationStatuses.untagOnly
-    ).length;
-    const fullyDeletableRootCount = plan.fullyDeletableRoots.length;
+    ).length
+    const fullyDeletableRootCount = plan.fullyDeletableRoots.length
     const blockedDeleteRootCount = plan.rootDecisions.filter(
       (decision) => decision.validationStatus === DeletePlanValidationStatuses.blocked
-    ).length;
-    const protectedRootCount = plan.protectedRoots.length;
+    ).length
+    const protectedRootCount = plan.protectedRoots.length
     const result = this.#insertCleanupRunStatement.run(
       scanId,
       randomUUID(),
@@ -153,8 +153,8 @@ export class CleanupRunWriter {
       fullyDeletableRootCount,
       blockedDeleteRootCount,
       protectedRootCount
-    );
+    )
 
-    return Number(result.lastInsertRowid);
+    return Number(result.lastInsertRowid)
   }
 }

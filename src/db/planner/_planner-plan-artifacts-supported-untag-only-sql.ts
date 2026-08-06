@@ -83,4 +83,4 @@ export const _LIST_SUPPORTED_UNTAG_ONLY_ROOT_DIGESTS_SQL = `
           FROM retained_manifests
         )
     )
-`;
+`

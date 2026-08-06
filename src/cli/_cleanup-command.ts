@@ -1,66 +1,66 @@
-import { ManifestKinds } from "../core/index.js";
-import { buildCleanupSummary } from "../cleanup-summary/index.js";
-import { CleanupRunWriter, openDatabase, PlannerRepository } from "../db/index.js";
-import { executeDeletePlan } from "../execute/index.js";
-import { hasFlag, resolveLogLevel, resolveToken } from "./_args.js";
-import { writeJsonOutput } from "./_json-output.js";
-import { createLogger } from "./_logger.js";
-import { loadDeletePlan, resolvePlanCommandInputs } from "./_planner-options.js";
-import { resolveTagSelectors } from "./_tag-selector-resolver.js";
+import { ManifestKinds } from '../core/index.js'
+import { buildCleanupSummary } from '../cleanup-summary/index.js'
+import { CleanupRunWriter, openDatabase, PlannerRepository } from '../db/index.js'
+import { executeDeletePlan } from '../execute/index.js'
+import { hasFlag, resolveLogLevel, resolveToken } from './_args.js'
+import { writeJsonOutput } from './_json-output.js'
+import { createLogger } from './_logger.js'
+import { loadDeletePlan, resolvePlanCommandInputs } from './_planner-options.js'
+import { resolveTagSelectors } from './_tag-selector-resolver.js'
 
-export async function handleCleanup(args: string[]): Promise<number> {
-  const inputs = resolvePlanCommandInputs(args);
-  const dryRun = hasFlag(args, "--dry-run");
-  const token = dryRun ? undefined : resolveToken(args);
-  const logger = createLogger(resolveLogLevel(args));
-  const database = openDatabase(inputs.databasePath);
+export async function handleCleanup (args: string[]): Promise<number> {
+  const inputs = resolvePlanCommandInputs(args)
+  const dryRun = hasFlag(args, '--dry-run')
+  const token = dryRun ? undefined : resolveToken(args)
+  const logger = createLogger(resolveLogLevel(args))
+  const database = openDatabase(inputs.databasePath)
   try {
-    const repository = new PlannerRepository(database, logger);
-    const cleanupRunWriter = new CleanupRunWriter(database);
-    const scanId = repository.getLatestCompletedScanId(inputs.owner, inputs.packageName);
-    logger.debug(`Starting cleanup for ${inputs.owner}/${inputs.packageName}`);
-    const plan = loadDeletePlan(repository, resolveTagSelectors(database, inputs));
+    const repository = new PlannerRepository(database, logger)
+    const cleanupRunWriter = new CleanupRunWriter(database)
+    const scanId = repository.getLatestCompletedScanId(inputs.owner, inputs.packageName)
+    logger.debug(`Starting cleanup for ${inputs.owner}/${inputs.packageName}`)
+    const plan = loadDeletePlan(repository, resolveTagSelectors(database, inputs))
     const rootTagsByVersionId = _loadRootTagsByVersionId(
       database,
       inputs.owner,
       inputs.packageName,
       plan.rootDecisions.map((decision) => decision.versionId)
-    );
+    )
     const cleanupRunId = cleanupRunWriter.persistCleanupRun(scanId, plan, {
       dryRun,
       cleanupStartedAt: new Date().toISOString()
-    });
+    })
     if (dryRun) {
       const summary = buildCleanupSummary(plan, {
         dryRun: true,
         rootTagsByVersionId,
         changes: _loadSummaryChanges(database, cleanupRunId)
-      });
-      logger.debug(`Completed dry-run cleanup for ${inputs.owner}/${inputs.packageName}`);
-      writeJsonOutput(args, "--summary-json-path", summary);
-      return 0;
+      })
+      logger.debug(`Completed dry-run cleanup for ${inputs.owner}/${inputs.packageName}`)
+      writeJsonOutput(args, '--summary-json-path', summary)
+      return 0
     }
 
     const executionSummary = await executeDeletePlan(plan, {
       token: token as string,
       logger,
       listRootTags: (root) => _listRootTags(database, root.owner, root.packageName, root.versionId)
-    });
+    })
     const summary = buildCleanupSummary(plan, {
       dryRun: false,
       rootTagsByVersionId,
       changes: _loadSummaryChanges(database, cleanupRunId),
       executionSummary
-    });
-    logger.debug(`Completed cleanup for ${inputs.owner}/${inputs.packageName}`);
-    writeJsonOutput(args, "--summary-json-path", summary);
-    return 0;
+    })
+    logger.debug(`Completed cleanup for ${inputs.owner}/${inputs.packageName}`)
+    writeJsonOutput(args, '--summary-json-path', summary)
+    return 0
   } finally {
-    database.close();
+    database.close()
   }
 }
 
-function _listRootTags(
+function _listRootTags (
   database: ReturnType<typeof openDatabase>,
   owner: string,
   packageName: string,
@@ -79,26 +79,26 @@ function _listRootTags(
         ORDER BY tags.tag
       `
     )
-    .all(owner, packageName, versionId) as Array<{ tag: string }>;
+    .all(owner, packageName, versionId) as Array<{ tag: string }>
 
-  return rows.map((row) => row.tag);
+  return rows.map((row) => row.tag)
 }
 
-function _loadRootTagsByVersionId(
+function _loadRootTagsByVersionId (
   database: ReturnType<typeof openDatabase>,
   owner: string,
   packageName: string,
   versionIds: number[]
 ): Map<number, string[]> {
-  const requestedVersionIds = new Set(versionIds);
-  const tagsByVersionId = new Map<number, string[]>();
+  const requestedVersionIds = new Set(versionIds)
+  const tagsByVersionId = new Map<number, string[]>()
 
   for (const versionId of requestedVersionIds) {
-    tagsByVersionId.set(versionId, []);
+    tagsByVersionId.set(versionId, [])
   }
 
   if (requestedVersionIds.size === 0) {
-    return tagsByVersionId;
+    return tagsByVersionId
   }
 
   const rows = database
@@ -113,32 +113,32 @@ function _loadRootTagsByVersionId(
         ORDER BY tags.version_id, tags.tag
       `
     )
-    .all(owner, packageName) as Array<{ version_id: number; tag: string }>;
+    .all(owner, packageName) as Array<{ version_id: number, tag: string }>
 
   for (const row of rows) {
     if (!requestedVersionIds.has(row.version_id)) {
-      continue;
+      continue
     }
 
-    tagsByVersionId.get(row.version_id)?.push(row.tag);
+    tagsByVersionId.get(row.version_id)?.push(row.tag)
   }
 
-  return tagsByVersionId;
+  return tagsByVersionId
 }
 
-function _loadSummaryChanges(
+function _loadSummaryChanges (
   database: ReturnType<typeof openDatabase>,
   cleanupRunId: number
 ): {
-  deletedTags: number;
-  deletedImages: number;
-  deletedIndexes: number;
-  deletedMultiArchManifests: number;
-  deletedArtifactManifests: number;
-  deletedAttestations: number;
-  deletedSignatures: number;
-  deletedTotal: number;
-} {
+    deletedTags: number
+    deletedImages: number
+    deletedIndexes: number
+    deletedMultiArchManifests: number
+    deletedArtifactManifests: number
+    deletedAttestations: number
+    deletedSignatures: number
+    deletedTotal: number
+  } {
   const deletedTags = (
     database
       .prepare(
@@ -150,7 +150,7 @@ function _loadSummaryChanges(
         `
       )
       .get(cleanupRunId) as { count: number }
-  ).count;
+  ).count
 
   const manifestCounts = database
     .prepare(
@@ -176,9 +176,9 @@ function _loadSummaryChanges(
         GROUP BY manifest_kind
       `
     )
-    .all(cleanupRunId) as Array<{ manifest_kind: string | null; count: number }>;
+    .all(cleanupRunId) as Array<{ manifest_kind: string | null, count: number }>
 
-  const countsByKind = new Map(manifestCounts.map((row) => [row.manifest_kind ?? "", row.count]));
+  const countsByKind = new Map(manifestCounts.map((row) => [row.manifest_kind ?? '', row.count]))
 
   return {
     deletedTags,
@@ -189,5 +189,5 @@ function _loadSummaryChanges(
     deletedAttestations: countsByKind.get(ManifestKinds.attestationManifest) ?? 0,
     deletedSignatures: countsByKind.get(ManifestKinds.signatureManifest) ?? 0,
     deletedTotal: manifestCounts.reduce((total, row) => total + row.count, 0)
-  };
+  }
 }

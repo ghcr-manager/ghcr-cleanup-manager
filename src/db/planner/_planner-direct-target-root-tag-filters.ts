@@ -1,29 +1,29 @@
-import { buildTagSelectorPredicate } from "./_planner-tag-selectors.js";
-import type { DirectTargetRootOptions } from "./_planner-direct-target-root-options.js";
-import type { PlannerSql } from "./_planner-sql.js";
+import { buildTagSelectorPredicate } from './_planner-tag-selectors.js'
+import type { DirectTargetRootOptions } from './_planner-direct-target-root-options.js'
+import type { PlannerSql } from './_planner-sql.js'
 
 export interface DirectTargetRootTagFilters {
-  selectedTagsSql: string;
-  selectedParams: Array<number | string>;
-  excludedTagsSql: string;
-  excludedParams: Array<number | string>;
+  selectedTagsSql: string
+  selectedParams: Array<number | string>
+  excludedTagsSql: string
+  excludedParams: Array<number | string>
 }
 
-export function buildDirectTargetRootTagFilters(
+export function buildDirectTargetRootTagFilters (
   sql: PlannerSql,
   scanId: number,
   options: DirectTargetRootOptions
 ): DirectTargetRootTagFilters {
   const selectedTagPredicate =
     options.deleteTags.length > 0
-      ? buildTagSelectorPredicate(sql.database, "t.tag", options.deleteTags, options.useRegex ?? false)
-      : undefined;
+      ? buildTagSelectorPredicate(sql.database, 't.tag', options.deleteTags, options.useRegex ?? false)
+      : undefined
   const excludedTagPredicate =
     options.excludeTags.length > 0
-      ? buildTagSelectorPredicate(sql.database, "xt.tag", options.excludeTags, options.useRegex ?? false)
-      : undefined;
+      ? buildTagSelectorPredicate(sql.database, 'xt.tag', options.excludeTags, options.useRegex ?? false)
+      : undefined
 
-  const selectedTagDigestFlag = options.deleteOrphanedImages ? 1 : 0;
+  const selectedTagDigestFlag = options.deleteOrphanedImages ? 1 : 0
   const selectedTagsSql =
     selectedTagPredicate != null
       ? `
@@ -44,17 +44,17 @@ export function buildDirectTargetRootTagFilters(
               AND (${excludedTagPredicate.sql})
           )
         `
-              : ""
+              : ''
           }
       `
       : `
         SELECT NULL AS version_id, NULL AS tag
         WHERE 1 = 0
-      `;
+      `
   const selectedParams =
     selectedTagPredicate != null
       ? [scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? [])]
-      : [];
+      : []
   const excludedTagsSql =
     excludedTagPredicate != null
       ? `
@@ -67,13 +67,13 @@ export function buildDirectTargetRootTagFilters(
       : `
         SELECT NULL AS version_id, NULL AS tag
         WHERE 1 = 0
-      `;
-  const excludedParams = excludedTagPredicate != null ? [scanId, ...excludedTagPredicate.params] : [];
+      `
+  const excludedParams = excludedTagPredicate != null ? [scanId, ...excludedTagPredicate.params] : []
 
   return {
     selectedTagsSql,
     selectedParams,
     excludedTagsSql,
     excludedParams
-  };
+  }
 }
