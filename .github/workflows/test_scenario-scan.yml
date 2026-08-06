@@ -86,10 +86,12 @@ jobs:
           node tests/tools/resolve-test-scenario.mjs "$SCENARIO" "ghcr-cleanup-manager" "$REPOSITORY_NAME" > "$resolution_path"
           package_name="$(jq -r '.packageName' "$resolution_path")"
           db_path="$work_dir/${TEST_OWNER}__${package_name}__scan-history.sqlite"
-          echo "resolution_path=$resolution_path" >> "$GITHUB_OUTPUT"
-          echo "db_path=$db_path" >> "$GITHUB_OUTPUT"
-          echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
-          echo "seed_strategy=$(jq -r '.seedStrategy' "$resolution_path")" >> "$GITHUB_OUTPUT"
+          {
+            echo "resolution_path=$resolution_path"
+            echo "db_path=$db_path"
+            echo "package_name=$package_name"
+            echo "seed_strategy=$(jq -r '.seedStrategy' "$resolution_path")"
+          } >> "$GITHUB_OUTPUT"
           echo "image_ref=ghcr.io/${TEST_OWNER}/${package_name}" >> "$GITHUB_OUTPUT"
 
       - name: Clear scenario package

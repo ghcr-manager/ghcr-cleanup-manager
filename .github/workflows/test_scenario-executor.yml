@@ -178,14 +178,16 @@ jobs:
           fi
           db_file="${TEST_OWNER}__${package_name}__${EXECUTOR}__scan-history.sqlite"
           db_path="$work_dir/$db_file"
-          echo "work_dir=$work_dir" >> "$GITHUB_OUTPUT"
-          echo "resolution_path=$resolution_path" >> "$GITHUB_OUTPUT"
-          echo "db_path=$db_path" >> "$GITHUB_OUTPUT"
-          echo "summary_path=$summary_path" >> "$GITHUB_OUTPUT"
-          echo "package_name=$package_name" >> "$GITHUB_OUTPUT"
-          echo "seed_strategy=$(jq -r '.seedStrategy' "$resolution_path")" >> "$GITHUB_OUTPUT"
-          echo "digest_selector_tag_name_key=$(jq -r '.digestSelectorTagNameKey // ""' "$resolution_path")" >> "$GITHUB_OUTPUT"
-          echo "image_ref=ghcr.io/${TEST_OWNER}/${package_name}" >> "$GITHUB_OUTPUT"
+          {
+            echo "work_dir=$work_dir"
+            echo "resolution_path=$resolution_path"
+            echo "db_path=$db_path"
+            echo "summary_path=$summary_path"
+            echo "package_name=$package_name"
+            echo "seed_strategy=$(jq -r '.seedStrategy' "$resolution_path")"
+            echo "digest_selector_tag_name_key=$(jq -r '.digestSelectorTagNameKey // ""' "$resolution_path")"
+            echo "image_ref=ghcr.io/${TEST_OWNER}/${package_name}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Clear scenario package
         shell: bash
