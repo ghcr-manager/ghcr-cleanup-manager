@@ -19,6 +19,6 @@ done < <(
     --paginate \
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: $_GITHUB_API_VERSION" \
-    "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
-    | jq -r '.artifacts[] | [.id, .name] | @tsv'
+    "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" |
+    jq -r '.artifacts[] | [.id, .name] | @tsv'
 )

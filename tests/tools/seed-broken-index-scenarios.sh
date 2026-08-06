@@ -12,14 +12,14 @@ if [[ -z "$scenario_id" || -z "$image_ref" || -z "$registry_username" || -z "$re
 fi
 
 case "$scenario_id" in
-  delete-ghost-images-real|delete-ghost-images-noop|delete-partial-images-real|delete-partial-images-noop)
+  delete-ghost-images-real | delete-ghost-images-noop | delete-partial-images-real | delete-partial-images-noop)
     ;;
   *)
     exit 0
     ;;
 esac
 
-echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >> "$GITHUB_ENV"
+echo "GHCR_MANAGER_SCENARIO_SEED_HANDLED=true" >>"$GITHUB_ENV"
 
 fixture_dockerfile="$PWD/tests/tools/fixtures/minimal-image/Dockerfile"
 base_dir="$(mktemp -d)"
@@ -27,17 +27,17 @@ base_dir="$(mktemp -d)"
 keep_dir="$base_dir/keep"
 mkdir -p "$keep_dir"
 cp "$fixture_dockerfile" "$keep_dir/Dockerfile"
-printf '%s\n' "${scenario_id} keep" > "$keep_dir/payload.txt"
+printf '%s\n' "${scenario_id} keep" >"$keep_dir/payload.txt"
 
 noop_child_dir="$base_dir/noop-child"
 mkdir -p "$noop_child_dir"
 cp "$fixture_dockerfile" "$noop_child_dir/Dockerfile"
-printf '%s\n' "${scenario_id} noop child" > "$noop_child_dir/payload.txt"
+printf '%s\n' "${scenario_id} noop child" >"$noop_child_dir/payload.txt"
 
 second_child_dir="$base_dir/second-child"
 mkdir -p "$second_child_dir"
 cp "$fixture_dockerfile" "$second_child_dir/Dockerfile"
-printf '%s\n' "${scenario_id} second child" > "$second_child_dir/payload.txt"
+printf '%s\n' "${scenario_id} second child" >"$second_child_dir/payload.txt"
 
 docker buildx build \
   --platform linux/amd64 \
@@ -55,8 +55,8 @@ if [[ "$scenario_id" == "delete-ghost-images-noop" || "$scenario_id" == "delete-
     --tag "$image_ref:${scenario_id}-amd64-test" \
     "$noop_child_dir"
   primary_child_digest="$(
-    docker buildx imagetools inspect "$image_ref:${scenario_id}-amd64-test" \
-      | awk '/Digest:/ {print $2; exit}'
+    docker buildx imagetools inspect "$image_ref:${scenario_id}-amd64-test" |
+      awk '/Digest:/ {print $2; exit}'
   )"
 fi
 
@@ -69,8 +69,8 @@ if [[ "$scenario_id" == "delete-partial-images-noop" ]]; then
     --tag "$image_ref:${scenario_id}-arm64-test" \
     "$second_child_dir"
   secondary_child_digest="$(
-    docker buildx imagetools inspect "$image_ref:${scenario_id}-arm64-test" \
-      | awk '/Digest:/ {print $2; exit}'
+    docker buildx imagetools inspect "$image_ref:${scenario_id}-arm64-test" |
+      awk '/Digest:/ {print $2; exit}'
   )"
 fi
 
@@ -80,8 +80,8 @@ package="${ref_path#*/}"
 scope="repository:${owner}/${package}:pull,push"
 token="$(
   curl -fsSL -u "${registry_username}:${registry_password}" \
-    "https://ghcr.io/token?service=ghcr.io&scope=${scope}" \
-    | jq -r '.token'
+    "https://ghcr.io/token?service=ghcr.io&scope=${scope}" |
+    jq -r '.token'
 )"
 [[ -n "$token" && "$token" != "null" ]] || {
   echo "Failed to acquire GHCR push token for $owner/$package" >&2
@@ -93,11 +93,17 @@ missing_amd64_digest="sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 missing_arm64_digest="sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
 if [[ "$scenario_id" == "delete-ghost-images-noop" ]]; then
-  [[ -n "$primary_child_digest" ]] || { echo "Missing noop child digest for delete-ghost-images-noop" >&2; exit 1; }
+  [[ -n "$primary_child_digest" ]] || {
+    echo "Missing noop child digest for delete-ghost-images-noop" >&2
+    exit 1
+  }
   amd64_digest="$primary_child_digest"
   arm64_digest="$missing_arm64_digest"
 elif [[ "$scenario_id" == "delete-partial-images-real" ]]; then
-  [[ -n "$primary_child_digest" ]] || { echo "Missing primary child digest for delete-partial-images-real" >&2; exit 1; }
+  [[ -n "$primary_child_digest" ]] || {
+    echo "Missing primary child digest for delete-partial-images-real" >&2
+    exit 1
+  }
   amd64_digest="$primary_child_digest"
   arm64_digest="$missing_arm64_digest"
 elif [[ "$scenario_id" == "delete-partial-images-noop" ]]; then
@@ -134,7 +140,7 @@ jq -n \
         platform: { architecture: "arm64", os: "linux" }
       }
     ]
-  }' > "$index_json_path"
+  }' >"$index_json_path"
 
 curl -fsSL \
   -X PUT \
