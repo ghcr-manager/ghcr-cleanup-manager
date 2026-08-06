@@ -62,3 +62,5 @@ Previous handoff material was archived to
   clients rather than being reimplemented in individual endpoint wrappers.
 - Treat `exclude-tags` as a run-wide protection signal for tagged-root planning, not only as a filter on explicit
   `delete-tags` matches.
+- Keep changelog entries for commits after the latest actual git tag under `Unreleased`; do not pre-file them under an
+  unreleased version heading.

@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.11] - 2026-08-07
+
+### Changed
+
+- Bumped dependencies and used GitHub Actions.
+
+### Fixed
+
+- Action-generated SQLite DB filenames now lowercase the owner segment to match the lowercase owner used by GHCR image
+  names.
+- Fixed the visualizer's public HTML asset links so `styles.css` and `app.js` resolve via relative paths instead of
+  root-relative paths.
+- Fixed the visualizer Docker image build for native `better-sqlite3` runtime dependencies.
+- Fixed many small linting issues.
+
 ## [v1.1.8] - 2026-07-24
 
 ### Fixed
