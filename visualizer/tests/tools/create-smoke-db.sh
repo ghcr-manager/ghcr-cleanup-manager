@@ -17,7 +17,7 @@ rm -f "$DB_PATH"
 for directory_name in schema views; do
   sql_directory="${REPO_ROOT}/resources/sql/${directory_name}"
   while IFS= read -r sql_file; do
-    sqlite3 "$DB_PATH" < "$sql_file"
+    sqlite3 "$DB_PATH" <"$sql_file"
   done < <(find "$sql_directory" -maxdepth 1 -type f -name '*.sql' | sort)
 done
 

@@ -20,6 +20,6 @@ while IFS=$'\t' read -r artifact_id artifact_name; do
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: $_GITHUB_API_VERSION" \
     "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id" \
-    > /dev/null
+    >/dev/null
   echo "Deleted intermediate artifact: $artifact_name" >&2
-done < "$ARTIFACT_LIST_PATH"
+done <"$ARTIFACT_LIST_PATH"
