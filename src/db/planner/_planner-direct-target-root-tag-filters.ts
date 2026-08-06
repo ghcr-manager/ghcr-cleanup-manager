@@ -24,15 +24,16 @@ export function buildDirectTargetRootTagFilters(
       : undefined;
 
   const selectedTagDigestFlag = options.deleteOrphanedImages ? 1 : 0;
-  const selectedTagsSql = selectedTagPredicate
-    ? `
+  const selectedTagsSql =
+    selectedTagPredicate != null
+      ? `
         SELECT DISTINCT t.version_id, t.tag
         FROM tags t
         WHERE t.scan_id = ?
           AND t.is_digest_tag = ?
           AND (${selectedTagPredicate.sql})
           ${
-            excludedTagPredicate
+            excludedTagPredicate != null
               ? `
           AND NOT EXISTS (
             SELECT 1
@@ -46,26 +47,28 @@ export function buildDirectTargetRootTagFilters(
               : ""
           }
       `
-    : `
+      : `
         SELECT NULL AS version_id, NULL AS tag
         WHERE 1 = 0
       `;
-  const selectedParams = selectedTagPredicate
-    ? [scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? [])]
-    : [];
-  const excludedTagsSql = excludedTagPredicate
-    ? `
+  const selectedParams =
+    selectedTagPredicate != null
+      ? [scanId, selectedTagDigestFlag, ...selectedTagPredicate.params, ...(excludedTagPredicate?.params ?? [])]
+      : [];
+  const excludedTagsSql =
+    excludedTagPredicate != null
+      ? `
         SELECT DISTINCT xt.version_id, xt.tag
         FROM tags xt
         WHERE xt.scan_id = ?
           AND xt.is_digest_tag = 0
           AND (${excludedTagPredicate.sql})
       `
-    : `
+      : `
         SELECT NULL AS version_id, NULL AS tag
         WHERE 1 = 0
       `;
-  const excludedParams = excludedTagPredicate ? [scanId, ...excludedTagPredicate.params] : [];
+  const excludedParams = excludedTagPredicate != null ? [scanId, ...excludedTagPredicate.params] : [];
 
   return {
     selectedTagsSql,

@@ -96,6 +96,6 @@ export async function listPackageVersionTagSources(
 
   return requestedTags.flatMap((tag) => {
     const match = matches.get(tag);
-    return match ? [match] : [];
+    return match != null ? [match] : [];
   });
 }

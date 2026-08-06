@@ -1,7 +1,7 @@
 import type { ScanRow } from "./_planner-types.js";
 
 interface LatestScanSql {
-  get<T>(sql: string, params: Array<number | string>): T | undefined;
+  get: <T>(sql: string, params: Array<number | string>) => T | undefined;
 }
 
 export class PlannerLatestScan {
@@ -20,7 +20,7 @@ export class PlannerLatestScan {
       LIMIT 1
     `;
     const row = this.#sql.get<ScanRow>(sql, [owner, packageName]);
-    if (!row) {
+    if (row == null) {
       throw new Error(`database does not contain completed package scan for ${owner}/${packageName}`);
     }
 

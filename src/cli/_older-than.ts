@@ -6,12 +6,12 @@ export interface OlderThanResolution {
 export function resolveOlderThan(rawValue: string, now: Date): OlderThanResolution {
   const normalized = rawValue.trim().toLowerCase();
   const match = normalized.match(/^(\d+)\s+(minute|minutes|hour|hours|day|days|week|weeks|month|months|year|years)$/);
-  if (!match) {
+  if (match == null) {
     throw new Error(`invalid older-than interval: ${rawValue}`);
   }
 
   const amount = Number(match[1]);
-  const unit = match[2] as string;
+  const unit = match[2];
   const cutoff = new Date(now.getTime());
 
   switch (unit) {

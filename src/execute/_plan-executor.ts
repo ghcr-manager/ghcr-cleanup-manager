@@ -16,7 +16,7 @@ export async function executeDeletePlan(
     if (decision.validationStatus !== DeletePlanValidationStatuses.untagOnly) {
       continue;
     }
-    if (!options.listRootTags) {
+    if (options.listRootTags == null) {
       throw new Error(`execution requires listRootTags support for untag-only root ${decision.digest}`);
     }
 

@@ -1,7 +1,7 @@
 export interface HttpErrorResponse {
   status: number;
   headers: Headers;
-  json(): Promise<unknown>;
+  json: () => Promise<unknown>;
 }
 
 export async function buildHttpErrorMessage(response: HttpErrorResponse, fallback: string): Promise<string> {

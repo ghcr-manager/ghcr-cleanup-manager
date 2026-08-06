@@ -5,8 +5,8 @@ const _DEFAULT_PAGE_SIZE = 100;
 const _PROGRESS_LABEL = "GitHub package-version pages";
 
 export interface ParallelPaginatedIngestOptions<T> {
-  loadPage(page: number): Promise<T[]>;
-  writePage(pageItems: T[], page: number): Promise<void> | void;
+  loadPage: (page: number) => Promise<T[]>;
+  writePage: (pageItems: T[], page: number) => Promise<void> | void;
   logger: GitHubScanLogger;
   firstPageItems?: T[];
 }

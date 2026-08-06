@@ -10,17 +10,17 @@ export interface GitHubScanOptions {
 }
 
 export interface GitHubScanLogger {
-  debug(message: string): void;
-  info(message: string): void;
-  warn(message: string): void;
-  error(message: string): void;
+  debug: (message: string) => void;
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
 }
 
 export interface FetchLikeResponse {
   ok: boolean;
   status: number;
   headers: Headers;
-  json(): Promise<unknown>;
+  json: () => Promise<unknown>;
 }
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<FetchLikeResponse>;
@@ -55,7 +55,7 @@ export async function withFetchRetry<T>(
       return await run();
     } catch (error) {
       attempt += 1;
-      const shouldRetry = options.shouldRetry ? options.shouldRetry(error) : true;
+      const shouldRetry = options.shouldRetry != null ? options.shouldRetry(error) : true;
       if (!shouldRetry || attempt > ingestRequestRetryCount) {
         throw error;
       }

@@ -56,7 +56,7 @@ export function rebuildManifestReachability(database: Database.Database, scanId:
       _setMinDistance(distances, childDigest, 1);
 
       const childDistances = descendantDistancesByDigest.get(childDigest);
-      if (!childDistances) {
+      if (childDistances == null) {
         throw new Error(`manifest reachability build missing child results for ${childDigest}`);
       }
 
