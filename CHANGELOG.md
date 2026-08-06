@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.9] - 2026-08-06
+
+### Changed
+
+- Bumped dependencies and used GitHub Actions.
+
+### Fixed
+
+- Action-generated SQLite DB filenames now lowercase the owner segment to match the lowercase owner used by GHCR image
+  names.
+
 ## [v1.1.8] - 2026-07-24
 
 ### Fixed
