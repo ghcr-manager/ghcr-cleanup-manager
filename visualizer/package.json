@@ -44,7 +44,7 @@
     "test": "bash -lc 'shopt -s globstar nullglob; node --import tsx --test tests/**/*.test.ts'"
   },
   "dependencies": {
-    "better-sqlite3": "^12.9.0",
+    "better-sqlite3": "^13.0.1",
     "cytoscape": "^3.34.0"
   },
   "devDependencies": {
