@@ -7,11 +7,24 @@ DISABLE_LINTERS:
   - REPOSITORY_DEVSKIM
   - SQL_TSQLLINT
   - TYPESCRIPT_STANDARD
+
 # jscpd
 COPYPASTE_JSCPD_ARGUMENTS: "--threshold 10"
 
+# ESLint
+JAVASCRIPT_ES_CLI_EXECUTABLE:
+  - node_modules/.bin/eslint
+TYPESCRIPT_ES_CLI_EXECUTABLE:
+  - node_modules/.bin/eslint
+
 # shfmt
 BASH_SHFMT_ARGUMENTS: "--indent 2 -case-indent"
+
+# trivy
+REPOSITORY_TRIVY_ARGUMENTS: "--ignorefile ./.trivyignore.yaml"
+
+# kingfisher
+REPOSITORY_KINGFISHER_ARGUMENTS: "--exclude node_modules"
 
 # zizmor
 ACTION_ZIZMOR_UNSECURED_ENV_VARIABLES:

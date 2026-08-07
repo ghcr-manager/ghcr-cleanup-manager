@@ -13,6 +13,14 @@ export default defineConfig(
     ignores: [".venv/**", "dist/**", "node_modules/**"]
   },
   js.configs.recommended,
+  {
+    files: ["visualizer/public/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser
+      }
+    }
+  },
   ..._tsRecommendedConfigs,
   {
     files: ["src/**/*.ts", "tests/**/*.ts", "visualizer/src/**/*.ts", "visualizer/tests/**/*.ts"],

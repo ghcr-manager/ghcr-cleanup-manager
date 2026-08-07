@@ -2,6 +2,8 @@ import path from "node:path";
 
 const srcRoot = path.resolve("src");
 const testsRoot = path.resolve("tests");
+const visualizerSrcRoot = path.resolve("visualizer/src");
+const visualizerTestsRoot = path.resolve("visualizer/tests");
 
 function isInsideDirectory(filePath, directoryPath) {
   const relativePath = path.relative(directoryPath, filePath);
@@ -28,12 +30,19 @@ function isIndexFile(filePath) {
 }
 
 function isMappedTestImport(importerPath, targetPath) {
-  if (!isInsideDirectory(importerPath, testsRoot) || !isInsideDirectory(targetPath, srcRoot)) {
+  return (
+    isMappedTestImportInTree(importerPath, targetPath, testsRoot, srcRoot) ||
+    isMappedTestImportInTree(importerPath, targetPath, visualizerTestsRoot, visualizerSrcRoot)
+  );
+}
+
+function isMappedTestImportInTree(importerPath, targetPath, treeTestsRoot, treeSrcRoot) {
+  if (!isInsideDirectory(importerPath, treeTestsRoot) || !isInsideDirectory(targetPath, treeSrcRoot)) {
     return false;
   }
 
-  const importerRelativePath = path.relative(testsRoot, importerPath).replace(/\.test\.ts$/, ".ts");
-  const targetRelativePath = path.relative(srcRoot, targetPath).replace(/\.js$/, ".ts");
+  const importerRelativePath = path.relative(treeTestsRoot, importerPath).replace(/\.test\.ts$/, ".ts");
+  const targetRelativePath = path.relative(treeSrcRoot, targetPath).replace(/\.js$/, ".ts");
   return importerRelativePath === targetRelativePath;
 }
 
