@@ -1,0 +1,10 @@
+misconfigurations:
+  - id: AVD-DS-0002
+    paths:
+      - tests/tools/fixtures/minimal-image/Dockerfile
+    statement: USER not needed for this test Dockerfile
+  - id: AVD-DS-0026
+    paths:
+      - visualizer/Dockerfile
+      - tests/tools/fixtures/minimal-image/Dockerfile
+    statement: HEALTHCHECK not needed
