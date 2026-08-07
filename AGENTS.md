@@ -19,7 +19,9 @@ Audience: AI coding agents working in this repo.
   Perl, or shell helper programs inside YAML `run:` steps; put that logic in repo-local script files instead.
 - Disabling linters via comments is a last resort; fix first and only suppress with explicit approval.
 - For any substantial work, update [docs/implementation-notes.md](docs/implementation-notes.md) before ending the
-  session.
+  session, but only when the work adds durable cross-session knowledge.
+- Do not add implementation-notes entries for routine small fixes, obvious code edits, transient debugging details, or
+  isolated lint/config churn.
 - Do not create commits unless the user explicitly asks for a commit after review.
 - Keep production TypeScript files small by default:
   - up to about 100 lines is comfortable
@@ -46,6 +48,8 @@ Audience: AI coding agents working in this repo.
 
 - Treat [docs/implementation-notes.md](docs/implementation-notes.md) as the canonical handoff document.
 - Keep a checkbox-based checklist there for completed work and the current next plan.
-- Record important decisions there when they affect architecture, tooling, or workflow shape.
+- Record important decisions there when they affect architecture, tooling, workflow shape, or other durable working
+  conventions that future sessions are likely to need.
+- Prefer consolidating or updating existing notes over appending new bullets for every change.
 - Treat commits as user-approved checkpoints, not agent-owned defaults.
 - Before starting new implementation work, read the handoff doc and align with its current next plan.
