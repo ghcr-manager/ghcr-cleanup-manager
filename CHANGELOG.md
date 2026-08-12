@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.12] - 2026-08-12
+
+### Changed
+
+- Bumped dependencies and used GitHub Actions.
+
 ## [v1.1.11] - 2026-08-07
 
 ### Changed
