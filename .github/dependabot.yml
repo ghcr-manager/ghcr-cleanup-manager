@@ -37,4 +37,4 @@ updates:
           - "version-update:semver-major"
       # ignore until ESLint supports TS 7
       - dependency-name: "typescript"
-        versions: [ ">=7" ]
+        versions: [">=7"]
