@@ -133,7 +133,7 @@ jobs:
           password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@c5eac5dd8f7ed6b39fffc6e2c2242966b4917260 # 0.2.1
+        uses: gh-workflow/multiarch-image-publish@310d8b3eb42bc5d1dc6746e70e449b93f63a41af # 0.2.2
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |

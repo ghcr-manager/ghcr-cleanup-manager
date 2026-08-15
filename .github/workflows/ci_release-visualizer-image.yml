@@ -85,7 +85,7 @@ jobs:
           tags: ${{ env.IMAGE_REF }}:${{ github.run_id }}-${{ matrix.arch }}-test
 
       - name: Remove temporary tag on image (optional)
-        uses: ghcr-manager/ghcr-untag-action@6691a653f421749a921a1ce0e63fec76bf2748a9 # v1.0.7
+        uses: ghcr-manager/ghcr-untag-action@952822b03f7c536658dd68fb17f802f52451276e # v1.0.8
         with:
           token: ${{ github.token }}
           owner: ${{ github.repository_owner }}
@@ -133,7 +133,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@c5eac5dd8f7ed6b39fffc6e2c2242966b4917260 # 0.2.1
+        uses: gh-workflow/multiarch-image-publish@310d8b3eb42bc5d1dc6746e70e449b93f63a41af # 0.2.2
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
