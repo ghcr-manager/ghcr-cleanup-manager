@@ -12,8 +12,6 @@ updates:
       github-actions:
         patterns:
           - "*"
-    cooldown:
-      default-days: 7
 
   - package-ecosystem: "npm"
     directories:
@@ -28,8 +26,6 @@ updates:
       npm:
         patterns:
           - "*"
-    cooldown:
-      default-days: 7
     ignore:
       # ignore to keep in sync with node24 used by GH runners
       - dependency-name: "@types/node"
