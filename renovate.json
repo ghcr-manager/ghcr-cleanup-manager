@@ -5,11 +5,13 @@
   "packageRules": [
     {
       "matchManagers": ["github-actions"],
-      "groupName": "github-actions"
+      "groupName": "github-actions",
+      "minimumReleaseAge": "3 days"
     },
     {
       "matchManagers": ["npm"],
-      "groupName": "npm"
+      "groupName": "npm",
+      "minimumReleaseAge": "3 days"
     },
     {
       "matchPackageNames": ["@types/node"],
