@@ -62,7 +62,7 @@ runs:
 
     - name: Remove extra graph tags for 2multiarch2tags
       if: ${{ startsWith(inputs.seed_strategy, 'graph-2multiarch2tags-') }}
-      uses: ghcr-manager/ghcr-untag-action@952822b03f7c536658dd68fb17f802f52451276e # v1.0.8
+      uses: ghcr-manager/ghcr-untag-action@0ead7d5951f7e90be3783a110f342c22910008a4 # v1.0.9
       with:
         token: ${{ inputs.registry_password }}
         owner: ${{ env.OWNER }}

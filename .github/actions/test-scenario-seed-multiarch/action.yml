@@ -115,7 +115,7 @@ runs:
 
     - name: Publish blocked delete index
       if: ${{ inputs.seed_strategy == 'blocked-shared-closure' }}
-      uses: gh-workflow/multiarch-image-publish@7f8a855c8761fb1ebded6bc06a96ea56dff6e653 # 0.2.3
+      uses: gh-workflow/multiarch-image-publish@e235b287dc52113ee3fa98d09f5f81e5f4c7e93d # 0.2.5
       with:
         image_ref: ${{ inputs.image_ref }}
         tags: |
@@ -129,7 +129,7 @@ runs:
 
     - name: Publish blocked keep index
       if: ${{ inputs.seed_strategy == 'blocked-shared-closure' }}
-      uses: gh-workflow/multiarch-image-publish@7f8a855c8761fb1ebded6bc06a96ea56dff6e653 # 0.2.3
+      uses: gh-workflow/multiarch-image-publish@e235b287dc52113ee3fa98d09f5f81e5f4c7e93d # 0.2.5
       with:
         image_ref: ${{ inputs.image_ref }}
         tags: |
@@ -284,7 +284,7 @@ runs:
           inputs.seed_strategy == 'cosign-referrer-kept-multiarch' ||
           inputs.seed_strategy == 'cosign-referrer-kept-multiarch-index-signature'
         }}
-      uses: gh-workflow/multiarch-image-publish@7f8a855c8761fb1ebded6bc06a96ea56dff6e653 # 0.2.3
+      uses: gh-workflow/multiarch-image-publish@e235b287dc52113ee3fa98d09f5f81e5f4c7e93d # 0.2.5
       with:
         image_ref: ${{ inputs.image_ref }}
         tags: |

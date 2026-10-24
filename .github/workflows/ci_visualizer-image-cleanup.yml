@@ -18,7 +18,7 @@ jobs:
       packages: write
     steps:
       - name: Cleanup old images
-        uses: ghcr-manager/ghcr-cleanup-manager@3fea6c863f901f992c4996ac07d2680cdf8cae6b # v1.1.12
+        uses: ghcr-manager/ghcr-cleanup-manager@c38c0a5ad9aa59047033e6a4965bce6a076ef084 # v1.1.13
         with:
           command: cleanup
           token: ${{ github.token }}
