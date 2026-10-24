@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.13] - 2026-10-24
+
+### Changed
+
+- Updated npm dependencies, GitHub Actions, and dependency-update automation.
+
 ## [v1.1.12] - 2026-08-12
 
 ### Changed
