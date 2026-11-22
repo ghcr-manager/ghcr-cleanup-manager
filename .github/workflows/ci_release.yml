@@ -244,11 +244,10 @@ jobs:
           DB_PATH: ${{ steps.release-scenario-db.outputs.db-path }}
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
-          TARGET_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           gh release create "$RELEASE_TAG" \
             "$DB_PATH" \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$TARGET_SHA" \
+            --verify-tag \
             --generate-notes
