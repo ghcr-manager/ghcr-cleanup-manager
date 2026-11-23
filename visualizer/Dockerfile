@@ -1,4 +1,4 @@
-FROM node:24.16.0-alpine3.23 AS build
+FROM node:26.13.1-alpine3.23 AS build
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY visualizer visualizer
 
 RUN npm run build --workspace visualizer
 
-FROM node:24.16.0-alpine3.23 AS deps
+FROM node:26.13.1-alpine3.23 AS deps
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ COPY visualizer/package.json visualizer/package.json
 
 RUN npm ci --omit=dev --workspace visualizer --include-workspace-root=false
 
-FROM node:24.16.0-alpine3.23 AS runtime
+FROM node:26.13.1-alpine3.23 AS runtime
 
 WORKDIR /app
 
