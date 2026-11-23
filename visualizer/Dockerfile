@@ -33,10 +33,10 @@ COPY visualizer/package.json visualizer/package.json
 COPY --from=deps /app/node_modules node_modules
 COPY --from=build /app/visualizer/dist visualizer/dist
 
-RUN adduser -D -h /home/appuser -s /sbin/nologin appuser \
-    && chown -R appuser:appuser /app
+RUN chown -R node:node /app
 
-USER appuser
+# user node has UID 1000
+USER 1000
 
 EXPOSE 8080
 
