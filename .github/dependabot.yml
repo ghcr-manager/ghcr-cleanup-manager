@@ -36,3 +36,17 @@ updates:
       # ignore until ESLint supports TS 7
       - dependency-name: "typescript"
         versions: [">=7"]
+
+  - package-ecosystem: "docker"
+    directories:
+      - "**/*"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 3
+    labels:
+      - "dependencies"
+    groups:
+      docker:
+        patterns:
+          - "*"
