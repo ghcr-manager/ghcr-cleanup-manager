@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.17] - 2026-11-23
+
+### Fixed
+
+- Mount smoke DB file directly, avoid relying on host UID matching the image user.
+
 ## [v1.1.16] - 2026-11-23
 
 ### Changed
