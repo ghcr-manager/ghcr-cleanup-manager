@@ -23,7 +23,7 @@ Or run the release image:
 
 ```sh
 docker run --rm -p 8080:8080 \
-  -v "$PWD:/data:ro" \
+  -v "$PWD/ghcr-cleanup-manager-release-scenarios.sqlite:/data/ghcr-cleanup-manager-release-scenarios.sqlite:ro" \
   ghcr.io/ghcr-manager/ghcr-cleanup-manager-visualizer:latest \
   --db /data/ghcr-cleanup-manager-release-scenarios.sqlite
 ```
@@ -78,7 +78,7 @@ Example:
 
 ```sh
 docker run --rm -p 8080:8080 \
-  -v "$PWD:/data:ro" \
+  -v "$PWD/acme__demo.sqlite:/data/acme__demo.sqlite:ro" \
   ghcr.io/ghcr-manager/ghcr-cleanup-manager-visualizer:v1.1.16 \
   --db /data/acme__demo.sqlite
 ```
