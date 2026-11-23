@@ -28,7 +28,7 @@ docker run -d \
   --rm \
   --name "$CONTAINER_NAME" \
   -p "${PORT}:8080" \
-  -v "${TMP_DIR}:/data:ro" \
+  -v "${DB_PATH}:/data/smoke.sqlite:ro" \
   "$IMAGE_REF" \
   --db /data/smoke.sqlite \
   >/dev/null
