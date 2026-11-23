@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [v1.1.16] - 2026-11-23
+
+### Changed
+
+- Bumped the action, CLI tooling, CI, and visualizer Docker image from Node.js 24 to Node.js 26.
+- The visualizer Docker image now runs as the built-in `node` user (UID 1000) instead of creating a custom user.
+- Updated npm dependencies and GitHub Actions, and added Docker image updates to Dependabot and Renovate.
+- Consolidated linter configuration under `.github/linters/` and fixed Prettier ignore paths.
+- Release publishing now uses `--verify-tag` so a release is only created for an existing tag.
+- Added a "Required Status Checks" CI job for the repository ruleset.
+
+### Fixed
+
+- Pinned dev-only transitive dependencies (`glob`, `katex`, `minimatch`) to versions without known security advisories.
+- Removed the unsupported SQL_TSQLLINT linter from MegaLinter.
+
 ## [v1.1.15] - 2026-10-24
 
 ### Changed
