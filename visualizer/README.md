@@ -79,7 +79,7 @@ Example:
 ```sh
 docker run --rm -p 8080:8080 \
   -v "$PWD/acme__demo.sqlite:/data/acme__demo.sqlite:ro" \
-  ghcr.io/ghcr-manager/ghcr-cleanup-manager-visualizer:v1.1.16 \
+  ghcr.io/ghcr-manager/ghcr-cleanup-manager-visualizer:v1.1.17 \
   --db /data/acme__demo.sqlite
 ```
 
