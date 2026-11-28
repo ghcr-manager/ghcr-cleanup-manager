@@ -139,7 +139,7 @@ jobs:
           password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@e235b287dc52113ee3fa98d09f5f81e5f4c7e93d # 0.2.5
+        uses: gh-workflow/multiarch-image-publish@5df8d38ea3a29faa3134c0a1a3e128d83cb2546c # 0.2.6
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
@@ -206,7 +206,7 @@ jobs:
           password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@e235b287dc52113ee3fa98d09f5f81e5f4c7e93d # 0.2.5
+        uses: gh-workflow/multiarch-image-publish@5df8d38ea3a29faa3134c0a1a3e128d83cb2546c # 0.2.6
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |
@@ -246,7 +246,7 @@ jobs:
           password: ${{ secrets.GH_TEST_PAT }}
 
       - name: Publish multi-arch image
-        uses: gh-workflow/multiarch-image-publish@e235b287dc52113ee3fa98d09f5f81e5f4c7e93d # 0.2.5
+        uses: gh-workflow/multiarch-image-publish@5df8d38ea3a29faa3134c0a1a3e128d83cb2546c # 0.2.6
         with:
           image_ref: ${{ env.IMAGE_REF }}
           tags: |

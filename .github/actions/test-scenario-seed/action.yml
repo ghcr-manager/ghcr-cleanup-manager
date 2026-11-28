@@ -36,7 +36,7 @@ runs:
 
     - name: Install Cosign for graph-matrix scenarios
       if: ${{ startsWith(inputs.seed_strategy, 'graph-') }}
-      uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+      uses: sigstore/cosign-installer@881c63bd87e38389154debd8331404ce7ca8a3ab # v4.1.4
 
     - name: Seed graph-matrix scenario
       if: ${{ startsWith(inputs.seed_strategy, 'graph-') }}
@@ -62,7 +62,7 @@ runs:
 
     - name: Remove extra graph tags for 2multiarch2tags
       if: ${{ startsWith(inputs.seed_strategy, 'graph-2multiarch2tags-') }}
-      uses: ghcr-manager/ghcr-untag-action@0ead7d5951f7e90be3783a110f342c22910008a4 # v1.0.9
+      uses: ghcr-manager/ghcr-untag-action@c78b11e6c1793c4d249d6c65a3e3a7b2f110dc20 # v1.0.10
       with:
         token: ${{ inputs.registry_password }}
         owner: ${{ env.OWNER }}
